@@ -30,14 +30,30 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 30px;
 }
 
 .brand {
   color: var(--primary);
-  text-decoration: none;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: 0.08em;
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  gap: 28px;
+}
+
+.nav a {
+  color: var(--muted);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.nav a:hover {
+  color: var(--primary);
 }
 
 .secure {
@@ -45,7 +61,7 @@
   align-items: center;
   gap: 7px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .container {
@@ -59,7 +75,7 @@
   gap: 8px;
   margin-bottom: 22px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .breadcrumbs a {
@@ -75,7 +91,6 @@
   margin: 0;
   color: var(--primary);
   font-size: 42px;
-  line-height: 1.1;
   font-weight: 600;
 }
 
@@ -85,10 +100,10 @@
   font-size: 14px;
 }
 
-.checkoutLayout {
+.layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(320px, 0.85fr);
-  gap: 30px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.8fr);
+  gap: 28px;
   align-items: start;
 }
 
@@ -116,9 +131,9 @@
 }
 
 .step {
-  display: flex;
   width: 30px;
   height: 30px;
+  display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
@@ -131,7 +146,6 @@
 
 .cardHeader h2 {
   margin: 0 0 4px;
-  color: var(--text);
   font-size: 19px;
   font-weight: 600;
 }
@@ -171,20 +185,6 @@
   border-color: var(--primary);
 }
 
-.checkbox {
-  flex-direction: row !important;
-  align-items: center;
-  gap: 9px !important;
-  margin-top: 14px;
-  color: var(--muted) !important;
-  font-weight: 400 !important;
-}
-
-.checkbox input {
-  width: auto;
-  min-height: auto;
-}
-
 .formGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -214,17 +214,12 @@
 .paymentOption input {
   width: auto;
   min-height: auto;
-  margin: 0;
 }
 
 .paymentOption span {
   display: flex;
   flex-direction: column;
   gap: 3px;
-}
-
-.paymentOption strong {
-  font-size: 14px;
 }
 
 .paymentOption small {
@@ -270,7 +265,6 @@
 
 .summaryItem div {
   display: flex;
-  min-width: 0;
   flex-direction: column;
   gap: 4px;
 }
@@ -314,7 +308,6 @@
 }
 
 .total {
-  color: var(--text);
   font-size: 18px;
 }
 
@@ -324,9 +317,17 @@
 }
 
 .taxNote {
-  margin: 8px 0 22px;
+  margin: 8px 0 18px;
   color: var(--muted);
   font-size: 11px;
+}
+
+.editCart {
+  display: block;
+  margin-bottom: 18px;
+  color: var(--primary);
+  font-size: 12px;
+  text-decoration: none;
 }
 
 .trust {
@@ -338,13 +339,13 @@
 
 .trust > span {
   display: flex;
-  width: 26px;
-  height: 26px;
+  width: 27px;
+  height: 27px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
   border-radius: 50%;
-  background: var(--surface-high);
+  background: white;
   color: var(--primary);
 }
 
@@ -356,23 +357,11 @@
 .trust p {
   margin: 3px 0 0;
   color: var(--muted);
-  font-size: 11px;
-}
-
-.backToCart {
-  display: block;
-  margin-top: 20px;
-  color: var(--primary);
-  font-size: 13px;
-  text-align: center;
-  text-decoration: none;
+  font-size: 10px;
 }
 
 .footer {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 40px;
-  padding: 50px max(24px, calc((100vw - 1180px) / 2));
+  padding: 40px max(24px, calc((100vw - 1180px) / 2));
   background: var(--surface-high);
 }
 
@@ -382,50 +371,130 @@
   letter-spacing: 0.08em;
 }
 
-.footer p,
-.footer a {
+.footer p {
+  margin: 5px 0 0;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.8;
-  text-decoration: none;
+  font-size: 12px;
 }
 
-.footer a {
+.successPage {
+  width: min(650px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 110px 0;
+  text-align: center;
+}
+
+.successIcon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-size: 25px;
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.successPage h1 {
+  margin: 9px 0 12px;
+  color: var(--primary);
+  font-size: 38px;
+  font-weight: 600;
+}
+
+.successPage > p {
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.orderNumber {
+  margin: 28px auto;
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: white;
+}
+
+.orderNumber span,
+.orderNumber strong {
   display: block;
 }
 
+.orderNumber span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.orderNumber strong {
+  margin-top: 5px;
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.successActions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.successActions a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0 18px;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.successActions a:first-child {
+  background: var(--primary-container);
+  color: white;
+}
+
 @media (max-width: 767px) {
-  .headerInner,
-  .container {
-    width: calc(100% - 32px);
-  }
-
-  .headerInner {
-    min-height: 62px;
-  }
-
-  .brand {
-    font-size: 21px;
-  }
-
-  .secure {
-    font-size: 11px;
+  .header {
+    display: none;
   }
 
   .container {
-    padding: 24px 0 50px;
+    width: 100%;
+    padding: 20px 16px 60px;
+  }
+
+  .breadcrumbs {
+    display: none;
+  }
+
+  .titleBlock {
+    margin-bottom: 20px;
   }
 
   .titleBlock h1 {
-    font-size: 32px;
+    font-size: 31px;
   }
 
-  .checkoutLayout {
+  .layout {
     display: block;
   }
 
   .card {
     padding: 18px;
+    margin-bottom: 14px;
   }
 
   .formGrid {
@@ -439,15 +508,27 @@
 
   .summaryCard {
     position: static;
-    margin-top: 18px;
     padding: 20px 18px;
-  }
-
-  .placeOrder {
-    width: 100%;
   }
 
   .footer {
     display: none;
+  }
+
+  .successPage {
+    width: calc(100% - 32px);
+    padding: 90px 0;
+  }
+
+  .successPage h1 {
+    font-size: 30px;
+  }
+
+  .successActions {
+    flex-direction: column;
+  }
+
+  .successActions a {
+    justify-content: center;
   }
 }

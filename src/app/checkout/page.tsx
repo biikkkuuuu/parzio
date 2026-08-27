@@ -1,7 +1,85 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo, useState } from "react";
+import { products } from "@/lib/products";
 import styles from "./checkout.module.css";
 
+type CartItem = {
+  productId: number;
+  quantity: number;
+};
+
+const cartItems: CartItem[] = [
+  { productId: 1, quantity: 1 },
+  { productId: 3, quantity: 1 },
+];
+
+const shipping = 0;
+
+const formatPrice = (value: number) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value);
+
 export default function CheckoutPage() {
+  const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [placed, setPlaced] = useState(false);
+
+  const items = useMemo(() => {
+    return cartItems
+      .map((item) => {
+        const product = products.find((product) => product.id === item.productId);
+
+        if (!product) return null;
+
+        return {
+          ...product,
+          quantity: item.quantity,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+  }, []);
+
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+
+  const total = subtotal + shipping;
+
+  if (placed) {
+    return (
+      <main className={styles.page}>
+        <section className={styles.successPage}>
+          <div className={styles.successIcon}>✓</div>
+
+          <span className={styles.eyebrow}>ORDER CONFIRMED</span>
+
+          <h1>Thank you for your order.</h1>
+
+          <p>
+            Your PARZIO order has been placed successfully. Your order
+            confirmation and tracking details will be available in your
+            account.
+          </p>
+
+          <div className={styles.orderNumber}>
+            <span>ORDER ID</span>
+            <strong>PRZ-{Math.floor(10000 + Math.random() * 89999)}</strong>
+          </div>
+
+          <div className={styles.successActions}>
+            <Link href="/orders">View My Orders</Link>
+            <Link href="/products">Continue Shopping</Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className={styles.page}>
       <header className={styles.header}>
@@ -9,6 +87,12 @@ export default function CheckoutPage() {
           <Link href="/" className={styles.brand}>
             PARZIO
           </Link>
+
+          <nav className={styles.nav}>
+            <Link href="/products">Shop</Link>
+            <Link href="/offers">Offers</Link>
+            <Link href="/account">Account</Link>
+          </nav>
 
           <div className={styles.secure}>
             <span>🔒</span>
@@ -29,7 +113,7 @@ export default function CheckoutPage() {
           <p>Complete your order securely.</p>
         </div>
 
-        <div className={styles.checkoutLayout}>
+        <div className={styles.layout}>
           <section className={styles.formArea}>
             <div className={styles.card}>
               <div className={styles.cardHeader}>
@@ -43,11 +127,6 @@ export default function CheckoutPage() {
               <label>
                 Email Address
                 <input type="email" placeholder="you@example.com" />
-              </label>
-
-              <label className={styles.checkbox}>
-                <input type="checkbox" />
-                <span>Send me order updates and offers</span>
               </label>
             </div>
 
@@ -92,8 +171,8 @@ export default function CheckoutPage() {
                     </option>
                     <option>Jharkhand</option>
                     <option>Madhya Pradesh</option>
-                    <option>Maharashtra</option>
                     <option>Delhi</option>
+                    <option>Maharashtra</option>
                     <option>West Bengal</option>
                     <option>Uttar Pradesh</option>
                   </select>
@@ -113,7 +192,6 @@ export default function CheckoutPage() {
                   Phone
                   <input
                     type="tel"
-                    inputMode="tel"
                     placeholder="+91 XXXXX XXXXX"
                   />
                 </label>
@@ -125,7 +203,7 @@ export default function CheckoutPage() {
                 <span className={styles.step}>3</span>
                 <div>
                   <h2>Payment Method</h2>
-                  <p>All transactions are securely encrypted.</p>
+                  <p>Choose your preferred payment option.</p>
                 </div>
               </div>
 
@@ -134,8 +212,10 @@ export default function CheckoutPage() {
                   <input
                     type="radio"
                     name="payment"
-                    defaultChecked
+                    checked={paymentMethod === "upi"}
+                    onChange={() => setPaymentMethod("upi")}
                   />
+
                   <span>
                     <strong>UPI</strong>
                     <small>Google Pay, PhonePe, Paytm and more</small>
@@ -143,7 +223,13 @@ export default function CheckoutPage() {
                 </label>
 
                 <label className={styles.paymentOption}>
-                  <input type="radio" name="payment" />
+                  <input
+                    type="radio"
+                    name="payment"
+                    checked={paymentMethod === "card"}
+                    onChange={() => setPaymentMethod("card")}
+                  />
+
                   <span>
                     <strong>Credit / Debit Card</strong>
                     <small>Visa, Mastercard, RuPay and more</small>
@@ -151,7 +237,13 @@ export default function CheckoutPage() {
                 </label>
 
                 <label className={styles.paymentOption}>
-                  <input type="radio" name="payment" />
+                  <input
+                    type="radio"
+                    name="payment"
+                    checked={paymentMethod === "cod"}
+                    onChange={() => setPaymentMethod("cod")}
+                  />
+
                   <span>
                     <strong>Cash on Delivery</strong>
                     <small>Pay when your order arrives</small>
@@ -160,52 +252,61 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <button className={styles.placeOrder}>
-              Place Order
+            <button
+              type="button"
+              className={styles.placeOrder}
+              onClick={() => setPlaced(true)}
+            >
+              Place Order · {formatPrice(total)}
             </button>
           </section>
 
           <aside className={styles.summaryCard}>
             <h2>Order Summary</h2>
 
-            <div className={styles.summaryItem}>
-              <div>
-                <strong>LUMINA</strong>
-                <span>Radiance Glow Serum · 30ml × 1</span>
-              </div>
-              <strong>₹1,499</strong>
-            </div>
+            {items.map((item) => (
+              <div key={item.id} className={styles.summaryItem}>
+                <div>
+                  <strong>{item.brand}</strong>
+                  <span>
+                    {item.name} · Qty {item.quantity}
+                  </span>
+                </div>
 
-            <div className={styles.summaryItem}>
-              <div>
-                <strong>BOTANICA</strong>
-                <span>Hydrating Skin Cream · 50ml × 1</span>
+                <strong>
+                  {formatPrice(item.price * item.quantity)}
+                </strong>
               </div>
-              <strong>₹1,199</strong>
-            </div>
+            ))}
 
             <div className={styles.divider} />
 
             <div className={styles.priceLine}>
               <span>Subtotal</span>
-              <strong>₹2,698</strong>
+              <strong>{formatPrice(subtotal)}</strong>
             </div>
 
             <div className={styles.priceLine}>
               <span>Shipping</span>
-              <strong className={styles.free}>FREE</strong>
+              <strong className={styles.free}>
+                {shipping === 0 ? "FREE" : formatPrice(shipping)}
+              </strong>
             </div>
 
             <div className={styles.divider} />
 
             <div className={styles.total}>
               <span>Total</span>
-              <strong>₹2,698</strong>
+              <strong>{formatPrice(total)}</strong>
             </div>
 
             <p className={styles.taxNote}>
               Inclusive of all applicable taxes.
             </p>
+
+            <Link href="/cart" className={styles.editCart}>
+              ← Edit Cart
+            </Link>
 
             <div className={styles.trust}>
               <span>✓</span>
@@ -214,29 +315,13 @@ export default function CheckoutPage() {
                 <p>Your payment information is protected.</p>
               </div>
             </div>
-
-            <Link href="/cart" className={styles.backToCart}>
-              ← Edit Cart
-            </Link>
           </aside>
         </div>
       </section>
 
       <footer className={styles.footer}>
-        <div>
-          <strong>PARZIO</strong>
-          <p>Premium beauty marketplace.</p>
-        </div>
-
-        <div>
-          <Link href="/help">Help Center</Link>
-          <Link href="#">Shipping & Returns</Link>
-        </div>
-
-        <div>
-          <Link href="#">Privacy Policy</Link>
-          <Link href="#">Terms of Service</Link>
-        </div>
+        <strong>PARZIO</strong>
+        <p>Premium beauty marketplace.</p>
       </footer>
     </main>
   );
