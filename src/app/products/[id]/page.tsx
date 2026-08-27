@@ -1,14 +1,27 @@
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getProductById, products } from "@/lib/products";
 import styles from "./product-details.module.css";
 
-const productImages = [
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuBL1yaFv08PJ3axK16QzPEMdzTbGNBONmdH6_Sv0zspPbj1gtyqViIJFwt2afYiqYCYMFs6cJ-0ksBf5EEHG0doP-j16YESlTZY8W1_huFQOrv2hmivdMPy4170ES36o6PGJY-i8en9i1rGzYP6E7m3FsuaJHMGgNWSUDEz08bJubOqv9YNNbBk_DEYDCoX7DZ3-ZwYmdON-bEe5jJzM2euEHq9U_NZsmDBo0Y_xkRnlTgbkU4sfqOu",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuAprxoZl6cvq_VALB5FRKww091uHtSRhBXdTgeq_1MgKkD8u9KF61CLXIsmhJo33JbnznNoaED1-ao2NqIGQJztU5mZMIFGnqpZ2VJQlVfqkqH7tFKrDPXTS9gh3sUQdXZln3l1Z1eN7QrPdqH4bZkIIJKYXnGmh66uZ4w-_b-BktJ8WqGA32GC5Boi3RWgqyQ6Z_mLfr7XJ4Xj1oDXyLHhOt8zMC5lKfHxBM2eXs9oY-a-Y5yOcLJL",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDZPobWDPy2HvNkjThEVNuh_GYfRAiozHGGGrAfO-_kKQNB06YWu3FopBDP1-1ZFRwtfJEahJuwAoXu8GeQDsVvmlCQkXD25ywkLflDjMuNRdgmebOnAk6Eu0HmaLGMzll-ymkwUtDRjPoJY5UoS2dswnEHbvmaFO_iO5vRU7Snn1whhvDHKz4TWNPBXNDTQ_bRPajW9OIIS5YkOQXBUcMqio7vS6-t74yqGXMp3LHKzW7e52tOZpb_",
-];
+type Props = {
+  params: Promise<{ id: string }>;
+};
 
-export default function ProductDetailsPage() {
+export function generateStaticParams() {
+  return products.map((product) => ({
+    id: String(product.id),
+  }));
+}
+
+export default async function ProductDetailsPage({ params }: Props) {
+  const { id } = await params;
+  const product = getProductById(Number(id));
+
+  if (!product) {
+    notFound();
+  }
+
   return (
     <main className={styles.page}>
       <header className={styles.desktopHeader}>
@@ -26,9 +39,15 @@ export default function ProductDetailsPage() {
           </nav>
 
           <div className={styles.headerActions}>
-            <button aria-label="Wishlist">♡</button>
-            <Link href="/cart" aria-label="Cart">🛍</Link>
-            <Link href="/account" aria-label="Account">◯</Link>
+            <Link href="/wishlist" aria-label="Wishlist">
+              ♡
+            </Link>
+            <Link href="/cart" aria-label="Cart">
+              🛍
+            </Link>
+            <Link href="/account" aria-label="Account">
+              ◯
+            </Link>
           </div>
         </div>
       </header>
@@ -38,119 +57,100 @@ export default function ProductDetailsPage() {
           ←
         </Link>
 
-        <div className={styles.mobileActions}>
-          <button className={styles.roundButton} aria-label="Share">
-            ↗
-          </button>
-          <button className={styles.roundButton} aria-label="Wishlist">
-            ♡
-          </button>
-        </div>
+        <Link href="/cart" className={styles.mobileIcon} aria-label="Cart">
+          🛍
+        </Link>
       </header>
 
       <section className={styles.container}>
-        <div className={styles.productLayout}>
-          <section className={styles.gallery}>
-            <div className={styles.thumbnailRail}>
-              {productImages.map((image, index) => (
-                <button
-                  key={image}
-                  className={`${styles.thumbnail} ${
-                    index === 0 ? styles.thumbnailActive : ""
-                  }`}
-                  aria-label={`Product image ${index + 1}`}
-                >
-                  <Image
-                    src={image}
-                    alt={`Radiance Glow Serum image ${index + 1}`}
-                    fill
-                    sizes="96px"
-                  />
-                </button>
-              ))}
-            </div>
+        <nav className={styles.breadcrumbs}>
+          <Link href="/">Home</Link>
+          <span>›</span>
+          <Link href="/products">Skincare</Link>
+          <span>›</span>
+          <span>{product.name}</span>
+        </nav>
 
+        <div className={styles.productLayout}>
+          <div className={styles.imageSection}>
             <div className={styles.mainImage}>
+              {product.badge && (
+                <span className={styles.badge}>{product.badge}</span>
+              )}
+
               <Image
-                src={productImages[0]}
-                alt="LUMINA Radiance Glow Serum"
+                src={product.image}
+                alt={product.name}
                 fill
                 priority
-                sizes="(max-width: 767px) 100vw, 58vw"
+                sizes="(max-width: 767px) 100vw, 55vw"
               />
-
-              <button
-                className={styles.imageWishlist}
-                aria-label="Add to wishlist"
-              >
-                ♡
-              </button>
-
-              <div className={styles.mobileDots}>
-                <span className={styles.activeDot} />
-                <span className={styles.dot} />
-                <span className={styles.dot} />
-              </div>
             </div>
-          </section>
+          </div>
 
           <section className={styles.productInfo}>
-            <nav className={styles.breadcrumbs}>
-              <Link href="/products">Skincare</Link>
-              <span>›</span>
-              <Link href="/products">Serums</Link>
-            </nav>
+            <span className={styles.brandName}>{product.brand}</span>
 
-            <p className={styles.brandName}>LUMINA</p>
-
-            <h1>Radiance Glow Serum</h1>
+            <h1>{product.name}</h1>
 
             <div className={styles.rating}>
-              <span className={styles.stars}>★★★★★</span>
-              <span>4.8 (124 reviews)</span>
+              <span>★</span>
+              <strong>{product.rating}</strong>
+              <span>({product.reviews} reviews)</span>
             </div>
 
-            <div className={styles.priceRow}>
-              <span className={styles.currentPrice}>₹1,499</span>
-              <span className={styles.oldPrice}>₹2,100</span>
-              <span className={styles.discount}>30% OFF</span>
+            <div className={styles.price}>
+              ₹{product.price.toLocaleString("en-IN")}
             </div>
 
-            <p className={styles.description}>
-              A potent, lightweight serum that visibly brightens and evens skin
-              tone. Formulated with advanced Vitamin C and Niacinamide, it
-              delivers an instant, radiant glow while providing long-lasting
-              hydration.
-            </p>
+            <p className={styles.tax}>Inclusive of all applicable taxes.</p>
 
-            <div className={styles.optionSection}>
-              <span>SIZE</span>
+            <div className={styles.divider} />
 
-              <div className={styles.options}>
-                <button className={styles.selectedOption}>30ml</button>
-                <button>50ml</button>
+            <div className={styles.description}>
+              <h2>Description</h2>
+              <p>{product.description}</p>
+            </div>
+
+            <div className={styles.quantity}>
+              <span>Quantity</span>
+
+              <div>
+                <button type="button" aria-label="Decrease quantity">
+                  −
+                </button>
+                <strong>1</strong>
+                <button type="button" aria-label="Increase quantity">
+                  +
+                </button>
               </div>
             </div>
 
-            <div className={styles.deliverySection}>
-              <span>CHECK DELIVERY</span>
-
-              <div className={styles.pincodeBox}>
-                <span>⌖</span>
-                <input
-                  type="text"
-                  placeholder="Enter Pincode"
-                  aria-label="Enter pincode"
-                />
-                <button>CHECK</button>
-              </div>
-            </div>
-
-            <div className={styles.desktopActions}>
-              <button className={styles.cartButton}>
-                🛍 Add to Cart
+            <div className={styles.purchaseActions}>
+              <button type="button" className={styles.cartButton}>
+                Add to Cart
               </button>
-              <button className={styles.buyButton}>Buy Now</button>
+
+              <button type="button" className={styles.buyButton}>
+                Buy Now
+              </button>
+            </div>
+
+            <div className={styles.shippingInfo}>
+              <div>
+                <strong>Free Delivery</strong>
+                <span>On orders above ₹999</span>
+              </div>
+
+              <div>
+                <strong>Easy Returns</strong>
+                <span>Simple return experience</span>
+              </div>
+
+              <div>
+                <strong>Authentic Products</strong>
+                <span>100% genuine beauty products</span>
+              </div>
             </div>
           </section>
         </div>
@@ -164,27 +164,16 @@ export default function ProductDetailsPage() {
 
           <div className={styles.detailsGrid}>
             <div>
-              <p>
-                Experience the ultimate glow with our LUMINA Radiance Glow
-                Serum. This carefully curated formula is designed to target
-                dullness and uneven texture, revealing a smoother, brighter
-                complexion.
-              </p>
-
-              <p>
-                Suitable for all skin types, it absorbs quickly without leaving
-                a sticky residue, making it the perfect base for your
-                moisturizer and makeup.
-              </p>
+              <p>{product.description}</p>
             </div>
 
             <div className={styles.benefits}>
-              <h2>Key Benefits</h2>
+              <h2>Product Details</h2>
 
               <ul>
-                <li>✓ Illuminates and brightens skin instantly.</li>
-                <li>✓ Reduces the appearance of dark spots over time.</li>
-                <li>✓ Hydrates and plumps the skin surface.</li>
+                <li>✓ Premium {product.category.toLowerCase()} product.</li>
+                <li>✓ Rated {product.rating}/5 by customers.</li>
+                <li>✓ Suitable for your everyday beauty routine.</li>
               </ul>
             </div>
           </div>
@@ -192,8 +181,13 @@ export default function ProductDetailsPage() {
       </section>
 
       <div className={styles.mobilePurchaseBar}>
-        <button className={styles.mobileCartButton}>🛍 Add to Cart</button>
-        <button className={styles.mobileBuyButton}>Buy Now</button>
+        <button type="button" className={styles.mobileCartButton}>
+          Add to Cart
+        </button>
+
+        <button type="button" className={styles.mobileBuyButton}>
+          Buy Now
+        </button>
       </div>
 
       <nav className={styles.mobileBottomNav}>
@@ -230,14 +224,14 @@ export default function ProductDetailsPage() {
         </div>
 
         <div>
-          <a href="#">Authenticity Guaranteed</a>
-          <a href="#">Free Shipping over ₹500</a>
-          <a href="#">Easy Returns</a>
+          <Link href="/help">Authenticity Guaranteed</Link>
+          <Link href="/help">Free Shipping over ₹500</Link>
+          <Link href="/help">Easy Returns</Link>
         </div>
 
         <div>
-          <a href="#">Contact Us</a>
-          <a href="#">Privacy Policy</a>
+          <Link href="/help">Contact Us</Link>
+          <Link href="/help">Privacy Policy</Link>
         </div>
       </footer>
     </main>
