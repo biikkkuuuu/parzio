@@ -1,27 +1,24 @@
+﻿"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo, useState } from "react";
+import { products } from "@/lib/products";
 import styles from "./cart.module.css";
 
-const cartItems = [
+type CartItem = {
+  productId: number;
+  quantity: number;
+};
+
+const initialCart: CartItem[] = [
   {
-    id: 1,
-    brand: "LUMINA",
-    name: "Radiance Glow Serum",
-    size: "30ml",
-    price: 1499,
+    productId: 1,
     quantity: 1,
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBL1yaFv08PJ3axK16QzPEMdzTbGNBONmdH6_Sv0zspPbj1gtyqViIJFwt2afYiqYCYMFs6cJ-0ksBf5EEHG0doP-j16YESlTZY8W1_huFQOrv2hmivdMPy4170ES36o6PGJY-i8en9i1rGzYP6E7m3FsuaJHMGgNWSUDEz08bJubOqv9YNNbBk_DEYDCoX7DZ3-ZwYmdON-bEe5jJzM2euEHq9U_NZsmDBo0Y_xkRnlTgbkU4sfqOu",
   },
   {
-    id: 2,
-    brand: "BOTANICA",
-    name: "Hydrating Skin Cream",
-    size: "50ml",
-    price: 1199,
+    productId: 3,
     quantity: 1,
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAprxoZl6cvq_VALB5FRKww091uHtSRhBXdTgeq_1MgKkD8u9KF61CLXIsmhJo33JbnznNoaED1-ao2NqIGQJztU5mZMIFGnqpZ2VJQlVfqkqH7tFKrDPXTS9gh3sUQdXZln3l1Z1eN7QrPdqH4bZkIIJKYXnGmh66uZ4w-_b-BktJ8WqGA32GC5Boi3RWgqyQ6Z_mLfr7XJ4Xj1oDXyLHhOt8zMC5lKfHxBM2eXs9oY-a-Y5yOcLJL",
   },
 ];
 
@@ -35,12 +32,50 @@ const formatPrice = (value: number) =>
   }).format(value);
 
 export default function CartPage() {
-  const subtotal = cartItems.reduce(
+  const [cartItems, setCartItems] = useState(initialCart);
+
+  const items = useMemo(() => {
+    return cartItems
+      .map((cartItem) => {
+        const product = products.find(
+          (item) => item.id === cartItem.productId,
+        );
+
+        if (!product) return null;
+
+        return {
+          ...product,
+          quantity: cartItem.quantity,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+  }, [cartItems]);
+
+  const subtotal = items.reduce(
     (total, item) => total + item.price * item.quantity,
     0,
   );
 
   const total = subtotal + shipping;
+
+  const updateQuantity = (productId: number, change: number) => {
+    setCartItems((current) =>
+      current.map((item) =>
+        item.productId === productId
+          ? {
+              ...item,
+              quantity: Math.max(1, item.quantity + change),
+            }
+          : item,
+      ),
+    );
+  };
+
+  const removeItem = (productId: number) => {
+    setCartItems((current) =>
+      current.filter((item) => item.productId !== productId),
+    );
+  };
 
   return (
     <main className={styles.page}>
@@ -73,7 +108,10 @@ export default function CartPage() {
         <div className={styles.titleRow}>
           <div>
             <h1>Your Cart</h1>
-            <p>{cartItems.length} items in your cart</p>
+            <p>
+              {items.length} {items.length === 1 ? "item" : "items"} in your
+              cart
+            </p>
           </div>
 
           <Link href="/products" className={styles.continueShopping}>
@@ -81,135 +119,157 @@ export default function CartPage() {
           </Link>
         </div>
 
-        <div className={styles.cartLayout}>
-          <section className={styles.itemsCard}>
-            {cartItems.map((item) => (
-              <article key={item.id} className={styles.cartItem}>
-                <div className={styles.productImage}>
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    sizes="160px"
-                  />
-                </div>
+        {items.length > 0 ? (
+          <div className={styles.cartLayout}>
+            <section className={styles.itemsCard}>
+              {items.map((item) => (
+                <article key={item.id} className={styles.cartItem}>
+                  <Link
+                    href={`/products/${item.id}`}
+                    className={styles.productImage}
+                  >
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      sizes="160px"
+                    />
+                  </Link>
 
-                <div className={styles.itemDetails}>
-                  <p className={styles.brandName}>{item.brand}</p>
-                  <h2>{item.name}</h2>
-                  <p className={styles.size}>Size: {item.size}</p>
+                  <div className={styles.itemDetails}>
+                    <p className={styles.brandName}>{item.brand}</p>
 
-                  <button type="button" className={styles.removeButton}>
-                    Remove
-                  </button>
-                </div>
+                    <Link
+                      href={`/products/${item.id}`}
+                      className={styles.productName}
+                    >
+                      {item.name}
+                    </Link>
 
-                <div className={styles.itemControls}>
-                  <div className={styles.quantity}>
-                    <button type="button" aria-label="Decrease quantity">
-                      −
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button type="button" aria-label="Increase quantity">
-                      +
+                    <p className={styles.size}>
+                      {item.category} · Qty {item.quantity}
+                    </p>
+
+                    <button
+                      type="button"
+                      className={styles.removeButton}
+                      onClick={() => removeItem(item.id)}
+                    >
+                      Remove
                     </button>
                   </div>
 
-                  <strong>{formatPrice(item.price * item.quantity)}</strong>
+                  <div className={styles.itemControls}>
+                    <div className={styles.quantity}>
+                      <button
+                        type="button"
+                        aria-label={`Decrease ${item.name} quantity`}
+                        onClick={() => updateQuantity(item.id, -1)}
+                      >
+                        −
+                      </button>
+
+                      <span>{item.quantity}</span>
+
+                      <button
+                        type="button"
+                        aria-label={`Increase ${item.name} quantity`}
+                        onClick={() => updateQuantity(item.id, 1)}
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    <strong>
+                      {formatPrice(item.price * item.quantity)}
+                    </strong>
+                  </div>
+                </article>
+              ))}
+
+              <div className={styles.coupon}>
+                <div>
+                  <h3>Have a coupon?</h3>
+                  <p>Apply your promo code before checkout.</p>
                 </div>
-              </article>
-            ))}
 
-            <div className={styles.coupon}>
-              <div>
-                <h3>Have a coupon?</h3>
-                <p>Apply your promo code before checkout.</p>
+                <div className={styles.couponForm}>
+                  <input
+                    type="text"
+                    placeholder="Enter coupon code"
+                    aria-label="Coupon code"
+                  />
+                  <button type="button">Apply</button>
+                </div>
+              </div>
+            </section>
+
+            <aside className={styles.summary}>
+              <h2>Order Summary</h2>
+
+              <div className={styles.summaryLine}>
+                <span>Subtotal</span>
+                <strong>{formatPrice(subtotal)}</strong>
               </div>
 
-              <div className={styles.couponForm}>
-                <input
-                  type="text"
-                  placeholder="Enter coupon code"
-                  aria-label="Coupon code"
-                />
-                <button type="button">Apply</button>
+              <div className={styles.summaryLine}>
+                <span>Shipping</span>
+                <strong>
+                  {shipping === 0 ? "FREE" : formatPrice(shipping)}
+                </strong>
               </div>
-            </div>
+
+              <div className={styles.divider} />
+
+              <div className={styles.total}>
+                <span>Total</span>
+                <strong>{formatPrice(total)}</strong>
+              </div>
+
+              <p className={styles.taxNote}>
+                Inclusive of all applicable taxes.
+              </p>
+
+              <Link href="/checkout" className={styles.checkoutButton}>
+                Proceed to Checkout
+              </Link>
+
+              <div className={styles.trust}>
+                <div>
+                  <span>✓</span>
+                  <p>
+                    <strong>Authenticity Guaranteed</strong>
+                    100% genuine products
+                  </p>
+                </div>
+
+                <div>
+                  <span>✓</span>
+                  <p>
+                    <strong>Secure Payments</strong>
+                    Safe & encrypted checkout
+                  </p>
+                </div>
+
+                <div>
+                  <span>✓</span>
+                  <p>
+                    <strong>Easy Returns</strong>
+                    Hassle-free returns
+                  </p>
+                </div>
+              </div>
+            </aside>
+          </div>
+        ) : (
+          <section className={styles.emptyCart}>
+            <div>🛍</div>
+            <h2>Your cart is empty</h2>
+            <p>Add some products to your cart and come back here.</p>
+            <Link href="/products">Start Shopping</Link>
           </section>
-
-          <aside className={styles.summary}>
-            <h2>Order Summary</h2>
-
-            <div className={styles.summaryLine}>
-              <span>Subtotal</span>
-              <strong>{formatPrice(subtotal)}</strong>
-            </div>
-
-            <div className={styles.summaryLine}>
-              <span>Shipping</span>
-              <strong>{shipping === 0 ? "FREE" : formatPrice(shipping)}</strong>
-            </div>
-
-            <div className={styles.divider} />
-
-            <div className={styles.total}>
-              <span>Total</span>
-              <strong>{formatPrice(total)}</strong>
-            </div>
-
-            <p className={styles.taxNote}>
-              Inclusive of all applicable taxes.
-            </p>
-
-            <Link href="/checkout" className={styles.checkoutButton}>
-              Proceed to Checkout
-            </Link>
-
-            <div className={styles.trust}>
-              <div>
-                <span>✓</span>
-                <p>
-                  <strong>Authenticity Guaranteed</strong>
-                  100% genuine products
-                </p>
-              </div>
-
-              <div>
-                <span>✓</span>
-                <p>
-                  <strong>Secure Payments</strong>
-                  Safe & encrypted checkout
-                </p>
-              </div>
-
-              <div>
-                <span>✓</span>
-                <p>
-                  <strong>Easy Returns</strong>
-                  Hassle-free returns
-                </p>
-              </div>
-            </div>
-          </aside>
-        </div>
+        )}
       </section>
-
-      <footer className={styles.footer}>
-        <div>
-          <strong>PARZIO</strong>
-          <p>Premium beauty marketplace.</p>
-        </div>
-
-        <div>
-          <Link href="/help">Help Center</Link>
-          <Link href="#">Shipping & Returns</Link>
-        </div>
-
-        <div>
-          <Link href="#">Privacy Policy</Link>
-          <Link href="#">Terms of Service</Link>
-        </div>
-      </footer>
 
       <nav className={styles.mobileBottomNav}>
         <Link href="/">

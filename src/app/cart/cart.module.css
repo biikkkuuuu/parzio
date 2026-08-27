@@ -542,3 +542,36 @@
     font-weight: 700;
   }
 }
+.emptyCart {
+  padding: 80px 20px;
+  border: 1px dashed var(--border);
+  background: white;
+  text-align: center;
+}
+
+.emptyCart > div {
+  color: var(--primary);
+  font-size: 42px;
+}
+
+.emptyCart h2 {
+  margin: 12px 0 6px;
+  color: var(--primary);
+  font-size: 24px;
+}
+
+.emptyCart p {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.emptyCart a {
+  display: inline-flex;
+  padding: 12px 18px;
+  background: var(--primary-container);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
