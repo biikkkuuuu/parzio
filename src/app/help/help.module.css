@@ -1,0 +1,426 @@
+.page {
+  --primary: #431830;
+  --primary-container: #5d2e46;
+  --surface: #fcf9f8;
+  --surface-low: #f6f3f2;
+  --surface-high: #eae7e7;
+  --border: #d4c2c8;
+  --text: #1c1b1b;
+  --muted: #5f5e5d;
+
+  min-height: 100vh;
+  background: var(--surface);
+  color: var(--text);
+  font-family: Inter, Arial, sans-serif;
+  padding-bottom: 80px;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--border);
+  background: rgba(252, 249, 248, 0.96);
+  backdrop-filter: blur(12px);
+}
+
+.headerInner {
+  width: min(1180px, calc(100% - 48px));
+  min-height: 78px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  color: var(--primary);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  gap: 28px;
+}
+
+.nav a,
+.actions a {
+  color: var(--muted);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.nav a:hover,
+.actions a:hover {
+  color: var(--primary);
+}
+
+.actions {
+  display: flex;
+  gap: 14px;
+}
+
+.actions a {
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.container {
+  width: min(1120px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 42px 0 80px;
+}
+
+.mobileTop {
+  display: none;
+}
+
+.hero {
+  padding: 48px;
+  background: var(--primary);
+  color: white;
+}
+
+.hero > span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.hero h1 {
+  margin: 10px 0 10px;
+  font-size: 48px;
+  line-height: 1.05;
+  font-weight: 600;
+}
+
+.hero p {
+  max-width: 580px;
+  margin: 0;
+  color: #eadfe4;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.searchBox {
+  max-width: 650px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 0 16px;
+  background: white;
+}
+
+.searchBox span {
+  color: var(--muted);
+  font-size: 20px;
+}
+
+.searchBox input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.quickLinks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.quickLinks a {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.quickLinks a:hover {
+  border-color: var(--primary);
+  background: var(--surface-low);
+}
+
+.quickLinks a > span {
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.quickLinks strong {
+  font-size: 14px;
+}
+
+.quickLinks small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
+  gap: 28px;
+  margin-top: 50px;
+  align-items: start;
+}
+
+.sectionHeader {
+  margin-bottom: 20px;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  color: var(--primary);
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.sectionHeader p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.faqList {
+  border-top: 1px solid var(--border);
+}
+
+.faq {
+  border-bottom: 1px solid var(--border);
+  background: white;
+}
+
+.faq button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 19px 18px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.faq button span:last-child {
+  color: var(--primary);
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.faq p {
+  margin: 0;
+  padding: 0 18px 20px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.contactCard {
+  padding: 28px;
+  border: 1px solid var(--border);
+  background: white;
+}
+
+.contactIcon {
+  display: flex;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  background: var(--surface-low);
+  color: var(--primary);
+}
+
+.contactCard h2 {
+  margin: 0 0 8px;
+  color: var(--primary);
+  font-size: 23px;
+  font-weight: 600;
+}
+
+.contactCard > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.contactCard > button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 20px;
+  border: 0;
+  background: var(--primary-container);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.contactInfo {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.contactInfo div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 15px;
+}
+
+.contactInfo div:last-child {
+  margin-bottom: 0;
+}
+
+.contactInfo span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.contactInfo strong {
+  font-size: 12px;
+}
+
+.footer {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 40px;
+  padding: 50px max(24px, calc((100vw - 1120px) / 2));
+  background: var(--surface-high);
+}
+
+.footer strong {
+  color: var(--primary);
+  font-size: 22px;
+  letter-spacing: 0.08em;
+}
+
+.footer p,
+.footer a {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+  text-decoration: none;
+}
+
+.footer a {
+  display: block;
+}
+
+.mobileNav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding-bottom: 72px;
+  }
+
+  .header {
+    display: none;
+  }
+
+  .container {
+    width: 100%;
+    padding: 0 16px 90px;
+  }
+
+  .mobileTop {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 0 16px;
+  }
+
+  .mobileTop a {
+    color: var(--primary);
+    font-size: 23px;
+    text-decoration: none;
+  }
+
+  .mobileTop h1 {
+    margin: 0;
+    color: var(--primary);
+    font-size: 26px;
+  }
+
+  .hero {
+    margin: 0 -16px;
+    padding: 30px 20px;
+  }
+
+  .hero h1 {
+    font-size: 35px;
+  }
+
+  .searchBox {
+    height: 48px;
+  }
+
+  .quickLinks {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .contentGrid {
+    display: block;
+    margin-top: 34px;
+  }
+
+  .contactCard {
+    margin-top: 24px;
+  }
+
+  .footer {
+    display: none;
+  }
+
+  .mobileNav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 80;
+    height: 66px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    border-radius: 18px 18px 0 0;
+    background: white;
+    box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08);
+  }
+
+  .mobileNav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: var(--muted);
+    font-size: 10px;
+    text-decoration: none;
+  }
+
+  .mobileNav span {
+    font-size: 18px;
+  }
+}
