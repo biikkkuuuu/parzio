@@ -94,6 +94,64 @@ type ProductImage = {
   preview: string;
 };
 
+type AdminOrder = {
+  id: string;
+  customer: string;
+  items: number;
+  amount: number;
+  date: string;
+  status:
+    | "Pending"
+    | "Processing"
+    | "Shipped"
+    | "Out for Delivery"
+    | "Delivered"
+    | "Cancelled";
+};
+
+const initialAdminOrders: AdminOrder[] = [
+  {
+    id: "PRZ-10482",
+    customer: "Aarav Sharma",
+    items: 2,
+    amount: 2698,
+    date: "28 Aug 2026",
+    status: "Processing",
+  },
+  {
+    id: "PRZ-10481",
+    customer: "Priya Singh",
+    items: 1,
+    amount: 1499,
+    date: "28 Aug 2026",
+    status: "Pending",
+  },
+  {
+    id: "PRZ-10480",
+    customer: "Riya Verma",
+    items: 3,
+    amount: 3248,
+    date: "27 Aug 2026",
+    status: "Shipped",
+  },
+  {
+    id: "PRZ-10479",
+    customer: "Kabir Mehta",
+    items: 1,
+    amount: 950,
+    date: "27 Aug 2026",
+    status: "Delivered",
+  },
+  {
+    id: "PRZ-10478",
+    customer: "Neha Gupta",
+    items: 2,
+    amount: 2199,
+    date: "26 Aug 2026",
+    status: "Cancelled",
+  },
+];
+
 export default function AdminPage() {
   const [active, setActive] = useState("Dashboard");
   const [products, setProducts] = useState<Product[]>(initialProducts);
@@ -102,9 +160,29 @@ export default function AdminPage() {
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [adminOrders, setAdminOrders] =
+    useState<AdminOrder[]>(initialAdminOrders);
+  const [orderSearch, setOrderSearch] = useState("");
+  const [orderStatus, setOrderStatus] = useState("All");
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const [images, setImages] = useState<ProductImage[]>([]);
   const [mainImageId, setMainImageId] = useState<string | null>(null);
+
+  const filteredOrders = adminOrders.filter((order) => {
+    const matchesSearch =
+      order.id.toLowerCase().includes(orderSearch.toLowerCase()) ||
+      order.customer.toLowerCase().includes(orderSearch.toLowerCase());
+
+    const matchesStatus =
+      orderStatus === "All" || order.status === orderStatus;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const selectedOrder = adminOrders.find(
+    (order) => order.id === selectedOrderId,
+  );
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -263,7 +341,169 @@ export default function AdminPage() {
         </header>
 
         <div className={styles.content}>
-          {active === "Products" && showProductForm ? (
+          {active === "Orders" ? (
+            <>
+              <section className={styles.welcome}>
+                <div>
+                  <span>ORDER MANAGEMENT</span>
+                  <h2>Orders</h2>
+                  <p>Review and manage customer orders.</p>
+                </div>
+              </section>
+
+              <section className={styles.card}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    marginBottom: 20,
+                  }}
+                >
+                  <input
+                    type="search"
+                    value={orderSearch}
+                    onChange={(event) => setOrderSearch(event.target.value)}
+                    placeholder="Search order ID or customer..."
+                    style={{
+                      flex: 1,
+                      minWidth: 240,
+                      padding: 12,
+                      boxSizing: "border-box",
+                    }}
+                  />
+
+                  <select
+                    value={orderStatus}
+                    onChange={(event) => setOrderStatus(event.target.value)}
+                    style={{ padding: 12 }}
+                  >
+                    <option value="All">All Statuses</option>
+                    <option>Pending</option>
+                    <option>Processing</option>
+                    <option>Shipped</option>
+                    <option>Out for Delivery</option>
+                    <option>Delivered</option>
+                    <option>Cancelled</option>
+                  </select>
+                </div>
+
+                <div className={styles.table}>
+                  <div className={styles.tableHead}>
+                    <span>Order</span>
+                    <span>Customer</span>
+                    <span>Items</span>
+                    <span>Amount</span>
+                    <span>Date</span>
+                    <span>Status</span>
+                    <span>Action</span>
+                  </div>
+
+                  {filteredOrders.map((order) => (
+                    <div key={order.id} className={styles.tableRow}>
+                      <strong>{order.id}</strong>
+                      <span>{order.customer}</span>
+                      <span>{order.items}</span>
+                      <span>
+                        ₹{order.amount.toLocaleString("en-IN")}
+                      </span>
+                      <span>{order.date}</span>
+
+                      <select
+                        value={order.status}
+                        onChange={(event) => {
+                          const status =
+                            event.target.value as AdminOrder["status"];
+
+                          setAdminOrders((current) =>
+                            current.map((item) =>
+                              item.id === order.id
+                                ? { ...item, status }
+                                : item,
+                            ),
+                          );
+                        }}
+                        style={{ padding: 7 }}
+                        aria-label={"Change status for " + order.id}
+                      >
+                        <option>Pending</option>
+                        <option>Processing</option>
+                        <option>Shipped</option>
+                        <option>Out for Delivery</option>
+                        <option>Delivered</option>
+                        <option>Cancelled</option>
+                      </select>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedOrderId(order.id)}
+                      >
+                        View
+                      </button>
+                    </div>
+                  ))}
+
+                  {filteredOrders.length === 0 && (
+                    <div style={{ padding: 30, textAlign: "center" }}>
+                      No orders found.
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {selectedOrder && (
+                <div
+                  className={styles.modalBackdrop}
+                  onClick={() => setSelectedOrderId(null)}
+                >
+                  <div
+                    className={styles.deleteModal}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <span className={styles.modalEyebrow}>
+                      ORDER DETAILS
+                    </span>
+
+                    <h2>{selectedOrder.id}</h2>
+
+                    <p>
+                      Customer: <strong>{selectedOrder.customer}</strong>
+                    </p>
+
+                    <p style={{ marginTop: 8 }}>
+                      Items: <strong>{selectedOrder.items}</strong>
+                    </p>
+
+                    <p style={{ marginTop: 8 }}>
+                      Amount:{" "}
+                      <strong>
+                        ₹{selectedOrder.amount.toLocaleString("en-IN")}
+                      </strong>
+                    </p>
+
+                    <p style={{ marginTop: 8 }}>
+                      Date: <strong>{selectedOrder.date}</strong>
+                    </p>
+
+                    <p style={{ marginTop: 8 }}>
+                      Status: <strong>{selectedOrder.status}</strong>
+                    </p>
+
+                    <div className={styles.modalActions}>
+                      <button
+                        type="button"
+                        className={styles.cancelButton}
+                        onClick={() => setSelectedOrderId(null)}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : active === "Products" && showProductForm ? (
             <section className={styles.card}>
               <div className={styles.cardHeader}>
                 <div>
