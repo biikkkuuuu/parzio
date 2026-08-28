@@ -42,6 +42,7 @@ export function saveCart(items: CartItem[]) {
   }
 
   window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+  window.dispatchEvent(new Event("cart-updated"));
 }
 
 export function addToCart(productId: number, quantity = 1) {

@@ -1,34 +1,103 @@
-﻿"use client";
+
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { notFound, useParams } from "next/navigation";
-import { addToCart } from "@/lib/cart";
+import { useState, useEffect } from "react";
+import { notFound, useParams, useRouter } from "next/navigation";
+import { addToCart, getCart, updateCartQuantity } from "@/lib/cart";
 import { getProductById } from "@/lib/products";
 import styles from "./product-details.module.css";
 
 export default function ProductDetailsPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const product = getProductById(Number(params.id));
+
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [initialLoaded, setInitialLoaded] = useState(false);
 
   if (!product) {
     notFound();
   }
 
-  const handleAddToCart = () => {
-    addToCart(product.id, quantity);
+  useEffect(() => {
+    if (!product) return;
+    
+    const cart = getCart();
+    const existing = cart.find(item => item.productId === product.id);
+
+    if (existing) {
+      if (!initialLoaded) {
+        setQuantity(existing.quantity);
+        setInitialLoaded(true);
+      }
+      // THE MAGIC: Yahan pe check ho raha hai ki user ne + dabaya ya nahi
+      setAdded(existing.quantity === quantity);
+    } else {
+      setAdded(false);
+    }
+  }, [product, quantity, initialLoaded]);
+
+  
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Universal handler taaki tumhara UI kisi bhi type se quantity pass kare, wo handle ho jaye
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleQuantityChange = (value: any) => {
+    if (typeof value === 'string') {
+      const val = value.toLowerCase();
+      if (val.includes('inc') || val === 'add' || val === 'plus') {
+        setQuantity(prev => prev + 1);
+        return;
+      }
+      if (val.includes('dec') || val === 'sub' || val === 'minus') {
+        setQuantity(prev => Math.max(1, prev - 1));
+        return;
+      }
+    }
+    if (value === 1) setQuantity(prev => prev + 1);
+    else if (value === -1) setQuantity(prev => Math.max(1, prev - 1));
+    else if (typeof value === 'number') setQuantity(Math.max(1, value));
+    else if (value && value.target) setQuantity(Math.max(1, Number(value.target.value) || 1));
+  };
+  
+  const handleAddToCart = (e?: any) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const cart = getCart();
+    const existing = cart.find((item) => item.productId === product.id);
+    
+    if (existing) {
+      updateCartQuantity(product.id, quantity);
+    } else {
+      addToCart(product.id, quantity);
+    }
+    
     setAdded(true);
+    window.dispatchEvent(new Event("cart-updated"));
   };
 
-  const handleBuyNow = () => {
-    addToCart(product.id, quantity);
-    window.location.href = "/checkout";
+  const handleBuyNow = (e?: any) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const cart = getCart();
+    const existing = cart.find((item) => item.productId === product.id);
+    
+    if (existing) {
+      updateCartQuantity(product.id, quantity);
+    } else {
+      addToCart(product.id, quantity);
+    }
+    
+    window.dispatchEvent(new Event("cart-updated"));
+    router.push("/cart");
   };
 
-  return (
+return (
     <main className={styles.page}>
       <header className={styles.desktopHeader}>
         <div className={styles.headerInner}>
@@ -59,11 +128,15 @@ export default function ProductDetailsPage() {
       </header>
 
       <header className={styles.mobileHeader}>
-        <Link href="/products" className={styles.roundButton} aria-label="Back">
+        <Link
+          href="/products"
+          className={styles.roundButton}
+          aria-label="Back"
+        >
           ←
         </Link>
 
-        <Link href="/cart" className={styles.mobileIcon} aria-label="Cart">
+        <Link href="/cart" aria-label="Cart">
           🛍
         </Link>
       </header>
@@ -127,9 +200,7 @@ export default function ProductDetailsPage() {
                 <button
                   type="button"
                   aria-label="Decrease quantity"
-                  onClick={() =>
-                    setQuantity((current) => Math.max(1, current - 1))
-                  }
+                  onClick={() => handleQuantityChange(quantity - 1)}
                 >
                   −
                 </button>
@@ -139,7 +210,7 @@ export default function ProductDetailsPage() {
                 <button
                   type="button"
                   aria-label="Increase quantity"
-                  onClick={() => setQuantity((current) => current + 1)}
+                  onClick={() => handleQuantityChange(quantity + 1)}
                 >
                   +
                 </button>
@@ -151,6 +222,7 @@ export default function ProductDetailsPage() {
                 type="button"
                 className={styles.cartButton}
                 onClick={handleAddToCart}
+                disabled={!mounted}
               >
                 {added ? "Added to Cart ✓" : "Add to Cart"}
               </button>
@@ -159,6 +231,7 @@ export default function ProductDetailsPage() {
                 type="button"
                 className={styles.buyButton}
                 onClick={handleBuyNow}
+                disabled={!mounted}
               >
                 Buy Now
               </button>
@@ -199,7 +272,9 @@ export default function ProductDetailsPage() {
               <h2>Product Details</h2>
 
               <ul>
-                <li>✓ Premium {product.category.toLowerCase()} product.</li>
+                <li>
+                  ✓ Premium {product.category.toLowerCase()} product.
+                </li>
                 <li>✓ Rated {product.rating}/5 by customers.</li>
                 <li>✓ Suitable for your everyday beauty routine.</li>
               </ul>
@@ -213,6 +288,7 @@ export default function ProductDetailsPage() {
           type="button"
           className={styles.mobileCartButton}
           onClick={handleAddToCart}
+          disabled={!mounted}
         >
           {added ? "Added ✓" : "Add to Cart"}
         </button>
@@ -221,6 +297,7 @@ export default function ProductDetailsPage() {
           type="button"
           className={styles.mobileBuyButton}
           onClick={handleBuyNow}
+          disabled={!mounted}
         >
           Buy Now
         </button>
