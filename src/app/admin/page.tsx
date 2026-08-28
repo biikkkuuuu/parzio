@@ -2,8 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 import styles from "./admin.module.css";
+
+type Product = {
+  id: number;
+  brand: string;
+  name: string;
+  price: number;
+  category: string;
+  stock: number;
+  status: "Active" | "Draft" | "Out of Stock";
+  image: string;
+};
 
 const stats = [
   { label: "Total Products", value: "1,248", change: "+8.2%" },
@@ -19,6 +30,64 @@ const recentOrders = [
   { id: "PRZ-10479", customer: "Kabir Mehta", amount: "₹950", status: "Delivered" },
 ];
 
+const initialProducts: Product[] = [
+  {
+    id: 1,
+    brand: "LUMIERE",
+    name: "Hydra Restore Serum",
+    price: 1850,
+    category: "Serums",
+    stock: 42,
+    status: "Active",
+    image:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuC7QH0j2j3B7lQ4a9QvGxKfYjQJdGdZLJv4Pp5oT9Qw0C5fM8L6M1lP5Lq3P9rL8dKqC2LzM2tL6kN4XyJ8JjP8CzK7Yg6y8lQh3JQ2",
+  },
+  {
+    id: 2,
+    brand: "BOTANICA",
+    name: "Radiance Vitamin C Serum",
+    price: 2200,
+    category: "Serums",
+    stock: 18,
+    status: "Active",
+    image:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuD6Jx0nW0mO8o9Q4g3N9G5d1M6d4f2K7c3P8m0X7z4Q6m2L7k0R8Y5Q0R3H6N7P2X1",
+  },
+  {
+    id: 3,
+    brand: "AURA",
+    name: "Gentle Purifying Cleanser",
+    price: 950,
+    category: "Cleansers",
+    stock: 64,
+    status: "Active",
+    image:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuDXyilgB8Mwxqx2cpQHyh6xhkkLL23CqADks5EJn37lQ7qny3Y9mhoJvgXNi66opdmpzbN9GLdPC6JN0ss_g7ewipMJbpNJhuwGsn_DutQ0YBm9kF0TGJ9rTYUXOBJ9xo0MZer2aasptzfs8jMMGP0Pczh9Yvf0UeL3c3ZWlCjLvw68VIAC8qGCv8INseV3UxvTdr_TFvquQRohdvtNnbHpaEy6XIel-BiQkjVnNPEsroV5q5gRow9h",
+  },
+  {
+    id: 4,
+    brand: "BOTANICA",
+    name: "AHA/BHA Clarifying Toner",
+    price: 2100,
+    category: "Toners",
+    stock: 0,
+    status: "Out of Stock",
+    image:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuA6tUUWqvvLYHoE96sG565d-GHYPSe1hzLp1HOIDWHwZqWqjVcTp2VPP84sQRNVCvpNdUzqsGK5UdfOCWmupIyCAoBZwwJP58Y9y7x_dHnnWj67kkHlO6RhGAIPjYNq7mQS7xjd5cZlduuY_o6nSHcca4T-OAIVfo_sNpcpTUiYA4hRgil-fJ41VYkWQvqSFgJcCekAJFU9DHNV8ag0uP_i2iS6tAtoaIH_dkFH9rPAfaCdmLQcm_9",
+  },
+  {
+    id: 5,
+    brand: "DERMA LAB",
+    name: "Barrier Repair Moisturizer",
+    price: 1450,
+    category: "Moisturizers",
+    stock: 27,
+    status: "Draft",
+    image:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuD0wQW8L3f4B4K9m1P6R7N2K8M6F3Q5X9V0H4J7L2S6R8",
+  },
+];
+
 type ProductImage = {
   id: string;
   file: File;
@@ -27,22 +96,48 @@ type ProductImage = {
 
 export default function AdminPage() {
   const [active, setActive] = useState("Dashboard");
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
   const [showProductForm, setShowProductForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+
   const [images, setImages] = useState<ProductImage[]>([]);
   const [mainImageId, setMainImageId] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
 
-  const openProductForm = () => {
-    setSaved(false);
-    setShowProductForm(true);
-  };
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      const matchesSearch =
+        product.name.toLowerCase().includes(search.toLowerCase()) ||
+        product.brand.toLowerCase().includes(search.toLowerCase());
 
-  const closeProductForm = () => {
+      const matchesCategory =
+        category === "All" || product.category === category;
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, search, category]);
+
+  const resetForm = () => {
     images.forEach((image) => URL.revokeObjectURL(image.preview));
     setImages([]);
     setMainImageId(null);
+    setEditingId(null);
     setShowProductForm(false);
-    setSaved(false);
+  };
+
+  const openProductForm = (productId?: number) => {
+    if (productId) {
+      setEditingId(productId);
+    } else {
+      setEditingId(null);
+    }
+
+    setMainImageId(null);
+    setImages([]);
+    setShowProductForm(true);
+    setActive("Products");
   };
 
   const handleImages = (event: ChangeEvent<HTMLInputElement>) => {
@@ -56,10 +151,7 @@ export default function AdminPage() {
         preview: URL.createObjectURL(file),
       }));
 
-    setImages((current) => {
-      const combined = [...current, ...newImages];
-      return combined.slice(0, 10);
-    });
+    setImages((current) => [...current, ...newImages].slice(0, 10));
 
     if (!mainImageId && newImages.length > 0) {
       setMainImageId(newImages[0].id);
@@ -70,15 +162,15 @@ export default function AdminPage() {
 
   const removeImage = (id: string) => {
     setImages((current) => {
-      const image = current.find((item) => item.id === id);
+      const removed = current.find((item) => item.id === id);
 
-      if (image) {
-        URL.revokeObjectURL(image.preview);
+      if (removed) {
+        URL.revokeObjectURL(removed.preview);
       }
 
       const remaining = current.filter((item) => item.id !== id);
 
-      if (mainImageId === id) {
+      if (id === mainImageId) {
         setMainImageId(remaining[0]?.id ?? null);
       }
 
@@ -86,12 +178,31 @@ export default function AdminPage() {
     });
   };
 
-  const handleSaveProduct = () => {
-    if (images.length === 0) {
-      return;
-    }
+  const updateProductStatus = (
+    productId: number,
+    status: Product["status"],
+  ) => {
+    setProducts((current) =>
+      current.map((product) =>
+        product.id === productId
+          ? {
+              ...product,
+              status,
+              stock: status === "Out of Stock" ? 0 : product.stock,
+            }
+          : product,
+      ),
+    );
+  };
 
-    setSaved(true);
+  const confirmDelete = () => {
+    if (deleteId === null) return;
+
+    setProducts((current) =>
+      current.filter((product) => product.id !== deleteId),
+    );
+
+    setDeleteId(null);
   };
 
   return (
@@ -108,7 +219,12 @@ export default function AdminPage() {
               <button
                 key={item}
                 type="button"
-                onClick={() => setActive(item)}
+                onClick={() => {
+                  setActive(item);
+                  if (item !== "Products") {
+                    setShowProductForm(false);
+                  }
+                }}
                 className={active === item ? styles.navActive : ""}
               >
                 <span>
@@ -142,13 +258,374 @@ export default function AdminPage() {
               <i />
               Store Online
             </span>
-
             <div className={styles.avatar}>A</div>
           </div>
         </header>
 
         <div className={styles.content}>
-          {!showProductForm ? (
+          {active === "Products" && showProductForm ? (
+            <section className={styles.card}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <span className={styles.eyebrow}>PRODUCT MANAGEMENT</span>
+                  <h2>{editingId ? "Edit Product" : "Add Product"}</h2>
+                  <p>
+                    {editingId
+                      ? "Update product information and images."
+                      : "Create a new product listing."}
+                  </p>
+                </div>
+
+                <button type="button" onClick={resetForm}>
+                  Back
+                </button>
+              </div>
+
+              <div style={{ display: "grid", gap: 24 }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 16,
+                  }}
+                >
+                  <label>
+                    Product Name
+                    <input
+                      type="text"
+                      placeholder="Product name"
+                      style={{
+                        width: "100%",
+                        marginTop: 8,
+                        padding: 12,
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </label>
+
+                  <label>
+                    Brand
+                    <input
+                      type="text"
+                      placeholder="Brand name"
+                      style={{
+                        width: "100%",
+                        marginTop: 8,
+                        padding: 12,
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </label>
+
+                  <label>
+                    Price
+                    <input
+                      type="number"
+                      placeholder="₹ 0"
+                      style={{
+                        width: "100%",
+                        marginTop: 8,
+                        padding: 12,
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </label>
+
+                  <label>
+                    Category
+                    <select
+                      defaultValue=""
+                      style={{
+                        width: "100%",
+                        marginTop: 8,
+                        padding: 12,
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      <option value="" disabled>
+                        Select category
+                      </option>
+                      <option>Serums</option>
+                      <option>Cleansers</option>
+                      <option>Moisturizers</option>
+                      <option>Toners</option>
+                      <option>Sunscreens</option>
+                      <option>Makeup</option>
+                      <option>Haircare</option>
+                      <option>Fragrance</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div>
+                  <h3>Product Images</h3>
+                  <p style={{ marginTop: 5 }}>
+                    Select up to 10 images. Choose one as the main image.
+                  </p>
+
+                  <label
+                    style={{
+                      display: "flex",
+                      minHeight: 150,
+                      marginTop: 16,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: "2px dashed #d4c2c8",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      hidden
+                      onChange={handleImages}
+                    />
+                    <span>+ Select multiple product images</span>
+                  </label>
+                </div>
+
+                {images.length > 0 && (
+                  <div>
+                    <h3>Selected Images ({images.length}/10)</h3>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fill, minmax(160px, 1fr))",
+                        gap: 14,
+                        marginTop: 14,
+                      }}
+                    >
+                      {images.map((image) => (
+                        <div
+                          key={image.id}
+                          style={{
+                            border:
+                              image.id === mainImageId
+                                ? "2px solid #431830"
+                                : "1px solid #d4c2c8",
+                            padding: 8,
+                            background: "#fff",
+                          }}
+                        >
+                          <div
+                            style={{
+                              position: "relative",
+                              height: 150,
+                            }}
+                          >
+                            <Image
+                              src={image.preview}
+                              alt={image.file.name}
+                              fill
+                              unoptimized
+                              sizes="160px"
+                              style={{ objectFit: "cover" }}
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setMainImageId(image.id)}
+                            style={{
+                              width: "100%",
+                              marginTop: 8,
+                              padding: 8,
+                            }}
+                          >
+                            {image.id === mainImageId
+                              ? "Main Image ✓"
+                              : "Set Main Image"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => removeImage(image.id)}
+                            style={{
+                              width: "100%",
+                              marginTop: 6,
+                              padding: 8,
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 12,
+                  }}
+                >
+                  <button type="button" onClick={resetForm}>
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    disabled={!editingId && images.length === 0}
+                  >
+                    {editingId ? "Update Product" : "Save Product"}
+                  </button>
+                </div>
+              </div>
+            </section>
+          ) : active === "Products" ? (
+            <>
+              <section className={styles.welcome}>
+                <div>
+                  <span>PRODUCT MANAGEMENT</span>
+                  <h2>Products</h2>
+                  <p>Manage your PARZIO product catalog.</p>
+                </div>
+
+                <button type="button" onClick={() => openProductForm()}>
+                  + Add Product
+                </button>
+              </section>
+
+              <section className={styles.card}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    marginBottom: 20,
+                  }}
+                >
+                  <input
+                    type="search"
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Search products or brands..."
+                    style={{
+                      flex: 1,
+                      minWidth: 240,
+                      padding: 12,
+                      boxSizing: "border-box",
+                    }}
+                  />
+
+                  <select
+                    value={category}
+                    onChange={(event) => setCategory(event.target.value)}
+                    style={{ padding: 12 }}
+                  >
+                    <option value="All">All Categories</option>
+                    <option value="Serums">Serums</option>
+                    <option value="Cleansers">Cleansers</option>
+                    <option value="Moisturizers">Moisturizers</option>
+                    <option value="Toners">Toners</option>
+                    <option value="Sunscreens">Sunscreens</option>
+                  </select>
+                </div>
+
+                <div className={styles.table}>
+                  <div className={styles.tableHead}>
+                    <span>Product</span>
+                    <span>Category</span>
+                    <span>Price</span>
+                    <span>Stock</span>
+                    <span>Status</span>
+                    <span>Actions</span>
+                  </div>
+
+                  {filteredProducts.map((product) => (
+                    <div key={product.id} className={styles.tableRow}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: "relative",
+                            width: 48,
+                            height: 48,
+                            flexShrink: 0,
+                            overflow: "hidden",
+                            background: "#f6f3f2",
+                          }}
+                        >
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            fill
+                            sizes="48px"
+                            style={{ objectFit: "cover" }}
+                          />
+                        </div>
+
+                        <div>
+                          <strong>{product.name}</strong>
+                          <div style={{ fontSize: 12 }}>
+                            {product.brand}
+                          </div>
+                        </div>
+                      </div>
+
+                      <span>{product.category}</span>
+                      <span>₹{product.price.toLocaleString("en-IN")}</span>
+                      <span>{product.stock}</span>
+
+                      <div>
+                        <select
+                          value={product.status}
+                          onChange={(event) =>
+                            updateProductStatus(
+                              product.id,
+                              event.target.value as Product["status"],
+                            )
+                          }
+                          style={{ padding: 7 }}
+                          aria-label={`Change status for ${product.name}`}
+                        >
+                          <option>Active</option>
+                          <option>Out of Stock</option>
+                          <option>Draft</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.productActions}>
+                        <button
+                          type="button"
+                          className={styles.editButton}
+                          onClick={() => openProductForm(product.id)}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          className={styles.deleteButton}
+                          onClick={() => setDeleteId(product.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {filteredProducts.length === 0 && (
+                    <div style={{ padding: 30, textAlign: "center" }}>
+                      No products found.
+                    </div>
+                  )}
+                </div>
+              </section>
+            </>
+          ) : (
             <>
               <section className={styles.welcome}>
                 <div>
@@ -159,7 +636,7 @@ export default function AdminPage() {
                   </p>
                 </div>
 
-                <button type="button" onClick={openProductForm}>
+                <button type="button" onClick={() => openProductForm()}>
                   + Add Product
                 </button>
               </section>
@@ -215,7 +692,7 @@ export default function AdminPage() {
                   </div>
 
                   <div className={styles.quickActions}>
-                    <button type="button" onClick={openProductForm}>
+                    <button type="button" onClick={() => openProductForm()}>
                       <strong>＋</strong>
                       <span>
                         <b>Add Product</b>
@@ -290,241 +767,76 @@ export default function AdminPage() {
                 </div>
               </section>
             </>
-          ) : (
-            <section className={styles.card}>
-              <div className={styles.cardHeader}>
-                <div>
-                  <span className={styles.eyebrow}>PRODUCT MANAGEMENT</span>
-                  <h2>Add Product</h2>
-                  <p>Create a new product with multiple product images.</p>
-                </div>
-
-                <button type="button" onClick={closeProductForm}>
-                  Close
-                </button>
-              </div>
-
-              {saved ? (
-                <div style={{ padding: "30px 0" }}>
-                  <h2>Product ready ✓</h2>
-                  <p>
-                    Product images were selected successfully. Permanent
-                    storage will be connected in the next backend step.
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={closeProductForm}
-                    style={{ marginTop: 20 }}
-                  >
-                    Back to Dashboard
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: "grid", gap: 24 }}>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: 16,
-                    }}
-                  >
-                    <label>
-                      Product Name
-                      <input
-                        type="text"
-                        placeholder="Product name"
-                        style={{
-                          width: "100%",
-                          marginTop: 8,
-                          padding: 12,
-                          boxSizing: "border-box",
-                        }}
-                      />
-                    </label>
-
-                    <label>
-                      Brand
-                      <input
-                        type="text"
-                        placeholder="Brand name"
-                        style={{
-                          width: "100%",
-                          marginTop: 8,
-                          padding: 12,
-                          boxSizing: "border-box",
-                        }}
-                      />
-                    </label>
-
-                    <label>
-                      Price
-                      <input
-                        type="number"
-                        placeholder="₹ 0"
-                        style={{
-                          width: "100%",
-                          marginTop: 8,
-                          padding: 12,
-                          boxSizing: "border-box",
-                        }}
-                      />
-                    </label>
-
-                    <label>
-                      Category
-                      <select
-                        defaultValue=""
-                        style={{
-                          width: "100%",
-                          marginTop: 8,
-                          padding: 12,
-                          boxSizing: "border-box",
-                        }}
-                      >
-                        <option value="" disabled>
-                          Select category
-                        </option>
-                        <option>Skincare</option>
-                        <option>Makeup</option>
-                        <option>Haircare</option>
-                        <option>Fragrance</option>
-                        <option>Body Care</option>
-                      </select>
-                    </label>
-                  </div>
-
-                  <div>
-                    <h3>Product Images</h3>
-                    <p style={{ marginTop: 5 }}>
-                      Select up to 10 images. The first image becomes the
-                      default main image.
-                    </p>
-
-                    <label
-                      style={{
-                        display: "flex",
-                        minHeight: 150,
-                        marginTop: 16,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        border: "2px dashed #d4c2c8",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        hidden
-                        onChange={handleImages}
-                      />
-
-                      <span>
-                        + Click to select multiple images
-                      </span>
-                    </label>
-                  </div>
-
-                  {images.length > 0 && (
-                    <div>
-                      <h3>Image Preview ({images.length}/10)</h3>
-
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns:
-                            "repeat(auto-fill, minmax(150px, 1fr))",
-                          gap: 14,
-                          marginTop: 14,
-                        }}
-                      >
-                        {images.map((image) => (
-                          <div
-                            key={image.id}
-                            style={{
-                              position: "relative",
-                              border:
-                                image.id === mainImageId
-                                  ? "2px solid #431830"
-                                  : "1px solid #d4c2c8",
-                              padding: 8,
-                              background: "#fff",
-                            }}
-                          >
-                            <div
-                              style={{
-                                position: "relative",
-                                height: 150,
-                                overflow: "hidden",
-                              }}
-                            >
-                              <Image
-                                src={image.preview}
-                                alt={image.file.name}
-                                fill
-                                unoptimized
-                                sizes="150px"
-                                style={{ objectFit: "cover" }}
-                              />
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() => setMainImageId(image.id)}
-                              style={{
-                                width: "100%",
-                                marginTop: 8,
-                                padding: 8,
-                              }}
-                            >
-                              {image.id === mainImageId
-                                ? "Main Image ✓"
-                                : "Set as Main"}
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => removeImage(image.id)}
-                              style={{
-                                width: "100%",
-                                marginTop: 6,
-                                padding: 8,
-                              }}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      gap: 12,
-                    }}
-                  >
-                    <button type="button" onClick={closeProductForm}>
-                      Cancel
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleSaveProduct}
-                      disabled={images.length === 0}
-                    >
-                      Save Product
-                    </button>
-                  </div>
-                </div>
-              )}
-            </section>
           )}
         </div>
       </section>
+
+      {deleteId !== null && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 200,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+            background: "rgba(0, 0, 0, 0.45)",
+          }}
+          onClick={() => setDeleteId(null)}
+        >
+          <div
+            style={{
+              width: "min(440px, 100%)",
+              padding: 28,
+              border: "1px solid #d4c2c8",
+              background: "#fff",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+            }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <span className={styles.eyebrow}>DELETE PRODUCT</span>
+            <h2 style={{ margin: "8px 0 10px", color: "#431830" }}>
+              Are you sure?
+            </h2>
+
+            <p style={{ margin: 0, color: "#5f5e5d", lineHeight: 1.6 }}>
+              This product will be removed from the current product list.
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+                marginTop: 24,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setDeleteId(null)}
+                style={{ padding: "10px 16px" }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmDelete}
+                style={{
+                  padding: "10px 16px",
+                  border: 0,
+                  background: "#431830",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                Delete Product
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
