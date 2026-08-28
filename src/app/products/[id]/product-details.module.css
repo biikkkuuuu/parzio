@@ -650,3 +650,249 @@
     font-size: 17px;
   }
 }
+.purchaseActions {
+  display: flex;
+  gap: 14px;
+  margin-top: 18px;
+  width: 100%;
+}
+
+.purchaseActions .cartButton,
+.purchaseActions .buyButton {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.purchaseActions .cartButton {
+  border: 1px solid var(--primary);
+  background: #ffffff;
+  color: var(--primary);
+}
+
+.purchaseActions .buyButton {
+  border: 1px solid var(--primary-container);
+  background: var(--primary-container);
+  color: #ffffff;
+}
+
+.purchaseActions .cartButton:hover {
+  background: var(--surface-low);
+}
+
+.purchaseActions .buyButton:hover {
+  background: var(--primary);
+}
+
+@media (max-width: 767px) {
+  .purchaseActions {
+    display: none;
+  }
+}
+
+.shippingInfo {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.shippingInfo > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-low);
+}
+
+.shippingInfo > div::before {
+  content: "✓";
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.shippingInfo strong,
+.shippingInfo span {
+  display: block;
+}
+
+.shippingInfo strong {
+  margin-bottom: 2px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.shippingInfo span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+@media (max-width: 767px) {
+  .shippingInfo {
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .shippingInfo > div {
+    padding: 12px;
+  }
+}
+
+.quantity {
+  margin-top: 24px;
+}
+
+.quantity > span {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.quantity > div {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+}
+
+.quantity button {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-size: 20px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.quantity button:hover {
+  background: var(--surface-low);
+}
+
+.quantity strong {
+  min-width: 42px;
+  text-align: center;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.purchaseActions {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.purchaseActions .cartButton,
+.purchaseActions .buyButton {
+  flex: 1;
+  min-width: 0;
+  min-height: 54px;
+  padding: 0 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.purchaseActions .cartButton {
+  border: 1px solid var(--primary);
+  background: #fff;
+  color: var(--primary);
+}
+
+.purchaseActions .buyButton {
+  border: 1px solid var(--primary-container);
+  background: var(--primary-container);
+  color: #fff;
+}
+
+.shippingInfo {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.shippingInfo > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-low);
+}
+
+.shippingInfo > div::before {
+  content: "✓";
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.shippingInfo strong,
+.shippingInfo span {
+  display: block;
+}
+
+.shippingInfo strong {
+  margin-bottom: 2px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.shippingInfo span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+@media (max-width: 767px) {
+  .purchaseActions {
+    display: none;
+  }
+
+  .quantity {
+    margin-top: 20px;
+  }
+
+  .shippingInfo {
+    gap: 10px;
+    margin-top: 18px;
+  }
+}
