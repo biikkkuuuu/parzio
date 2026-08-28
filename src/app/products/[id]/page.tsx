@@ -1,26 +1,32 @@
+﻿"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getProductById, products } from "@/lib/products";
+import { useState } from "react";
+import { notFound, useParams } from "next/navigation";
+import { addToCart } from "@/lib/cart";
+import { getProductById } from "@/lib/products";
 import styles from "./product-details.module.css";
 
-type Props = {
-  params: Promise<{ id: string }>;
-};
-
-export function generateStaticParams() {
-  return products.map((product) => ({
-    id: String(product.id),
-  }));
-}
-
-export default async function ProductDetailsPage({ params }: Props) {
-  const { id } = await params;
-  const product = getProductById(Number(id));
+export default function ProductDetailsPage() {
+  const params = useParams<{ id: string }>();
+  const product = getProductById(Number(params.id));
+  const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
 
   if (!product) {
     notFound();
   }
+
+  const handleAddToCart = () => {
+    addToCart(product.id, quantity);
+    setAdded(true);
+  };
+
+  const handleBuyNow = () => {
+    addToCart(product.id, quantity);
+    window.location.href = "/checkout";
+  };
 
   return (
     <main className={styles.page}>
@@ -103,7 +109,9 @@ export default async function ProductDetailsPage({ params }: Props) {
               ₹{product.price.toLocaleString("en-IN")}
             </div>
 
-            <p className={styles.tax}>Inclusive of all applicable taxes.</p>
+            <p className={styles.tax}>
+              Inclusive of all applicable taxes.
+            </p>
 
             <div className={styles.divider} />
 
@@ -116,22 +124,42 @@ export default async function ProductDetailsPage({ params }: Props) {
               <span>Quantity</span>
 
               <div>
-                <button type="button" aria-label="Decrease quantity">
+                <button
+                  type="button"
+                  aria-label="Decrease quantity"
+                  onClick={() =>
+                    setQuantity((current) => Math.max(1, current - 1))
+                  }
+                >
                   −
                 </button>
-                <strong>1</strong>
-                <button type="button" aria-label="Increase quantity">
+
+                <strong>{quantity}</strong>
+
+                <button
+                  type="button"
+                  aria-label="Increase quantity"
+                  onClick={() => setQuantity((current) => current + 1)}
+                >
                   +
                 </button>
               </div>
             </div>
 
             <div className={styles.purchaseActions}>
-              <button type="button" className={styles.cartButton}>
-                Add to Cart
+              <button
+                type="button"
+                className={styles.cartButton}
+                onClick={handleAddToCart}
+              >
+                {added ? "Added to Cart ✓" : "Add to Cart"}
               </button>
 
-              <button type="button" className={styles.buyButton}>
+              <button
+                type="button"
+                className={styles.buyButton}
+                onClick={handleBuyNow}
+              >
                 Buy Now
               </button>
             </div>
@@ -181,11 +209,19 @@ export default async function ProductDetailsPage({ params }: Props) {
       </section>
 
       <div className={styles.mobilePurchaseBar}>
-        <button type="button" className={styles.mobileCartButton}>
-          Add to Cart
+        <button
+          type="button"
+          className={styles.mobileCartButton}
+          onClick={handleAddToCart}
+        >
+          {added ? "Added ✓" : "Add to Cart"}
         </button>
 
-        <button type="button" className={styles.mobileBuyButton}>
+        <button
+          type="button"
+          className={styles.mobileBuyButton}
+          onClick={handleBuyNow}
+        >
           Buy Now
         </button>
       </div>

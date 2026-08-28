@@ -2,25 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getCart,
+  getCartProducts,
+  removeFromCart,
+  updateCartQuantity,
+  type CartItem,
+} from "@/lib/cart";
 import { products } from "@/lib/products";
 import styles from "./cart.module.css";
-
-type CartItem = {
-  productId: number;
-  quantity: number;
-};
-
-const initialCart: CartItem[] = [
-  {
-    productId: 1,
-    quantity: 1,
-  },
-  {
-    productId: 3,
-    quantity: 1,
-  },
-];
 
 const shipping = 0;
 
@@ -32,24 +23,18 @@ const formatPrice = (value: number) =>
   }).format(value);
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState(initialCart);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setCartItems(getCart());
+    setMounted(true);
+  }, []);
 
   const items = useMemo(() => {
-    return cartItems
-      .map((cartItem) => {
-        const product = products.find(
-          (item) => item.id === cartItem.productId,
-        );
-
-        if (!product) return null;
-
-        return {
-          ...product,
-          quantity: cartItem.quantity,
-        };
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null);
-  }, [cartItems]);
+    if (!mounted) return [];
+    return getCartProducts(products);
+  }, [cartItems, mounted]);
 
   const subtotal = items.reduce(
     (total, item) => total + item.price * item.quantity,
@@ -58,23 +43,22 @@ export default function CartPage() {
 
   const total = subtotal + shipping;
 
-  const updateQuantity = (productId: number, change: number) => {
-    setCartItems((current) =>
-      current.map((item) =>
-        item.productId === productId
-          ? {
-              ...item,
-              quantity: Math.max(1, item.quantity + change),
-            }
-          : item,
-      ),
+  const changeQuantity = (productId: number, change: number) => {
+    const current = cartItems.find((item) => item.productId === productId);
+
+    if (!current) return;
+
+    const updated = updateCartQuantity(
+      productId,
+      Math.max(1, current.quantity + change),
     );
+
+    setCartItems(updated);
   };
 
   const removeItem = (productId: number) => {
-    setCartItems((current) =>
-      current.filter((item) => item.productId !== productId),
-    );
+    const updated = removeFromCart(productId);
+    setCartItems(updated);
   };
 
   return (
@@ -119,7 +103,19 @@ export default function CartPage() {
           </Link>
         </div>
 
-        {items.length > 0 ? (
+        {!mounted ? (
+          <div className={styles.emptyCart}>
+            <p>Loading your cart...</p>
+          </div>
+        ) : items.length === 0 ? (
+          <section className={styles.emptyCart}>
+            <div>🛍</div>
+            <h2>Your cart is empty</h2>
+            <p>Add some products to your cart and come back here.</p>
+
+            <Link href="/products">Start Shopping</Link>
+          </section>
+        ) : (
           <div className={styles.cartLayout}>
             <section className={styles.itemsCard}>
               {items.map((item) => (
@@ -163,8 +159,8 @@ export default function CartPage() {
                     <div className={styles.quantity}>
                       <button
                         type="button"
+                        onClick={() => changeQuantity(item.id, -1)}
                         aria-label={`Decrease ${item.name} quantity`}
-                        onClick={() => updateQuantity(item.id, -1)}
                       >
                         −
                       </button>
@@ -173,8 +169,8 @@ export default function CartPage() {
 
                       <button
                         type="button"
+                        onClick={() => changeQuantity(item.id, 1)}
                         aria-label={`Increase ${item.name} quantity`}
-                        onClick={() => updateQuantity(item.id, 1)}
                       >
                         +
                       </button>
@@ -233,41 +229,8 @@ export default function CartPage() {
               <Link href="/checkout" className={styles.checkoutButton}>
                 Proceed to Checkout
               </Link>
-
-              <div className={styles.trust}>
-                <div>
-                  <span>✓</span>
-                  <p>
-                    <strong>Authenticity Guaranteed</strong>
-                    100% genuine products
-                  </p>
-                </div>
-
-                <div>
-                  <span>✓</span>
-                  <p>
-                    <strong>Secure Payments</strong>
-                    Safe & encrypted checkout
-                  </p>
-                </div>
-
-                <div>
-                  <span>✓</span>
-                  <p>
-                    <strong>Easy Returns</strong>
-                    Hassle-free returns
-                  </p>
-                </div>
-              </div>
             </aside>
           </div>
-        ) : (
-          <section className={styles.emptyCart}>
-            <div>🛍</div>
-            <h2>Your cart is empty</h2>
-            <p>Add some products to your cart and come back here.</p>
-            <Link href="/products">Start Shopping</Link>
-          </section>
         )}
       </section>
 
