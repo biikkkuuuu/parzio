@@ -94,6 +94,64 @@ type ProductImage = {
   preview: string;
 };
 
+type Customer = {
+  id: string;
+  name: string;
+  email: string;
+  orders: number;
+  spent: number;
+  joined: string;
+  status: "Active" | "Blocked";
+};
+
+const initialCustomers: Customer[] = [
+  {
+    id: "CUS-1001",
+    name: "Aarav Sharma",
+    email: "aarav@example.com",
+    orders: 8,
+    spent: 18450,
+    joined: "12 Aug 2026",
+    status: "Active",
+  },
+  {
+    id: "CUS-1002",
+    name: "Priya Singh",
+    email: "priya@example.com",
+    orders: 5,
+    spent: 12680,
+    joined: "05 Aug 2026",
+    status: "Active",
+  },
+  {
+    id: "CUS-1003",
+    name: "Riya Verma",
+    email: "riya@example.com",
+    orders: 11,
+    spent: 28990,
+    joined: "28 Jul 2026",
+    status: "Active",
+  },
+  {
+    id: "CUS-1004",
+    name: "Kabir Mehta",
+    email: "kabir@example.com",
+    orders: 2,
+    spent: 3199,
+    joined: "18 Jul 2026",
+    status: "Blocked",
+  },
+  {
+    id: "CUS-1005",
+    name: "Neha Gupta",
+    email: "neha@example.com",
+    orders: 6,
+    spent: 14980,
+    joined: "10 Jul 2026",
+    status: "Active",
+  },
+];
+
 type AdminOrder = {
   id: string;
   customer: string;
@@ -165,6 +223,10 @@ export default function AdminPage() {
   const [orderSearch, setOrderSearch] = useState("");
   const [orderStatus, setOrderStatus] = useState("All");
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [customerStatus, setCustomerStatus] = useState("All");
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
 
   const [images, setImages] = useState<ProductImage[]>([]);
   const [mainImageId, setMainImageId] = useState<string | null>(null);
@@ -182,6 +244,24 @@ export default function AdminPage() {
 
   const selectedOrder = adminOrders.find(
     (order) => order.id === selectedOrderId,
+  );
+
+  const filteredCustomers = customers.filter((customer) => {
+    const searchValue = customerSearch.toLowerCase();
+
+    const matchesSearch =
+      customer.name.toLowerCase().includes(searchValue) ||
+      customer.email.toLowerCase().includes(searchValue) ||
+      customer.id.toLowerCase().includes(searchValue);
+
+    const matchesStatus =
+      customerStatus === "All" || customer.status === customerStatus;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const selectedCustomer = customers.find(
+    (customer) => customer.id === selectedCustomerId,
   );
 
   const filteredProducts = useMemo(() => {
@@ -341,7 +421,148 @@ export default function AdminPage() {
         </header>
 
         <div className={styles.content}>
-          {active === "Orders" ? (
+          {active === "Customers" ? (
+            <>
+              <section className={styles.welcome}>
+                <div>
+                  <span>CUSTOMER MANAGEMENT</span>
+                  <h2>Customers</h2>
+                  <p>View and manage your PARZIO customers.</p>
+                </div>
+              </section>
+
+              <section className={styles.card}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    marginBottom: 20,
+                  }}
+                >
+                  <input
+                    type="search"
+                    value={customerSearch}
+                    onChange={(event) => setCustomerSearch(event.target.value)}
+                    placeholder="Search name, email or customer ID..."
+                    style={{
+                      flex: 1,
+                      minWidth: 240,
+                      padding: 12,
+                      boxSizing: "border-box",
+                    }}
+                  />
+
+                  <select
+                    value={customerStatus}
+                    onChange={(event) => setCustomerStatus(event.target.value)}
+                    style={{ padding: 12 }}
+                  >
+                    <option value="All">All Statuses</option>
+                    <option>Active</option>
+                    <option>Blocked</option>
+                  </select>
+                </div>
+
+                <div className={styles.table}>
+                  <div className={styles.tableHead}>
+                    <span>Customer</span>
+                    <span>Orders</span>
+                    <span>Total Spent</span>
+                    <span>Joined</span>
+                    <span>Status</span>
+                    <span>Action</span>
+                  </div>
+
+                  {filteredCustomers.map((customer) => (
+                    <div key={customer.id} className={styles.tableRow}>
+                      <div>
+                        <strong>{customer.name}</strong>
+                        <div style={{ fontSize: 11, color: "#5f5e5d" }}>
+                          {customer.email}
+                        </div>
+                      </div>
+
+                      <span>{customer.orders}</span>
+
+                      <span>
+                        ₹{customer.spent.toLocaleString("en-IN")}
+                      </span>
+
+                      <span>{customer.joined}</span>
+
+                      <span>{customer.status}</span>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCustomerId(customer.id)}
+                      >
+                        View
+                      </button>
+                    </div>
+                  ))}
+
+                  {filteredCustomers.length === 0 && (
+                    <div style={{ padding: 30, textAlign: "center" }}>
+                      No customers found.
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {selectedCustomer && (
+                <div
+                  className={styles.modalBackdrop}
+                  onClick={() => setSelectedCustomerId(null)}
+                >
+                  <div
+                    className={styles.deleteModal}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <span className={styles.modalEyebrow}>
+                      CUSTOMER DETAILS
+                    </span>
+
+                    <h2>{selectedCustomer.name}</h2>
+
+                    <p>
+                      Customer ID: <strong>{selectedCustomer.id}</strong>
+                    </p>
+
+                    <p style={{ marginTop: 8 }}>
+                      Email: <strong>{selectedCustomer.email}</strong>
+                    </p>
+
+                    <p style={{ marginTop: 8 }}>
+                      Orders: <strong>{selectedCustomer.orders}</strong>
+                    </p>
+
+                    <p style={{ marginTop: 8 }}>
+                      Total Spent:{" "}
+                      <strong>
+                        ₹{selectedCustomer.spent.toLocaleString("en-IN")}
+                      </strong>
+                    </p>
+
+                    <p style={{ marginTop: 8 }}>
+                      Joined: <strong>{selectedCustomer.joined}</strong>
+                    </p>
+
+                    <div className={styles.modalActions}>
+                      <button
+                        type="button"
+                        className={styles.cancelButton}
+                        onClick={() => setSelectedCustomerId(null)}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : active === "Orders" ? (
             <>
               <section className={styles.welcome}>
                 <div>
