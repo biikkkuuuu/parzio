@@ -1,19 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getCart, getCartProducts, clearCart, type CartItem } from "@/lib/cart";
 import { products } from "@/lib/products";
 import styles from "./checkout.module.css";
-
-type CartItem = {
-  productId: number;
-  quantity: number;
-};
-
-const cartItems: CartItem[] = [
-  { productId: 1, quantity: 1 },
-  { productId: 3, quantity: 1 },
-];
 
 const shipping = 0;
 
@@ -27,21 +18,18 @@ const formatPrice = (value: number) =>
 export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [placed, setPlaced] = useState(false);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setCartItems(getCart());
+    setMounted(true);
+  }, []);
 
   const items = useMemo(() => {
-    return cartItems
-      .map((item) => {
-        const product = products.find((product) => product.id === item.productId);
-
-        if (!product) return null;
-
-        return {
-          ...product,
-          quantity: item.quantity,
-        };
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null);
-  }, []);
+    if (!mounted) return [];
+    return getCartProducts(products);
+  }, [cartItems, mounted]);
 
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -49,6 +37,46 @@ export default function CheckoutPage() {
   );
 
   const total = subtotal + shipping;
+
+  const handlePlaceOrder = () => {
+    if (items.length === 0) return;
+
+    clearCart();
+    setPlaced(true);
+  };
+
+  if (!mounted) {
+    return (
+      <main className={styles.page}>
+        <section className={styles.successPage}>
+          <p>Loading checkout...</p>
+        </section>
+      </main>
+    );
+  }
+
+  if (items.length === 0 && !placed) {
+    return (
+      <main className={styles.page}>
+        <section className={styles.successPage}>
+          <div className={styles.successIcon}>🛍</div>
+
+          <span className={styles.eyebrow}>YOUR CART IS EMPTY</span>
+
+          <h1>No items to checkout.</h1>
+
+          <p>
+            Add a product to your cart before proceeding to checkout.
+          </p>
+
+          <div className={styles.successActions}>
+            <Link href="/products">Continue Shopping</Link>
+            <Link href="/cart">View Cart</Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   if (placed) {
     return (
@@ -255,7 +283,7 @@ export default function CheckoutPage() {
             <button
               type="button"
               className={styles.placeOrder}
-              onClick={() => setPlaced(true)}
+              onClick={handlePlaceOrder}
             >
               Place Order · {formatPrice(total)}
             </button>
