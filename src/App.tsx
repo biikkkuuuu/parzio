@@ -461,17 +461,6 @@ export default function App() {
                     }}
                   />
 
-                  {/* 2. Hero Banner with Right-to-Left Ticker & Dynamic Carousel */}
-                  <HeroBanner
-                    heroProduct={HERO_PRODUCT}
-                    onExploreVault={scrollToVault}
-                    onScrollToVault={scrollToVault}
-                    onAddToCart={handleAddToCart}
-                    onOpenProductModal={setSelectedProduct}
-                    banners={banners}
-                    bannerMarqueeItems={bannerMarqueeItems}
-                  />
-
                   {/* Category Filter Pills */}
                   <Categories
                     onSelectCategory={(cat) => {

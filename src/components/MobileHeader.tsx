@@ -23,12 +23,15 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   return (
     <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md border-b border-[#eae5dc]">
       {/* Top Announcement Bar - Cash On Delivery Available ✨ */}
-      <div className="w-full bg-[#faebd7]/80 border-b border-[#ebd7be] py-2 px-3 text-center">
+      <div className="w-full bg-[#faebd7]/80 border-b border-[#ebd7be] py-1.5 px-3 text-center">
         <p className="text-xs sm:text-[13px] font-medium text-[#141414] tracking-wide flex items-center justify-center gap-1.5">
           <span>Cash On Delivery Available</span>
           <span className="text-[#c59a45] text-sm">✨</span>
         </p>
       </div>
+
+      {/* Top Fixed Marquee Ticker Bar right at the top */}
+      <MarqueeBar items={topMarqueeItems} variant="gold" speed="fast" />
 
       {/* Main Header Navigation Row */}
       <div className="max-w-md mx-auto px-4 py-2.5 flex items-center justify-between">
