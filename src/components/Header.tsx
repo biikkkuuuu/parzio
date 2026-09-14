@@ -54,64 +54,8 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-[#eae5dc]">
       {/* Top Multi-Marquee Bar with Right-to-Left Continuous Movement */}
-      <div className="bg-[#141414] text-[#fed488] flex items-center justify-between overflow-hidden border-b border-[#2e3131]">
-        <div className="flex-1 overflow-hidden">
-          <MarqueeBar items={topMarqueeItems} variant="dark" />
-        </div>
-
-        {/* Screen / Perspective Switcher */}
-        <div className="flex items-center gap-2 px-3 py-1 bg-[#141414] border-l border-[#2e3131] text-[11px] z-10 flex-shrink-0">
-          <div className="flex bg-[#222424] border border-[#2e3131] rounded-full p-0.5">
-            <button
-              onClick={() => onToggleScreen('storefront')}
-              className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-all ${
-                activeScreen === 'storefront'
-                  ? 'bg-[#8c7138] text-white font-bold shadow-xs'
-                  : 'text-[#c4c7c7] hover:text-white'
-              }`}
-              title="Customer Storefront"
-            >
-              <Store className="w-3 h-3" />
-              <span className="hidden sm:inline">Store</span>
-            </button>
-            <button
-              onClick={() => onToggleScreen('atelier-ops')}
-              className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-all ${
-                activeScreen === 'atelier-ops'
-                  ? 'bg-[#8c7138] text-white font-bold shadow-xs'
-                  : 'text-[#c4c7c7] hover:text-white'
-              }`}
-              title="Admin Panel"
-            >
-              <LayoutDashboard className="w-3 h-3" />
-              <span className="hidden sm:inline">Admin</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            </button>
-          </div>
-
-          {activeScreen === 'storefront' && (
-            <div className="hidden sm:flex bg-[#222424] border border-[#2e3131] rounded-full p-0.5">
-              <button
-                onClick={() => onToggleDeviceMode('desktop')}
-                className={`p-1 rounded-full transition-all ${
-                  deviceMode === 'desktop' ? 'bg-[#8c7138] text-white' : 'text-[#c4c7c7] hover:text-white'
-                }`}
-                title="Desktop View"
-              >
-                <Monitor className="w-3 h-3" />
-              </button>
-              <button
-                onClick={() => onToggleDeviceMode('mobile')}
-                className={`p-1 rounded-full transition-all ${
-                  deviceMode === 'mobile' ? 'bg-[#8c7138] text-white' : 'text-[#c4c7c7] hover:text-white'
-                }`}
-                title="Mobile View"
-              >
-                <Smartphone className="w-3 h-3" />
-              </button>
-            </div>
-          )}
-        </div>
+      <div className="bg-[#141414] text-[#fed488] overflow-hidden border-b border-[#2e3131]">
+        <MarqueeBar items={topMarqueeItems} variant="dark" />
       </div>
 
       {/* Main Header Container */}
@@ -219,9 +163,9 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       )}
 
-      {/* Category Navigation Bar */}
+      {/* Category Navigation Bar - Centered */}
       <nav className="border-t border-[#eae5dc] bg-white overflow-x-auto no-scrollbar">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center sm:justify-start gap-4 sm:gap-8 py-2.5 whitespace-nowrap text-xs font-bold tracking-[0.06em] text-[#747878]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center gap-6 sm:gap-10 py-2.5 whitespace-nowrap text-xs font-bold tracking-[0.06em] text-[#747878]">
           {CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat;
             return (

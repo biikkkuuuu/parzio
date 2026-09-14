@@ -49,8 +49,8 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
           </div>
         </div>
 
-        {/* Filter Pills Tab Strip */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-6 px-1">
+        {/* Filter Pills Tab Strip - Centered on desktop */}
+        <div className="flex items-center sm:justify-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-6 px-1">
           {FILTER_TABS.map((tab) => {
             const rawCat = tab.replace(/ \(\d+\)/, '');
             const isActive =
