@@ -60,6 +60,9 @@ export function initDatabase() {
       phone_verified INTEGER DEFAULT 1,
       notes TEXT,
       idempotency_key TEXT UNIQUE,
+      razorpay_order_id TEXT,
+      razorpay_payment_id TEXT,
+      razorpay_signature TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -89,4 +92,19 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_orders_phone ON orders(phone);
     CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
   `);
+
+  // Safe schema migrations for existing database files
+  const columnsToAdd = [
+    'ALTER TABLE orders ADD COLUMN razorpay_order_id TEXT',
+    'ALTER TABLE orders ADD COLUMN razorpay_payment_id TEXT',
+    'ALTER TABLE orders ADD COLUMN razorpay_signature TEXT'
+  ];
+
+  for (const alterSql of columnsToAdd) {
+    try {
+      db.exec(alterSql);
+    } catch {
+      // Column already exists, ignore
+    }
+  }
 }

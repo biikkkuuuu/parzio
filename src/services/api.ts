@@ -14,6 +14,28 @@ export interface OrderPayload {
   paymentMethod: 'COD' | 'Prepaid UPI';
   totalAmount: number;
   idempotencyKey?: string;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
+}
+
+export interface RazorpayOrderResponse {
+  success: boolean;
+  order: {
+    id: string;
+    amount: number;
+    currency: string;
+    receipt?: string;
+    status: string;
+  };
+  keyId: string;
+  isSimulated?: boolean;
+}
+
+export interface RazorpayVerifyPayload {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
 }
 
 export const apiService = {
@@ -95,5 +117,44 @@ export const apiService = {
     } catch (err) {
       return null;
     }
+  },
+
+  // Razorpay: Get Public Key ID
+  async getRazorpayKey(): Promise<string> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/payment/razorpay-key`);
+      const data = await res.json();
+      return data.keyId || 'rzp_test_51b9o4kX1sXj5e';
+    } catch {
+      return 'rzp_test_51b9o4kX1sXj5e';
+    }
+  },
+
+  // Razorpay: Create Order on Backend
+  async createRazorpayOrder(amount: number): Promise<RazorpayOrderResponse> {
+    const res = await fetch(`${API_BASE_URL}/payment/razorpay-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to initiate Razorpay order');
+    }
+    return await res.json();
+  },
+
+  // Razorpay: Verify Signature on Backend
+  async verifyRazorpayPayment(payload: RazorpayVerifyPayload): Promise<{ success: boolean; verified: boolean }> {
+    const res = await fetch(`${API_BASE_URL}/payment/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Payment verification failed');
+    }
+    return await res.json();
   }
 };
