@@ -86,15 +86,13 @@ export const Header: React.FC<HeaderProps> = ({
             <Search className="w-4 h-4 text-[#747878] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
-          <div className="flex items-center justify-between text-[11px] text-[#747878] font-bold px-2">
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-[#8c7138]" /> 18K Gold Finish
+          <div className="flex items-center justify-around text-[11px] text-[#747878] font-bold px-4">
+            <span className="flex items-center gap-1.5">
+              <Droplet className="w-3.5 h-3.5 text-[#8c7138]" /> 100% Waterproof
             </span>
-            <span className="flex items-center gap-1">
-              <Droplet className="w-3 h-3 text-[#8c7138]" /> 100% Waterproof
-            </span>
-            <span className="flex items-center gap-1">
-              <Truck className="w-3 h-3 text-[#8c7138]" /> COD Available
+            <span className="text-[#eae5dc]">•</span>
+            <span className="flex items-center gap-1.5">
+              <Truck className="w-3.5 h-3.5 text-[#8c7138]" /> Cash on Delivery Available
             </span>
           </div>
         </div>
