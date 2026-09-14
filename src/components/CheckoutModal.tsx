@@ -160,6 +160,32 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         theme: {
           color: '#141414'
         },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: 'Pay via UPI / QR',
+                instruments: [
+                  {
+                    method: 'upi',
+                    flows: ['qr', 'intent', 'collect']
+                  }
+                ]
+              },
+              other: {
+                name: 'Cards & NetBanking',
+                instruments: [
+                  { method: 'card' },
+                  { method: 'netbanking' }
+                ]
+              }
+            },
+            sequence: ['block.upi', 'block.other'],
+            preferences: {
+              show_default_blocks: true
+            }
+          }
+        },
         modal: {
           ondismiss: () => {
             setIsSubmitting(false);
