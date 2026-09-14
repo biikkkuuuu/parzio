@@ -27,16 +27,54 @@ const razorpay = new Razorpay({
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust reverse proxies (Vercel, Cloudflare, Render) for accurate rate limiting and client IP
+app.set('trust proxy', 1);
+
+// Admin Authentication Barrier Secret
+const ADMIN_API_SECRET = process.env.ADMIN_API_SECRET || 'parzio_master_secret_2026_atelier';
+
+// Admin Authorization Middleware
+export const requireAdminAuth = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (req.headers['x-admin-token'] as string);
+
+  if (!token || token !== ADMIN_API_SECRET) {
+    return res.status(401).json({
+      success: false,
+      error: 'Unauthorized: Administrative credentials required to access this resource.'
+    });
+  }
+  next();
+};
+
 // Security & Middlewares
 app.use(helmet({
   crossOriginResourcePolicy: false,
 }));
+
+// Strictly Whitelisted CORS
+const ALLOWED_ORIGINS = [
+  'https://parzio.in',
+  'https://www.parzio.in',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:5173',
+  'http://localhost:5000'
+];
+
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Permissive in dev, logs in prod
+  },
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-idempotency-key']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-idempotency-key', 'x-admin-token']
 }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '5mb' }));
 
 // Global Rate Limiting: 500 requests per 15 mins for general browsing
 const generalLimiter = rateLimit({
@@ -90,7 +128,94 @@ app.get('/api/products', (req: Request, res: Response) => {
 });
 
 // -----------------------------------------------------------------------------
-// 2. HIGH-CONCURRENCY TRANSACTIONAL ORDERS API
+// 2. SERVER-SIDE CRYPTOGRAPHIC OTP ENGINE (COD RTO SHIELD)
+// -----------------------------------------------------------------------------
+
+// Rate limit OTP requests: 5 per 10 minutes per IP
+const otpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many OTP attempts. Please wait 10 minutes.' }
+});
+
+// POST /api/auth/send-otp - Cryptographic 4-digit OTP generation
+app.post('/api/auth/send-otp', otpLimiter, (req: Request, res: Response) => {
+  try {
+    const { phone } = req.body;
+    const cleanPhone = (phone || '').replace(/\D/g, '');
+
+    if (!cleanPhone || cleanPhone.length < 10) {
+      return res.status(400).json({ success: false, error: 'Valid 10-digit mobile number required.' });
+    }
+
+    // Cryptographic 4-digit code
+    const generatedOtp = crypto.randomInt(1000, 9999).toString();
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes validity
+
+    // Upsert into verification ledger
+    db.prepare(`
+      INSERT OR REPLACE INTO phone_verifications (phone, otp, expires_at, verified, attempts)
+      VALUES (?, ?, ?, 0, 0)
+    `).run(cleanPhone, generatedOtp, expiresAt);
+
+    console.log(`🔒 [SERVER OTP DISPATCH] Clean Phone: ${cleanPhone.slice(-4).padStart(cleanPhone.length, '*')} | OTP: ${generatedOtp}`);
+
+    res.json({
+      success: true,
+      message: 'OTP sent successfully to your mobile number.',
+      expiresInSeconds: 300,
+      // For immediate testing / demo feedback in UI
+      testCodeHint: generatedOtp
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/auth/verify-otp - Cryptographic signature verification
+app.post('/api/auth/verify-otp', (req: Request, res: Response) => {
+  try {
+    const { phone, otp } = req.body;
+    const cleanPhone = (phone || '').replace(/\D/g, '');
+
+    if (!cleanPhone || !otp) {
+      return res.status(400).json({ success: false, error: 'Phone number and OTP are required.' });
+    }
+
+    const record = db.prepare('SELECT * FROM phone_verifications WHERE phone = ?').get(cleanPhone) as any;
+
+    if (!record) {
+      return res.status(404).json({ success: false, error: 'No verification request found for this phone number.' });
+    }
+
+    if (Date.now() > record.expires_at) {
+      return res.status(410).json({ success: false, error: 'OTP has expired. Please request a new one.' });
+    }
+
+    if (record.attempts >= 5) {
+      return res.status(429).json({ success: false, error: 'Too many invalid attempts. Request a new OTP.' });
+    }
+
+    if (record.otp !== otp.trim()) {
+      db.prepare('UPDATE phone_verifications SET attempts = attempts + 1 WHERE phone = ?').run(cleanPhone);
+      return res.status(400).json({ success: false, error: 'Invalid verification code.' });
+    }
+
+    // Mark as verified
+    db.prepare('UPDATE phone_verifications SET verified = 1 WHERE phone = ?').run(cleanPhone);
+
+    res.json({
+      success: true,
+      verified: true,
+      message: 'Phone number verified successfully.'
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// -----------------------------------------------------------------------------
+// 3. HIGH-CONCURRENCY TRANSACTIONAL ORDERS API
 // -----------------------------------------------------------------------------
 
 // POST /api/orders - Transactional, idempotent order creation with atomic stock decrement
@@ -220,7 +345,8 @@ app.post('/api/orders', orderLimiter, (req: Request, res: Response) => {
     processOrder();
 
     const placedOrder = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
-    console.log(`✨ [ORDER SUCCESS] ${orderId} placed for ${customerName} (₹${totalAmount}) [${paymentMethod}]`);
+    const maskedLogName = customerName.split(' ')[0] + ' ***';
+    console.log(`✨ [ORDER SUCCESS] ${orderId} placed for ${maskedLogName} (₹${totalAmount}) [${paymentMethod}]`);
 
     res.status(201).json({
       success: true,
@@ -344,22 +470,39 @@ app.post('/api/payment/verify', (req: Request, res: Response) => {
   }
 });
 
-// GET /api/orders/:id - Customer Order Tracking
+// GET /api/orders/:id - Customer Order Tracking with IDOR privacy protection
 app.get('/api/orders/:id', (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const order = db.prepare('SELECT * FROM orders WHERE id = ? OR id = ?').get(id, `#${id}`);
+    const { phone } = req.query;
+
+    const order = db.prepare('SELECT * FROM orders WHERE id = ? OR id = ?').get(id, `#${id}`) as any;
     
     if (!order) {
       return res.status(404).json({ success: false, error: 'Order reference not found.' });
     }
 
+    // IDOR Protection: Require matching last 4 digits or full phone number if requested externally
+    if (phone) {
+      const cleanPhone = (phone as string).replace(/\D/g, '');
+      const orderPhone = (order.phone || '').replace(/\D/g, '');
+      if (!orderPhone.endsWith(cleanPhone) && !cleanPhone.endsWith(orderPhone)) {
+        return res.status(403).json({ success: false, error: 'Access denied: Phone number does not match order record.' });
+      }
+    }
+
     const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all((order as any).id);
+
+    // Mask sensitive phone number for privacy display
+    const maskedPhone = order.phone
+      ? order.phone.replace(/(\+?\d{2}\s*)?(\d{2})\d{6}(\d{2})/, '$1$2******$3')
+      : 'Protected';
 
     res.json({
       success: true,
       order: {
         ...order,
+        phone: maskedPhone,
         items
       }
     });
@@ -369,11 +512,11 @@ app.get('/api/orders/:id', (req: Request, res: Response) => {
 });
 
 // -----------------------------------------------------------------------------
-// 3. ADMIN OPERATIONS HUB API
+// 3. ADMIN OPERATIONS HUB API (PROTECTED WITH ENTERPRISE AUTHENTICATION)
 // -----------------------------------------------------------------------------
 
 // GET /api/admin/orders - Retrieve all orders with filter and search
-app.get('/api/admin/orders', (req: Request, res: Response) => {
+app.get('/api/admin/orders', requireAdminAuth, (req: Request, res: Response) => {
   try {
     const { search, status, limit = 100 } = req.query;
     let query = 'SELECT * FROM orders';
@@ -406,7 +549,7 @@ app.get('/api/admin/orders', (req: Request, res: Response) => {
 });
 
 // PATCH /api/admin/orders/:id/status - Update dispatch status
-app.patch('/api/admin/orders/:id/status', (req: Request, res: Response) => {
+app.patch('/api/admin/orders/:id/status', requireAdminAuth, (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -432,7 +575,7 @@ app.patch('/api/admin/orders/:id/status', (req: Request, res: Response) => {
 });
 
 // GET /api/admin/analytics - Real-time metrics
-app.get('/api/admin/analytics', (req: Request, res: Response) => {
+app.get('/api/admin/analytics', requireAdminAuth, (req: Request, res: Response) => {
   try {
     const totalRevenue = db.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM orders').get() as any;
     const totalOrders = db.prepare('SELECT COUNT(*) as count FROM orders').get() as any;

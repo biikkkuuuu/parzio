@@ -27,6 +27,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { ProductModal } from './components/ProductModal';
 import { CheckoutModal } from './components/CheckoutModal';
 import { WishlistModal } from './components/WishlistModal';
+import { PolicyModal, PolicyTab } from './components/PolicyModal';
 import { SearchModal } from './components/SearchModal';
 import { SalesSection } from './components/SalesSection';
 import { WhatsAppSupport } from './components/WhatsAppSupport';
@@ -143,8 +144,17 @@ export default function App() {
     mode: 'full-lockdown',
     reason: 'Security & Gateway Audit',
     customMessage: 'Our digital vault and order processing are temporarily paused for security maintenance. Placed orders remain safe.',
-    activatedAt: undefined
+    allowBrowsing: false
   });
+
+  // Legal & Compliance Policy Modal State (Razorpay & DPDPA)
+  const [isPolicyOpen, setIsPolicyOpen] = useState<boolean>(false);
+  const [policyInitialTab, setPolicyInitialTab] = useState<PolicyTab>('privacy');
+
+  const handleOpenPolicy = (tab: PolicyTab = 'privacy') => {
+    setPolicyInitialTab(tab);
+    setIsPolicyOpen(true);
+  };
 
   // Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -557,6 +567,7 @@ export default function App() {
                       el?.scrollIntoView({ behavior: 'smooth' });
                     }}
                     onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
+                    onOpenPolicy={handleOpenPolicy}
                   />
                 </div>
               )}
@@ -689,6 +700,7 @@ export default function App() {
                 el?.scrollIntoView({ behavior: 'smooth' });
               }}
               onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
+              onOpenPolicy={handleOpenPolicy}
             />
           </main>
         </div>
@@ -753,6 +765,12 @@ export default function App() {
         wishlistProducts={wishlistProducts}
         onAddToCart={handleAddToCart}
         onRemoveFromWishlist={handleToggleWishlist}
+      />
+
+      <PolicyModal
+        isOpen={isPolicyOpen}
+        onClose={() => setIsPolicyOpen(false)}
+        initialTab={policyInitialTab}
       />
 
       {/* Storefront Enhancements: WhatsApp Concierge & Live Purchase Social Proof */}

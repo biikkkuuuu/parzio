@@ -6,9 +6,10 @@ interface FooterProps {
   onSelectCategory: (cat: string) => void;
   onOpenQualityModal: () => void;
   onOpenAtelierOps?: () => void;
+  onOpenPolicy?: (tab?: 'privacy' | 'terms' | 'refund' | 'shipping' | 'contact') => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenQualityModal, onOpenAtelierOps }) => {
+export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenQualityModal, onOpenAtelierOps, onOpenPolicy }) => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -132,22 +133,50 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenQualityM
               <li>
                 <button
                   onClick={onOpenQualityModal}
-                  className="hover:text-white transition-colors"
+                  className="hover:text-white transition-colors cursor-pointer"
                 >
                   5-Step Quality Check
                 </button>
               </li>
               <li>
-                <span className="hover:text-white cursor-pointer">Track Your Order</span>
+                <button
+                  onClick={() => onOpenPolicy?.('refund')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Easy 7-Day Returns &amp; Refunds
+                </button>
               </li>
               <li>
-                <span className="hover:text-white cursor-pointer">Easy Returns & Exchanges</span>
+                <button
+                  onClick={() => onOpenPolicy?.('shipping')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Express Shipping &amp; Delivery
+                </button>
               </li>
               <li>
-                <span className="hover:text-white cursor-pointer">Shipping & Delivery</span>
+                <button
+                  onClick={() => onOpenPolicy?.('privacy')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Privacy Policy &amp; DPDPA
+                </button>
               </li>
               <li>
-                <span className="hover:text-white cursor-pointer">Jewellery Care Guide</span>
+                <button
+                  onClick={() => onOpenPolicy?.('terms')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Terms &amp; Conditions
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onOpenPolicy?.('contact')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Official Contact &amp; Concierge
+                </button>
               </li>
             </ul>
           </div>

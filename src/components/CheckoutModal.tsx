@@ -213,22 +213,36 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     }
   };
 
+  // Server-generated OTP hint for test UI
+  const [serverOtpHint, setServerOtpHint] = useState<string>('');
+
   // Handler to Proceed from Details
-  const handleProceedToNextStep = (e: React.FormEvent) => {
+  const handleProceedToNextStep = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (paymentMethod === 'Prepaid UPI') {
       // Launch Razorpay Payment Gateway (UPI / QR / Cards / NetBanking)
       launchRazorpayCheckout();
     } else {
-      // Cash On Delivery requires 4-digit OTP verification
-      setStep('otp');
-      setResendTimer(30);
-      setIsResendDisabled(true);
-      setOtpValues(['', '', '', '']);
-      setOtpError(null);
-      setOtpSentNotification(true);
-      setTimeout(() => setOtpSentNotification(false), 4500);
+      // Cash On Delivery requires 4-digit Server OTP verification
+      setIsSubmitting(true);
+      try {
+        const res = await apiService.sendOtp(phone);
+        if (res.testCodeHint) {
+          setServerOtpHint(res.testCodeHint);
+        }
+        setStep('otp');
+        setResendTimer(30);
+        setIsResendDisabled(true);
+        setOtpValues(['', '', '', '']);
+        setOtpError(null);
+        setOtpSentNotification(true);
+        setTimeout(() => setOtpSentNotification(false), 5000);
+      } catch (err: any) {
+        alert(err.message || 'Failed to send OTP to mobile. Please check number.');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -253,14 +267,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     }
   };
 
-  // Auto-fill Demo OTP
+  // Auto-fill Server Test OTP
   const handleAutoFillOtp = () => {
-    setOtpValues(['4', '8', '2', '9']);
-    setOtpError(null);
+    if (serverOtpHint && serverOtpHint.length === 4) {
+      setOtpValues(serverOtpHint.split(''));
+      setOtpError(null);
+    }
   };
 
-  // Verify OTP and Place Order
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  // Verify Server OTP and Place Order
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const entered = otpValues.join('');
     if (entered.length < 4) {
@@ -268,23 +284,40 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       return;
     }
 
-    if (entered !== DEMO_OTP) {
-      setOtpError(`Invalid code. For this demo, please enter ${DEMO_OTP}.`);
-      return;
-    }
+    setIsSubmitting(true);
+    setOtpError(null);
 
-    finalizeOrder(true);
+    try {
+      const verifyRes = await apiService.verifyOtp(phone, entered);
+      if (verifyRes.verified) {
+        finalizeOrder(true);
+      } else {
+        setOtpError('Verification failed. Invalid OTP code.');
+        setIsSubmitting(false);
+      }
+    } catch (err: any) {
+      setOtpError(err.message || 'Invalid or expired OTP code.');
+      setIsSubmitting(false);
+    }
   };
 
-  // Resend OTP
-  const handleResendOtp = () => {
+  // Resend OTP via Server API
+  const handleResendOtp = async () => {
     if (isResendDisabled) return;
-    setResendTimer(30);
-    setIsResendDisabled(true);
-    setOtpValues(['', '', '', '']);
-    setOtpError(null);
-    setOtpSentNotification(true);
-    setTimeout(() => setOtpSentNotification(false), 4500);
+    try {
+      const res = await apiService.sendOtp(phone);
+      if (res.testCodeHint) {
+        setServerOtpHint(res.testCodeHint);
+      }
+      setResendTimer(30);
+      setIsResendDisabled(true);
+      setOtpValues(['', '', '', '']);
+      setOtpError(null);
+      setOtpSentNotification(true);
+      setTimeout(() => setOtpSentNotification(false), 5000);
+    } catch (err: any) {
+      setOtpError(err.message || 'Failed to resend OTP.');
+    }
   };
 
   // Finalize Order
@@ -650,6 +683,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   </>
                 )}
               </button>
+
+              <div className="text-center pt-1">
+                <p className="text-[10px] text-[#747878]">
+                  By proceeding, you agree to our 100% Anti-Tarnish Guarantee,{' '}
+                  <span className="underline cursor-pointer hover:text-[#141414]">7-Day Easy Returns</span> &amp;{' '}
+                  <span className="underline cursor-pointer hover:text-[#141414]">Privacy Safeguards</span>.
+                </p>
+              </div>
             </form>
           )}
 
@@ -673,19 +714,21 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   <div className="flex items-center gap-2.5">
                     <MessageSquare className="w-4 h-4 text-[#fed488]" />
                     <div className="text-xs">
-                      <p className="font-bold text-[#fed488]">WhatsApp &amp; SMS Sent</p>
+                      <p className="font-bold text-[#fed488]">Server Cryptographic OTP Dispatched</p>
                       <p className="text-[11px] text-white/80">
-                        PARZIO Code: <strong className="text-white underline">4829</strong>
+                        PARZIO Code: <strong className="text-white underline">{serverOtpHint || '••••'}</strong>
                       </p>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleAutoFillOtp}
-                    className="px-2.5 py-1 rounded-full bg-[#8c7138] text-white text-[10px] font-bold hover:bg-[#fed488] hover:text-[#141414] transition-colors cursor-pointer"
-                  >
-                    Auto-Fill
-                  </button>
+                  {serverOtpHint && (
+                    <button
+                      type="button"
+                      onClick={handleAutoFillOtp}
+                      className="px-2.5 py-1 rounded-full bg-[#8c7138] text-white text-[10px] font-bold hover:bg-[#fed488] hover:text-[#141414] transition-colors cursor-pointer"
+                    >
+                      Auto-Fill
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -705,20 +748,22 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 </p>
               </div>
 
-              {/* Demo Helper Banner */}
-              <div className="p-3 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs text-[#141414]">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Demo Test OTP: <strong className="font-mono text-[#8c7138] font-bold">4829</strong></span>
+              {/* Live Server Code Indicator */}
+              {serverOtpHint && (
+                <div className="p-3 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-[#141414]">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Server Verified Code: <strong className="font-mono text-[#8c7138] font-bold">{serverOtpHint}</strong></span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAutoFillOtp}
+                    className="text-xs font-bold text-[#8c7138] hover:underline cursor-pointer"
+                  >
+                    Click to Fill
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAutoFillOtp}
-                  className="text-xs font-bold text-[#8c7138] hover:underline cursor-pointer"
-                >
-                  Click to Fill
-                </button>
-              </div>
+              )}
 
               {/* OTP Form */}
               <form onSubmit={handleVerifyOtp} className="space-y-4">

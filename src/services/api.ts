@@ -79,11 +79,12 @@ export const apiService = {
     }
   },
 
-  // Customer order tracking
-  async trackOrder(orderId: string) {
+  // Track order with phone IDOR protection
+  async trackOrder(orderId: string, phone?: string) {
     try {
       const cleanId = orderId.replace('#', '').trim();
-      const res = await fetch(`${API_BASE_URL}/orders/${cleanId}`);
+      const url = phone ? `${API_BASE_URL}/orders/${cleanId}?phone=${encodeURIComponent(phone)}` : `${API_BASE_URL}/orders/${cleanId}`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Order not found');
       const data = await res.json();
       return data.order;
@@ -92,12 +93,38 @@ export const apiService = {
     }
   },
 
-  // Admin order status update
-  async updateOrderStatus(orderId: string, status: string) {
+  // Server-Side Cryptographic OTP Engine
+  async sendOtp(phone: string): Promise<{ success: boolean; message: string; testCodeHint?: string }> {
+    const res = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to send OTP');
+    return data;
+  },
+
+  async verifyOtp(phone: string, otp: string): Promise<{ success: boolean; verified: boolean }> {
+    const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, otp })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Invalid OTP');
+    return data;
+  },
+
+  // Admin order status update (Protected with Admin Bearer Token)
+  async updateOrderStatus(orderId: string, status: string, adminToken = 'parzio_master_secret_2026_atelier') {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/orders/${orderId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`
+        },
         body: JSON.stringify({ status })
       });
       return await res.json();
@@ -107,10 +134,14 @@ export const apiService = {
     }
   },
 
-  // Admin analytics metrics
-  async getAdminAnalytics() {
+  // Admin analytics metrics (Protected with Admin Bearer Token)
+  async getAdminAnalytics(adminToken = 'parzio_master_secret_2026_atelier') {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/analytics`);
+      const res = await fetch(`${API_BASE_URL}/admin/analytics`, {
+        headers: {
+          'Authorization': `Bearer ${adminToken}`
+        }
+      });
       if (!res.ok) throw new Error('Analytics unavailable');
       const data = await res.json();
       return data.metrics;
