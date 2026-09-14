@@ -12,50 +12,60 @@ export const Categories: React.FC<CategoriesProps> = ({
   selectedCategory
 }) => {
   return (
-    <section className="py-12 sm:py-16 bg-neutral-50/80 border-b border-neutral-200">
+    <section className="py-8 sm:py-12 bg-white border-b border-[#eae5dc]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="text-[11px] font-semibold uppercase tracking-widest text-neutral-500 block mb-1">
-            Handpicked Curations
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#8c7138] block">
+              CURATED STYLES
+            </span>
+            <h2 className="font-display text-2xl sm:text-3xl text-neutral-900 font-bold tracking-tight">
+              Collections
+            </h2>
+          </div>
+          <span className="text-xs font-semibold text-[#8c7138] uppercase tracking-wider hidden sm:block">
+            Swipe to explore →
           </span>
-          <h2 className="font-display text-2xl sm:text-3xl text-neutral-900 font-semibold tracking-tight">
-            What's New in Demi-Fine
-          </h2>
-          <p className="text-xs sm:text-sm text-neutral-600 mt-2 leading-relaxed">
-            Explore daily silhouettes sculpted in surgical grade stainless steel and enveloped in radiant 18-karat micro-plating.
-          </p>
         </div>
 
-        {/* Categories Row / Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-5">
+        {/* Horizontal Smooth Scrollable Categories Row (L to R & R to L) */}
+        <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto no-scrollbar pb-3 pt-1 scroll-smooth snap-x snap-mandatory">
           {CATEGORIES_DATA.map((cat) => {
             const isSelected = selectedCategory.toLowerCase() === cat.name.toLowerCase();
             return (
               <button
                 key={cat.name}
                 onClick={() => onSelectCategory(cat.name)}
-                className={`flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-white border transition-all duration-200 group hover:shadow-md ${
+                className={`flex-shrink-0 flex flex-col items-center text-center p-3 rounded-3xl transition-all duration-300 group snap-start cursor-pointer ${
                   isSelected
-                    ? 'border-neutral-900 ring-2 ring-neutral-900/15 shadow-xs'
-                    : 'border-neutral-200 hover:border-neutral-400'
+                    ? 'bg-[#faf6ef] scale-105'
+                    : 'hover:bg-neutral-50 active:scale-95'
                 }`}
               >
-                {/* Image Frame */}
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-neutral-100 overflow-hidden p-1.5 mb-3 flex items-center justify-center border border-neutral-200/80 group-hover:scale-105 transition-transform duration-200">
+                {/* Round Circular Avatar Frame */}
+                <div
+                  className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden p-1 flex items-center justify-center transition-all duration-300 shadow-sm ${
+                    isSelected
+                      ? 'border-2 border-[#8c7138] ring-4 ring-[#8c7138]/20 shadow-md scale-105'
+                      : 'border-2 border-[#eae5dc] group-hover:border-[#8c7138] group-hover:scale-105'
+                  } bg-[#fbf9f6]`}
+                >
                   <img
                     src={cat.image}
                     alt={cat.name}
-                    className="w-full h-full object-contain mix-blend-multiply"
+                    className="w-full h-full object-cover rounded-full mix-blend-multiply transition-transform duration-300 group-hover:scale-110"
                   />
                 </div>
 
-                <h3 className="font-display text-sm sm:text-base font-semibold text-neutral-900 group-hover:text-black transition-colors flex items-center gap-1">
+                {/* Collection Title */}
+                <h3 className={`font-display text-xs sm:text-sm mt-2.5 font-bold uppercase tracking-wide transition-colors ${
+                  isSelected ? 'text-[#8c7138]' : 'text-neutral-900 group-hover:text-[#8c7138]'
+                }`}>
                   {cat.name}
-                  <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </h3>
-                <p className="text-[11px] text-neutral-500 mt-0.5">
+                <p className="text-[10px] text-neutral-500 tracking-tight leading-tight max-w-[90px] truncate">
                   {cat.subtitle}
                 </p>
               </button>
