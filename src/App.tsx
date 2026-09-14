@@ -397,15 +397,15 @@ export default function App() {
         </div>
       )}
 
-      {/* Top Device Mode Bar */}
-      <header className="bg-[#141414] text-white px-3 py-1.5 flex items-center justify-between border-b border-[#2e3131] z-40 flex-shrink-0">
+      {/* Top Device Mode Bar (Only visible on Desktop/PC for preview switching; Completely removed on Mobile screens) */}
+      <header className="hidden md:flex bg-[#141414] text-white px-3 py-1.5 items-center justify-between border-b border-[#2e3131] z-40 flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="font-bold text-[#fed488] tracking-wider uppercase text-[10px]">
             PARZIO ATELIER
           </span>
           <span className="text-[#555] hidden xs:inline">•</span>
-          <span className="text-[#c4c7c7] text-[11px] hidden sm:inline">
-            {isPhone ? '📱 Mobile Storefront' : '💻 Desktop Storefront'}
+          <span className="text-[#c4c7c7] text-[11px]">
+            {isPhone ? '📱 Mobile Preview' : '💻 Desktop Storefront'}
           </span>
           {emergencyConfig.isActive && (
             <span className="px-2 py-0.2 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[9px] font-mono font-bold animate-pulse">
@@ -417,7 +417,7 @@ export default function App() {
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setViewMode('phone')}
-            title="Switch to Mobile Phone Version"
+            title="Switch to Mobile Phone Preview"
             className={`flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
               isPhone
                 ? 'bg-[#8c7138] text-white shadow-sm font-bold'
@@ -440,7 +440,7 @@ export default function App() {
             <span>Desktop View</span>
           </button>
 
-          <div className="h-4 w-px bg-[#2e3131] mx-1 hidden sm:block" />
+          <div className="h-4 w-px bg-[#2e3131] mx-1" />
 
           <button
             onClick={() => setActiveScreen('atelier-ops')}
@@ -454,14 +454,14 @@ export default function App() {
       </header>
 
       {/* ========================================================================= */}
-      {/* 1. PHONE VERSION: Self-contained viewport with fixed header & bottom nav */}
+      {/* 1. PHONE VERSION: Responsive full-screen mobile app layout */}
       {/* ========================================================================= */}
       {isPhone ? (
-        <div className="flex-1 flex justify-center items-start overflow-hidden w-full">
-          <div className="w-full max-w-md h-[calc(100dvh-37px)] bg-[#fbf9f6] flex flex-col shadow-2xl relative overflow-hidden border-x border-[#eae5dc]">
+        <div className="flex-1 flex justify-center items-start w-full bg-[#fbf9f6]">
+          <div className="w-full max-w-md min-h-screen bg-[#fbf9f6] flex flex-col relative pb-20 md:border-x md:border-[#eae5dc] md:shadow-2xl">
             
             {/* Top Fixed Mobile Header */}
-            <div className="flex-shrink-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#eae5dc]">
+            <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#eae5dc]">
               <MobileHeader
                 onOpenDrawer={() => setIsDrawerOpen(true)}
                 onOpenSearch={() => setIsSearchOpen(true)}
@@ -471,10 +471,10 @@ export default function App() {
               />
             </div>
 
-            {/* Scrollable Center Content Area (Scrolls independently while bottom nav stays pinned) */}
+            {/* Content Area */}
             <main
               id="phone-scroll-area"
-              className="flex-1 overflow-y-auto overscroll-contain bg-[#fbf9f6]"
+              className="flex-1 bg-[#fbf9f6]"
             >
               {/* Home Tab */}
               {activeTab === 'home' && (
@@ -537,6 +537,7 @@ export default function App() {
                       const el = document.getElementById('quality-section');
                       el?.scrollIntoView({ behavior: 'smooth' });
                     }}
+                    onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
                   />
                 </div>
               )}
@@ -571,16 +572,13 @@ export default function App() {
               )}
             </main>
 
-            {/* FIRMLY PINNED BOTTOM NAVIGATION BAR: NEVER DISAPPEARS, NEVER OVERLAPS */}
-            <div className="flex-shrink-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#eae5dc] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+            {/* FIRMLY PINNED BOTTOM NAVIGATION BAR */}
+            <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-md border-t border-[#eae5dc] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
               <BottomNav
                 activeTab={activeTab}
                 onTabChange={(tab) => {
                   setActiveTab(tab);
-                  const scrollArea = document.getElementById('phone-scroll-area');
-                  if (scrollArea) {
-                    scrollArea.scrollTo({ top: 0, behavior: 'smooth' });
-                  }
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               />
             </div>
@@ -671,6 +669,7 @@ export default function App() {
                 const el = document.getElementById('quality-section');
                 el?.scrollIntoView({ behavior: 'smooth' });
               }}
+              onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
             />
           </main>
         </div>

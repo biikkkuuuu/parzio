@@ -5,9 +5,10 @@ import { ShieldCheck, Truck, RotateCcw, CreditCard, Instagram, Facebook, Youtube
 interface FooterProps {
   onSelectCategory: (cat: string) => void;
   onOpenQualityModal: () => void;
+  onOpenAtelierOps?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenQualityModal }) => {
+export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenQualityModal, onOpenAtelierOps }) => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -188,7 +189,17 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenQualityM
 
         {/* Bottom Copyright & Guarantee */}
         <div className="mt-12 pt-8 border-t border-[#2e3131] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#747878]">
-          <p>© 2026 PARZIO Demi-Fine Jewellery. All rights reserved. Handcrafted with pride in India.</p>
+          <div className="flex items-center gap-3">
+            <p>© 2026 PARZIO Demi-Fine Jewellery. All rights reserved.</p>
+            {onOpenAtelierOps && (
+              <button
+                onClick={onOpenAtelierOps}
+                className="text-[10px] text-[#8c7138] hover:text-[#fed488] transition-colors underline"
+              >
+                Staff / Atelier Ops
+              </button>
+            )}
+          </div>
           <div className="flex items-center gap-4 text-[11px] text-[#8c7138]">
             <span>100% SECURE CHECKOUT</span>
             <span>•</span>

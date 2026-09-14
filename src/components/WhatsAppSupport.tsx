@@ -31,7 +31,7 @@ export const WhatsAppSupport: React.FC<WhatsAppSupportProps> = ({ onNavigateTrac
   ];
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-40 flex flex-col items-end">
+    <div className="fixed bottom-16 md:bottom-6 right-3 sm:right-6 z-30 flex flex-col items-end">
       
       {/* Concierge Popover Window */}
       {isOpen && (
