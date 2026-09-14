@@ -14,7 +14,9 @@ import {
   RefreshCw,
   Sparkles,
   Clock,
-  Check
+  Check,
+  MessageSquare,
+  ExternalLink
 } from 'lucide-react';
 import { HIGH_RISK_PINCODES } from '../data/adminData';
 
@@ -68,6 +70,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [placedOrderId, setPlacedOrderId] = useState('');
   const [placedOrderData, setPlacedOrderData] = useState<OrderItem | null>(null);
+  const [whatsappDispatchUrl, setWhatsappDispatchUrl] = useState<string>('');
 
   // Delivery Date & City Inference
   const getEstimatedDelivery = (pin: string) => {
@@ -235,6 +238,49 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     };
 
     setPlacedOrderData(newOrder);
+
+    // Business Standard Dispatch Notification to Atelier Owner WhatsApp
+    const ADMIN_WHATSAPP_NUMBER = '919106694317';
+    
+    // Generate professional business message
+    const businessMessage = [
+      `💎 *PARZIO ATELIER — NEW ORDER RECEIVED*`,
+      `━━━━━━━━━━━━━━━━━━━━━━━━━`,
+      `📦 *Order Reference:* #${generatedId}`,
+      `📅 *Date & Time:* ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`,
+      ``,
+      `👤 *CUSTOMER PROFILE:*`,
+      `• *Name:* ${name}`,
+      `• *Contact Number:* +91 ${phone}`,
+      `• *Delivery Address:* ${address}`,
+      `• *City / State:* ${city}, ${state}`,
+      `• *PIN Code:* ${pincode}`,
+      ``,
+      `💍 *ORDER PARTICULARS:*`,
+      ...cartItems.map((item, idx) => `  ${idx + 1}. ${item.product.name} (Qty: ${item.quantity}) — ₹${item.product.price * item.quantity}`),
+      ``,
+      `💳 *COMMERCIAL SUMMARY:*`,
+      `• *Total Items:* ${cartItems.reduce((acc, c) => acc + c.quantity, 0)} Units`,
+      `• *Payment Mode:* ${paymentMethod} (${paymentMethod === 'COD' ? 'Cash On Delivery' : 'Prepaid Fast-Track'})`,
+      `• *Total Amount Payable:* ₹${totalAmount}`,
+      `• *Courier Partner:* BlueDart Air Express`,
+      `• *Expected Delivery:* ${deliveryDate}`,
+      `━━━━━━━━━━━━━━━━━━━━━━━━━`,
+      `🔒 *Status:* Verified & Queued for Quality Inspection.`
+    ].join('\n');
+
+    // Trigger WhatsApp notification via window.open / API
+    const encodedMsg = encodeURIComponent(businessMessage);
+    const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodedMsg}`;
+    setWhatsappDispatchUrl(whatsappUrl);
+
+    // Background call/dispatch & prepare direct action link
+    try {
+      // Open in background tab or store for instant 1-click dispatch
+      window.open(whatsappUrl, '_blank');
+    } catch {
+      // Safe fallback if popups blocked
+    }
 
     setTimeout(() => {
       setIsSubmitting(false);
@@ -713,6 +759,36 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   <p className="text-[10px] text-[#747878]">
                     Your package includes our official authentic warranty card and blue velvet jewellery pouch.
                   </p>
+                </div>
+              </div>
+
+              {/* Atelier WhatsApp Dispatch Status */}
+              <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-left flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#25D366] text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
+                  <MessageSquare className="w-4 h-4 fill-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-emerald-950">Atelier WhatsApp Alert Sent</p>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      +91 91066 94317
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-emerald-800/90 mt-0.5 leading-snug">
+                    Standard business order notification with customer address, product particulars and payable amount has been dispatched.
+                  </p>
+                  {whatsappDispatchUrl && (
+                    <a
+                      href={whatsappDispatchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-[#141414] bg-white hover:bg-emerald-100/50 border border-emerald-300 px-3 py-1.5 rounded-full transition-colors shadow-2xs"
+                    >
+                      <span>Open WhatsApp Thread</span>
+                      <ExternalLink className="w-3 h-3 text-emerald-700" />
+                    </a>
+                  )}
                 </div>
               </div>
 

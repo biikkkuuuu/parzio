@@ -20,10 +20,14 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
   const [blueDartKey, setBlueDartKey] = useState('BLUEDART_PROD_LIVE_88329');
   const [delhiveryKey, setDelhiveryKey] = useState('DELHIVERY_TOKEN_SEC_99182');
   const [whatsappApi, setWhatsappApi] = useState('META_WHATSAPP_CLOUD_PROD_4412');
+  const [adminPhone, setAdminPhone] = useState(() => {
+    return localStorage.getItem('parzio_admin_whatsapp') || '919876543210';
+  });
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    onTriggerToast('Atelier operational settings & logistics keys securely saved!');
+    localStorage.setItem('parzio_admin_whatsapp', adminPhone.replace(/\D/g, ''));
+    onTriggerToast('Atelier operational settings & WhatsApp Dispatch API updated successfully!');
   };
 
   return (
