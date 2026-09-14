@@ -73,27 +73,17 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* Center: Search & Value Badges */}
-        <div className="flex-1 max-w-xl hidden md:flex flex-col gap-1.5">
+        {/* Center: Search Bar */}
+        <div className="flex-1 max-w-xl hidden md:flex items-center">
           <div className="relative w-full">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search anti-tarnish necklaces, earrings, rings..."
-              className="w-full bg-[#faf8f5] text-[#141414] pl-10 pr-4 py-2 rounded-full text-xs sm:text-sm border border-[#eae5dc] focus:border-[#8c7138] focus:outline-none focus:bg-white transition-all placeholder:text-[#747878]"
+              className="w-full bg-[#faf8f5] text-[#141414] pl-10 pr-4 py-2.5 rounded-full text-xs sm:text-sm border border-[#eae5dc] focus:border-[#8c7138] focus:outline-none focus:bg-white transition-all placeholder:text-[#747878]"
             />
             <Search className="w-4 h-4 text-[#747878] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          <div className="flex items-center justify-around text-[11px] text-[#747878] font-bold px-4">
-            <span className="flex items-center gap-1.5">
-              <Droplet className="w-3.5 h-3.5 text-[#8c7138]" /> 100% Waterproof
-            </span>
-            <span className="text-[#eae5dc]">•</span>
-            <span className="flex items-center gap-1.5">
-              <Truck className="w-3.5 h-3.5 text-[#8c7138]" /> Cash on Delivery Available
-            </span>
           </div>
         </div>
 
