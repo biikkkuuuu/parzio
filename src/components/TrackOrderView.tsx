@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { OrderItem } from '../types';
 import { Search, CheckCircle2, Truck, Package, Clock, ShieldCheck, MapPin } from 'lucide-react';
 
+import { apiService } from '../services/api';
+
 interface TrackOrderViewProps {
   orders: OrderItem[];
 }
@@ -9,10 +11,13 @@ interface TrackOrderViewProps {
 export const TrackOrderView: React.FC<TrackOrderViewProps> = ({ orders }) => {
   const [searchInput, setSearchInput] = useState(orders[0]?.id || 'PARZIO-98241');
   const [activeOrder, setActiveOrder] = useState<OrderItem | null>(orders[0] || null);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     const query = searchInput.trim().toUpperCase();
+    
+    // First check local orders
     const found = orders.find(
       (o) =>
         o.id.toUpperCase() === query ||
@@ -21,8 +26,40 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({ orders }) => {
     );
     if (found) {
       setActiveOrder(found);
-    } else {
+      return;
+    }
+
+    // If not found in memory, query backend database
+    setIsSearching(true);
+    try {
+      const dbOrder = await apiService.trackOrder(query);
+      if (dbOrder) {
+        setActiveOrder({
+          id: dbOrder.id,
+          customerName: dbOrder.customer_name,
+          phone: dbOrder.phone,
+          location: dbOrder.location,
+          pincode: dbOrder.pincode,
+          rtoRisk: dbOrder.rto_risk || 'Low',
+          amount: dbOrder.amount,
+          paymentMethod: dbOrder.payment_method,
+          status: dbOrder.status,
+          productName: dbOrder.product_name,
+          sku: dbOrder.sku,
+          quantity: dbOrder.quantity,
+          image: dbOrder.image,
+          tag: dbOrder.tag,
+          courier: dbOrder.courier,
+          phoneVerified: Boolean(dbOrder.phone_verified),
+          notes: dbOrder.notes
+        });
+      } else {
+        setActiveOrder(null);
+      }
+    } catch {
       setActiveOrder(null);
+    } finally {
+      setIsSearching(false);
     }
   };
 

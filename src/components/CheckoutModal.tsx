@@ -18,6 +18,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { HIGH_RISK_PINCODES } from '../data/adminData';
+import { apiService } from '../services/api';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -235,6 +236,21 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       phoneVerified: isPhoneVerified,
       notes: `Doorstep delivery at ${address}, ${city}, ${state} - ${pincode} • Delivery by ${deliveryDate}`
     };
+
+    // Sync order with High-Scale Production Backend
+    apiService.createOrder({
+      customerName: name,
+      phone: phone,
+      address: address,
+      city: city,
+      state: state,
+      pincode: pincode,
+      items: cartItems,
+      paymentMethod: paymentMethod,
+      totalAmount: totalAmount
+    }).catch((err) => {
+      console.warn('Backend order sync notification:', err.message);
+    });
 
     setPlacedOrderData(newOrder);
 

@@ -103,7 +103,7 @@ export const VAULT_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 428,
     colorways: 40,
-    sku: 'BR-99-COIN',
+    sku: 'BR-99-COIN-LINK',
     material: 'Stainless Steel, 18K Gold Plated',
     isWaterproof: true,
     isAntiTarnish: true,
