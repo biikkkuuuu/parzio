@@ -453,7 +453,15 @@ export default function App() {
               {/* Home Tab */}
               {activeTab === 'home' && (
                 <div>
-                  {/* Hero Banner with Right-to-Left Ticker & Dynamic Carousel */}
+                  {/* 1. Skin Safe Jewellery Banner matching exact Phone View screenshot */}
+                  <SkinSafeBanner
+                    onExploreNewArrivals={() => {
+                      setActiveCategory('NEW ARRIVALS');
+                      scrollToVault();
+                    }}
+                  />
+
+                  {/* 2. Hero Banner with Right-to-Left Ticker & Dynamic Carousel */}
                   <HeroBanner
                     heroProduct={HERO_PRODUCT}
                     onExploreVault={scrollToVault}
@@ -462,14 +470,6 @@ export default function App() {
                     onOpenProductModal={setSelectedProduct}
                     banners={banners}
                     bannerMarqueeItems={bannerMarqueeItems}
-                  />
-
-                  {/* Skin Safe Jewellery Banner matching Image 2 */}
-                  <SkinSafeBanner
-                    onExploreNewArrivals={() => {
-                      setActiveCategory('NEW ARRIVALS');
-                      scrollToVault();
-                    }}
                   />
 
                   {/* Category Filter Pills */}
