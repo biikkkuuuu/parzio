@@ -19,6 +19,7 @@ import { TrackOrderView } from './components/TrackOrderView';
 import { ExchangeView } from './components/ExchangeView';
 import { AccountView } from './components/AccountView';
 import { EmergencyStorefrontLockdown } from './components/EmergencyStorefrontLockdown';
+import { NotFoundPage } from './components/NotFoundPage';
 
 // Lazy-load heavy Atelier Operations Admin suite for faster storefront loading
 const AtelierOpsHub = React.lazy(() => import('./components/AtelierOpsHub').then(m => ({ default: m.AtelierOpsHub })));
@@ -344,6 +345,24 @@ export default function App() {
           onUpdateBanners={setBanners}
         />
       </React.Suspense>
+    );
+  }
+
+  // If 404 Page Not Found view is requested
+  if (activeScreen === '404') {
+    return (
+      <NotFoundPage
+        onBackToHome={() => setActiveScreen('storefront')}
+        onExploreVault={() => {
+          setActiveScreen('storefront');
+          setTimeout(() => scrollToVault(), 100);
+        }}
+        onSearch={(q) => {
+          setSearchQuery(q);
+          setActiveScreen('storefront');
+          setTimeout(() => scrollToVault(), 100);
+        }}
+      />
     );
   }
 

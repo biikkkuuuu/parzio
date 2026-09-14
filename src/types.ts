@@ -147,7 +147,7 @@ export interface QCStep {
   passed: boolean;
 }
 
-export type ActiveScreen = 'storefront' | 'atelier-ops';
+export type ActiveScreen = 'storefront' | 'atelier-ops' | '404';
 export type DeviceMode = 'desktop' | 'mobile';
 
 export interface EmergencyShutdownConfig {
