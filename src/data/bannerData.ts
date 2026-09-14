@@ -9,7 +9,7 @@ export const INITIAL_TOP_MARQUEE: MarqueeItem[] = [
   },
   {
     id: 'marq-2',
-    text: 'CASH ON DELIVERY (COD) AVAILABLE NATIONWIDE',
+    text: 'CASH ON DELIVERY AVAILABLE NATIONWIDE',
     icon: 'shield',
     active: true
   },

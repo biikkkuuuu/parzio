@@ -143,8 +143,7 @@ export default function App() {
     isActive: false,
     mode: 'full-lockdown',
     reason: 'Security & Gateway Audit',
-    customMessage: 'Our digital vault and order processing are temporarily paused for security maintenance. Placed orders remain safe.',
-    allowBrowsing: false
+    customMessage: 'Our digital vault and order processing are temporarily paused for security maintenance. Placed orders remain safe.'
   });
 
   // Legal & Compliance Policy Modal State (Razorpay & DPDPA)
@@ -426,61 +425,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Top Device Mode Bar (Only visible on Desktop/PC for preview switching; Completely removed on Mobile screens) */}
-      <header className="hidden md:flex bg-[#141414] text-white px-3 py-1.5 items-center justify-between border-b border-[#2e3131] z-40 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-[#fed488] tracking-wider uppercase text-[10px]">
-            PARZIO ATELIER
-          </span>
-          <span className="text-[#555] hidden xs:inline">•</span>
-          <span className="text-[#c4c7c7] text-[11px]">
-            {isPhone ? '📱 Mobile Preview' : '💻 Desktop Storefront'}
-          </span>
-          {emergencyConfig.isActive && (
-            <span className="px-2 py-0.2 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[9px] font-mono font-bold animate-pulse">
-              🚨 SHUTDOWN ACTIVE
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => setViewMode('phone')}
-            title="Switch to Mobile Phone Preview"
-            className={`flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
-              isPhone
-                ? 'bg-[#8c7138] text-white shadow-sm font-bold'
-                : 'text-[#c4c7c7] hover:text-white bg-[#222424]'
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>Mobile View</span>
-          </button>
-          <button
-            onClick={() => setViewMode('pc')}
-            title="Switch to PC Desktop Version"
-            className={`flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
-              !isPhone
-                ? 'bg-[#8c7138] text-white shadow-sm font-bold'
-                : 'text-[#c4c7c7] hover:text-white bg-[#222424]'
-            }`}
-          >
-            <Monitor className="w-3.5 h-3.5" />
-            <span>Desktop View</span>
-          </button>
-
-          <div className="h-4 w-px bg-[#2e3131] mx-1" />
-
-          <button
-            onClick={() => setActiveScreen('atelier-ops')}
-            title="Open Full Production Admin Ops Hub"
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#222424] text-[#fed488] hover:bg-[#8c7138] hover:text-white border border-[#2e3131] shadow-xs transition-all"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Admin Ops</span>
-          </button>
-        </div>
-      </header>
+      {/* Mobile and PC views render automatically based on responsive screen width */}
 
       {/* ========================================================================= */}
       {/* 1. PHONE VERSION: Responsive full-screen mobile app layout */}
