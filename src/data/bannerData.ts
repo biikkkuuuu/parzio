@@ -74,25 +74,6 @@ export const INITIAL_BANNER_MARQUEE: MarqueeItem[] = [
 
 export const INITIAL_BANNERS: StoreBanner[] = [
   {
-    id: 'ban-1',
-    title: 'Everything For',
-    highlightText: 'Just ₹99',
-    subtitle: 'Anti-Tarnish Daily Wear Jewellery',
-    description: 'Enjoy 18K gold-finished necklaces, beautiful rings, and shining pearls. Made to resist water, sweat, and perfumes so you can wear them every day without any fading.',
-    badge: 'SPECIAL SALE • FLAT ₹99',
-    subBadge: '100% WATERPROOF',
-    priceText: '₹99',
-    stat1Value: '₹99',
-    stat1Label: 'Fixed Price',
-    stat2Value: '18K',
-    stat2Label: 'Real Gold Plated',
-    stat3Value: '5 Lac+',
-    stat3Label: 'Happy Shoppers',
-    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
-    buttonText: 'Shop ₹99 Vault',
-    active: true
-  },
-  {
     id: 'ban-2',
     title: 'Festive Pearl &',
     highlightText: 'Emerald Drops',
@@ -109,6 +90,25 @@ export const INITIAL_BANNERS: StoreBanner[] = [
     stat3Label: 'Tarnish Risk',
     image: 'https://images.unsplash.com/photo-1611591475819-79b8b730ab8b?auto=format&fit=crop&w=800&q=80',
     buttonText: 'Explore Collection',
+    active: true
+  },
+  {
+    id: 'ban-1',
+    title: 'Everything For',
+    highlightText: 'Just ₹99',
+    subtitle: 'Anti-Tarnish Daily Wear Jewellery',
+    description: 'Enjoy 18K gold-finished necklaces, beautiful rings, and shining pearls. Made to resist water, sweat, and perfumes so you can wear them every day without any fading.',
+    badge: 'SPECIAL SALE • FLAT ₹99',
+    subBadge: '100% WATERPROOF',
+    priceText: '₹99',
+    stat1Value: '₹99',
+    stat1Label: 'Fixed Price',
+    stat2Value: '18K',
+    stat2Label: 'Real Gold Plated',
+    stat3Value: '5 Lac+',
+    stat3Label: 'Happy Shoppers',
+    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
+    buttonText: 'Shop ₹99 Vault',
     active: true
   }
 ];
