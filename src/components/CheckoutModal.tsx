@@ -38,8 +38,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [phone, setPhone] = useState('9876543210');
   const [address, setAddress] = useState('Flat 402, Lotus Towers, Andheri West');
   const [city, setCity] = useState('Mumbai');
+  const [state, setState] = useState('Maharashtra');
   const [pincode, setPincode] = useState('400053');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'Prepaid UPI'>('COD');
+
+  const INDIAN_STATES = [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
+    'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
+    'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
+    'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+    'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+  ];
 
   // Checkout Steps: 'details' | 'otp' | 'success'
   const [step, setStep] = useState<'details' | 'otp' | 'success'>('details');
@@ -83,16 +94,21 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
     if (cleaned.length === 6) {
       setDeliveryDate(getEstimatedDelivery(cleaned));
-      if (cleaned.startsWith('11')) setCity('Delhi');
-      else if (cleaned.startsWith('40')) setCity('Mumbai');
-      else if (cleaned.startsWith('56')) setCity('Bengaluru');
-      else if (cleaned.startsWith('70')) setCity('Kolkata');
-      else if (cleaned.startsWith('50')) setCity('Hyderabad');
-      else if (cleaned.startsWith('60')) setCity('Chennai');
-      else if (cleaned.startsWith('30')) setCity('Jaipur');
-      else if (cleaned.startsWith('38')) setCity('Ahmedabad');
-      else if (cleaned.startsWith('22')) setCity('Lucknow');
-      else if (cleaned.startsWith('41')) setCity('Pune');
+      if (cleaned.startsWith('11')) { setCity('Delhi'); setState('Delhi'); }
+      else if (cleaned.startsWith('40')) { setCity('Mumbai'); setState('Maharashtra'); }
+      else if (cleaned.startsWith('41')) { setCity('Pune'); setState('Maharashtra'); }
+      else if (cleaned.startsWith('56')) { setCity('Bengaluru'); setState('Karnataka'); }
+      else if (cleaned.startsWith('70')) { setCity('Kolkata'); setState('West Bengal'); }
+      else if (cleaned.startsWith('50')) { setCity('Hyderabad'); setState('Telangana'); }
+      else if (cleaned.startsWith('60')) { setCity('Chennai'); setState('Tamil Nadu'); }
+      else if (cleaned.startsWith('30')) { setCity('Jaipur'); setState('Rajasthan'); }
+      else if (cleaned.startsWith('38')) { setCity('Ahmedabad'); setState('Gujarat'); }
+      else if (cleaned.startsWith('22')) { setCity('Lucknow'); setState('Uttar Pradesh'); }
+      else if (cleaned.startsWith('14')) { setCity('Amritsar'); setState('Punjab'); }
+      else if (cleaned.startsWith('80')) { setCity('Patna'); setState('Bihar'); }
+      else if (cleaned.startsWith('78')) { setCity('Guwahati'); setState('Assam'); }
+      else if (cleaned.startsWith('68')) { setCity('Kochi'); setState('Kerala'); }
+      else if (cleaned.startsWith('46')) { setCity('Bhopal'); setState('Madhya Pradesh'); }
     }
   };
 
@@ -202,7 +218,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       id: generatedId,
       customerName: name,
       phone: `+91 ${phone}`,
-      location: `${city} (${pincode})`,
+      location: `${city}, ${state} (${pincode})`,
       pincode: pincode,
       rtoRisk: paymentMethod === 'Prepaid UPI' ? 'Low' : isHighRiskPincode ? 'Medium' : 'Low',
       amount: totalAmount,
@@ -215,7 +231,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       tag: paymentMethod === 'COD' ? 'OTP Verified' : 'Prepaid Fast-Track',
       courier: 'BlueDart Air Express',
       phoneVerified: isPhoneVerified,
-      notes: `Doorstep delivery at ${address}, Pin: ${pincode} • Delivery by ${deliveryDate}`
+      notes: `Doorstep delivery at ${address}, ${city}, ${state} - ${pincode} • Delivery by ${deliveryDate}`
     };
 
     setPlacedOrderData(newOrder);
@@ -352,17 +368,37 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 />
               </div>
 
-              {/* City & State */}
-              <div>
-                <label className="block text-xs font-bold text-[#141414] mb-1">City / Town</label>
-                <input
-                  type="text"
-                  required
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="City"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                />
+              {/* City & State (All Indian States & UTs Enabled) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#141414] mb-1">City / Town</label>
+                  <input
+                    type="text"
+                    required
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="City"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#141414] mb-1">
+                    State / UT <span className="text-emerald-700 text-[10px] font-bold">● All India Delivery</span>
+                  </label>
+                  <select
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                    required
+                    className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138] cursor-pointer"
+                  >
+                    {INDIAN_STATES.map((st) => (
+                      <option key={st} value={st}>
+                        {st}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Dynamic Pincode Delivery Estimator Badge */}
