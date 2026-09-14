@@ -1,0 +1,6 @@
+{
+  "name": "PARZIO Demi-Fine Jewellery",
+  "description": "18K Gold-Finished Anti-Tarnish Demi-Fine Jewellery & Atelier Operations Hub",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
