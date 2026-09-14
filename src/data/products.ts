@@ -22,6 +22,25 @@ export const HERO_PRODUCT: Product = {
 
 export const VAULT_PRODUCTS: Product[] = [
   {
+    id: 'prod-test-gateway-charm',
+    name: 'PARZIO 18K Micro Testing Charm',
+    category: 'Bracelets',
+    price: 1.5,
+    originalPrice: 199,
+    savePercent: 99,
+    rating: 5.0,
+    reviewsCount: 999,
+    colorways: 10,
+    sku: 'TEST-1.5-RAZORPAY',
+    material: '18K Gold Plated Demi-Fine Stainless Alloy',
+    isWaterproof: true,
+    isAntiTarnish: true,
+    badge: '₹1.5 TEST DROP',
+    quote: 'Official live test product to verify payment gateway checkout.',
+    image: 'https://images.unsplash.com/photo-1611591475883-9b932fcda12b?auto=format&fit=crop&w=600&q=80',
+    description: 'Special 18K gold micro charm for instant live payment gateway testing and verification.'
+  },
+  {
     id: 'prod-pearl-double-necklace',
     name: 'PARZIO Necklace With Pearls',
     category: 'Necklaces',

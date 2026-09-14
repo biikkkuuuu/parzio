@@ -11,7 +11,7 @@ interface CartDrawerProps {
   onCheckout: () => void;
 }
 
-const MINIMUM_CART_VALUE = 500;
+const MINIMUM_CART_VALUE = 0;
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
   isOpen,
@@ -70,35 +70,19 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           </div>
 
           {/* Minimum Cart Value Banner & Progress Bar */}
-          <div className="p-4 bg-[#f2ece1] border-b border-[#dfd7ca]">
-            <div className="flex items-start gap-2.5">
-              <div className="w-6 h-6 rounded-full bg-[#8c7138] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">
-                !
+          <div className="p-3.5 bg-[#f2ece1] border-b border-[#dfd7ca]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-bold text-[#141414]">Zero Minimum Buy (Test Active)</span>
               </div>
-              <div className="text-xs">
-                <p className="font-bold text-[#141414]">
-                  Minimum Cart Value: ₹{MINIMUM_CART_VALUE}
-                </p>
-                <p className="text-[#747878] mt-0.5">
-                  {isMinMet ? (
-                    <span className="text-emerald-700 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Free Express Courier Unlocked!
-                    </span>
-                  ) : (
-                    `Add ₹${remainingAmount} more (${Math.ceil(remainingAmount / 99)} more ₹99 items) to checkout`
-                  )}
-                </p>
-              </div>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-full border border-emerald-300">
+                1-Click Buy Enabled
+              </span>
             </div>
-
-            {/* Progress line */}
-            <div className="mt-3 w-full h-1.5 rounded-full bg-[#dfd7ca] overflow-hidden">
-              <div
-                className="h-full rounded-full bg-[#8c7138] transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
+            <p className="text-[11px] text-[#747878] mt-1">
+              Order any amount with Instant UPI or COD checkout.
+            </p>
           </div>
 
           {/* Cart Items List */}
