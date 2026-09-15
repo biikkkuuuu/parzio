@@ -17,6 +17,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+input, button, select, textarea {
+  font-family: inherit;
+}
+
+
 /* Luxury Display Serif Typography */
 .font-display,
 .font-serif {

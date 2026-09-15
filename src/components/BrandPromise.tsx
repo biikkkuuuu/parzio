@@ -75,7 +75,7 @@ export const BrandPromise: React.FC = () => {
           <p className="text-center text-[10px] sm:text-[11px] uppercase tracking-widest font-semibold text-neutral-400 mb-6">
             RECOGNIZED & FEATURED IN NATIONAL MEDIA
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 opacity-80 text-sm sm:text-base font-serif font-bold text-neutral-700">
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 opacity-80 text-sm sm:text-base font-display font-bold text-neutral-700">
             <span className="tracking-widest">INDIA TODAY</span>
             <span className="tracking-widest">FOX 8</span>
             <span className="tracking-wider">YAHOO! finance</span>

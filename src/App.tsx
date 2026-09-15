@@ -119,8 +119,24 @@ export default function App() {
   // Mobile Bottom Tab Navigation (Persistent on refresh)
   const [activeTab, setActiveTab] = useState<TabType>(initialRoute.tab || 'home');
 
-  // Products and Filtering
-  const [products, setProducts] = useState<Product[]>(VAULT_PRODUCTS);
+  // Products and Filtering (Persisted in localStorage with fallback to default catalog)
+  const [products, setProducts] = useState<Product[]>(() => {
+    try {
+      const saved = localStorage.getItem('parzio_products');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return VAULT_PRODUCTS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('parzio_products', JSON.stringify(products));
+    } catch {}
+  }, [products]);
+
   const [activeCategory, setActiveCategory] = useState('NEW ARRIVALS');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -220,8 +236,23 @@ export default function App() {
     }
   }, [wishlistIds]);
 
-  // Orders State (Seeded with real demo orders for Ops & Tracking)
-  const [orders, setOrders] = useState<OrderItem[]>(INITIAL_ORDERS);
+  // Orders State (Persisted in localStorage with fallback to initial seeded orders)
+  const [orders, setOrders] = useState<OrderItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('parzio_orders');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return INITIAL_ORDERS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('parzio_orders', JSON.stringify(orders));
+    } catch {}
+  }, [orders]);
 
   // Dynamic Banners and Moving Marquees (Editable via Admin Panel)
   const [banners, setBanners] = useState<StoreBanner[]>(() => {
