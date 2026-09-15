@@ -1,12 +1,13 @@
 import React from 'react';
-import { X, ChevronRight, Sparkles, ShieldCheck, Truck, RotateCcw, User, Phone, LayoutDashboard } from 'lucide-react';
+import { X, ChevronRight, Sparkles, ShieldCheck, Truck, RotateCcw, User, Phone, LayoutDashboard, Heart } from 'lucide-react';
 import { Logo } from './Logo';
+import { TabType } from './BottomNav';
 
 interface MobileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectCategory: (cat: string) => void;
-  onNavigateTab: (tab: 'home' | 'sale' | 'track' | 'exchange' | 'account') => void;
+  onNavigateTab: (tab: TabType) => void;
   onOpenAtelierOps: () => void;
 }
 
@@ -117,6 +118,16 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
               >
                 <RotateCcw className="w-4 h-4 text-[#8c7138]" />
                 <span>7-Day Easy Exchange</span>
+              </button>
+              <button
+                onClick={() => {
+                  onNavigateTab('wishlist');
+                  onClose();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[#faf8f5]"
+              >
+                <Heart className="w-4 h-4 text-[#8c7138]" />
+                <span>My Wishlist / Saved</span>
               </button>
               <button
                 onClick={() => {

@@ -24,7 +24,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { ProductModal } from './components/ProductModal';
 import { ProductDetailView } from './components/ProductDetailView';
 import { CheckoutModal } from './components/CheckoutModal';
-import { WishlistModal } from './components/WishlistModal';
+import { WishlistView } from './components/WishlistView';
 import { SearchModal } from './components/SearchModal';
 import { SalesSection } from './components/SalesSection';
 import { WhatsAppSupport } from './components/WhatsAppSupport';
@@ -61,7 +61,7 @@ export default function App() {
     let savedTab: TabType = 'home';
     try {
       const t = sessionStorage.getItem('parzio_last_tab');
-      if (t === 'home' || t === 'sale' || t === 'track' || t === 'exchange' || t === 'account') {
+      if (t === 'home' || t === 'sale' || t === 'track' || t === 'exchange' || t === 'account' || t === 'wishlist') {
         savedTab = t;
       }
     } catch {}
@@ -73,7 +73,7 @@ export default function App() {
       return { type: 'tab', id: null, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: 'checkout' };
     }
     if (hash === '#/wishlist' || hash === '#wishlist') {
-      return { type: 'tab', id: null, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: 'wishlist' };
+      return { type: 'tab', id: null, tab: 'wishlist' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
     }
     if (hash === '#/search' || hash === '#search') {
       return { type: 'tab', id: null, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: 'search' };
@@ -429,10 +429,7 @@ export default function App() {
   };
 
   const handleOpenWishlist = () => {
-    if (window.location.hash !== '#/wishlist' && window.location.hash !== '#wishlist') {
-      window.history.pushState({ modal: 'wishlist' }, '', '#/wishlist');
-    }
-    setIsWishlistOpen(true);
+    handleTabChange('wishlist');
   };
 
   const handleCloseWishlist = () => {
@@ -833,6 +830,41 @@ export default function App() {
               handleSelectProduct(p);
             }}
           />
+        ) : activeTab === 'wishlist' ? (
+          <main className="pb-16 md:pb-0">
+            <WishlistView
+              wishlistProducts={wishlistProducts}
+              onAddToCart={handleAddToCart}
+              onRemoveFromWishlist={handleToggleWishlist}
+              onClearWishlist={() => {
+                setWishlistIds([]);
+                showToast('Wishlist cleared.');
+              }}
+              onSelectProduct={handleSelectProduct}
+              onOpenCart={handleOpenCart}
+              onBackToStore={() => handleTabChange('home')}
+              onMoveAllToBag={() => {
+                wishlistProducts.forEach((p) => handleAddToCart(p));
+                showToast(`Moved ${wishlistProducts.length} pieces to your bag!`);
+                handleOpenCart();
+              }}
+            />
+            <Footer
+              onSelectCategory={(cat) => {
+                handleTabChange('home');
+                setActiveCategory(cat.toUpperCase());
+                scrollToVault();
+              }}
+              onOpenQualityModal={() => {
+                handleTabChange('home');
+                setTimeout(() => {
+                  const el = document.getElementById('quality-section');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              onOpenAtelierOps={handleOpenAtelierOps}
+            />
+          </main>
         ) : activeTab === 'sale' ? (
           <main className="pb-16 md:pb-0">
             <SalesSection
@@ -999,15 +1031,6 @@ export default function App() {
         cartItems={cartItems}
         totalAmount={cartTotal}
         onOrderPlaced={handleOrderPlaced}
-      />
-
-      <WishlistModal
-        isOpen={isWishlistOpen}
-        onClose={handleCloseWishlist}
-        wishlistProducts={wishlistProducts}
-        onAddToCart={handleAddToCart}
-        onRemoveFromWishlist={handleToggleWishlist}
-        onSelectProduct={handleSelectProduct}
       />
 
       {/* Storefront Enhancements: WhatsApp Concierge (Draggable) */}
