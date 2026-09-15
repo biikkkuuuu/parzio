@@ -1018,15 +1018,17 @@ export default function App() {
               handleTabChange('track');
             }}
           />
-          <BottomNav
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            cartCount={cartCount}
-            onOpenCart={handleOpenCart}
-            onOpenProducts={() => {
-              handleTabChange('sale');
-            }}
-          />
+          {!selectedProduct && (
+            <BottomNav
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              cartCount={cartCount}
+              onOpenCart={handleOpenCart}
+              onOpenProducts={() => {
+                handleTabChange('sale');
+              }}
+            />
+          )}
         </>
       )}
     </div>
