@@ -127,7 +127,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[#faf8f5]"
               >
                 <Heart className="w-4 h-4 text-[#8c7138]" />
-                <span>My Wishlist / Saved</span>
+                <span>Wishlist</span>
               </button>
               <button
                 onClick={() => {
