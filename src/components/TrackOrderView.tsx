@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { OrderItem } from '../types';
 import {
   ArrowLeft,
-  Search,
   CheckCircle2,
   Truck,
   Package,
@@ -12,8 +11,7 @@ import {
   Copy,
   Check,
   Phone,
-  ChevronRight,
-  X
+  ChevronRight
 } from 'lucide-react';
 
 interface TrackOrderViewProps {
@@ -28,20 +26,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(
     initialOrderId ? orders.find((o) => o.id === initialOrderId) || null : null
   );
-  const [searchQuery, setSearchQuery] = useState('');
   const [copiedAwb, setCopiedAwb] = useState(false);
-
-  // Filter orders based on search
-  const filteredOrders = orders.filter((order) => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) return true;
-    return (
-      order.id.toLowerCase().includes(query) ||
-      order.customerName.toLowerCase().includes(query) ||
-      order.productName.toLowerCase().includes(query) ||
-      (order.trackingNumber && order.trackingNumber.toLowerCase().includes(query))
-    );
-  });
 
   const handleCopyAwb = (awb: string) => {
     if (navigator.clipboard) {
@@ -377,42 +362,17 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
   /* ========================================================================= */
   return (
     <div className="min-h-[85vh] bg-[#fbf9f6] pb-28 px-4 pt-4 max-w-lg mx-auto animate-fadeIn">
-      {/* Clean E-Commerce Header */}
-      <div className="flex items-baseline justify-between mb-4 px-1">
-        <div>
-          <h2 className="font-display text-2xl font-bold text-[#141414] tracking-tight">
-            My Orders
-          </h2>
-          <p className="text-xs text-[#747878] mt-0.5">
-            {orders.length} {orders.length === 1 ? 'order' : 'orders'} placed
-          </p>
-        </div>
+      {/* Clean Header */}
+      <div className="mb-4 px-1">
+        <h2 className="font-display text-2xl font-bold text-[#141414] tracking-tight">
+          My Orders
+        </h2>
       </div>
 
-      {/* Clean Search Input */}
-      <div className="relative mb-4">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by Order ID or item..."
-          className="w-full bg-white pl-10 pr-10 py-3 rounded-2xl border border-[#eae5dc] text-xs font-medium text-[#141414] placeholder-[#9ca3af] focus:outline-none focus:border-[#8c7138] shadow-2xs"
-        />
-        <Search className="w-4 h-4 text-[#747878] absolute left-3.5 top-1/2 -translate-y-1/2" />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#747878] hover:text-[#141414]"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
-
-      {/* Clean Orders List Cards */}
-      {filteredOrders.length > 0 ? (
+      {/* Orders List Cards */}
+      {orders.length > 0 ? (
         <div className="space-y-3.5">
-          {filteredOrders.map((order) => (
+          {orders.map((order) => (
             <div
               key={order.id}
               onClick={() => {
@@ -479,20 +439,10 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
           <div className="w-12 h-12 rounded-full bg-[#faf6ef] text-[#8c7138] flex items-center justify-center mx-auto mb-3">
             <Package className="w-6 h-6" />
           </div>
-          <h4 className="font-display text-base font-bold text-[#141414]">No Orders Found</h4>
+          <h4 className="font-display text-base font-bold text-[#141414]">No Orders Yet</h4>
           <p className="text-xs text-[#747878] mt-1 max-w-xs mx-auto">
-            {searchQuery
-              ? `No orders matching "${searchQuery}".`
-              : 'You have not placed any orders yet.'}
+            Your placed orders will appear here.
           </p>
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="mt-3 px-4 py-1.5 rounded-full bg-[#141414] text-white text-xs font-bold hover:bg-[#8c7138] transition-colors cursor-pointer"
-            >
-              Clear Search
-            </button>
-          )}
         </div>
       )}
     </div>
