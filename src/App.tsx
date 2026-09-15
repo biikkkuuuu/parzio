@@ -140,8 +140,39 @@ export default function App() {
     dbService.saveCategories(categories);
   }, [categories]);
 
+  // Background Cloud Sync & Realtime Listeners when Supabase is configured
+  useEffect(() => {
+    let isMounted = true;
+    const syncFromCloud = async () => {
+      if (dbService.isConfigured) {
+        const [cloudProducts, cloudCategories, cloudOrders] = await Promise.all([
+          dbService.fetchProductsFromCloud(),
+          dbService.fetchCategoriesFromCloud(),
+          dbService.fetchOrdersFromCloud(),
+        ]);
+        if (isMounted) {
+          if (cloudProducts && cloudProducts.length > 0) setProducts(cloudProducts);
+          if (cloudCategories && cloudCategories.length > 0) setCategories(cloudCategories);
+          if (cloudOrders && cloudOrders.length > 0) setOrders(cloudOrders);
+        }
+      }
+    };
+    syncFromCloud();
+
+    const unsubscribeOrders = dbService.subscribeToNewOrders((newOrder) => {
+      setOrders((prev) => [newOrder, ...prev.filter((o) => o.id !== newOrder.id)]);
+      showToast(`⚡ New Order Received: #${newOrder.id}`);
+    });
+
+    return () => {
+      isMounted = false;
+      if (unsubscribeOrders) unsubscribeOrders();
+    };
+  }, []);
+
   const handleAddCategory = (newCat: CategoryItem) => {
     setCategories((prev) => [...prev, newCat]);
+    dbService.upsertCategory(newCat);
     showToast(`Category "${newCat.name}" created!`);
   };
 
@@ -149,6 +180,7 @@ export default function App() {
     setCategories((prev) =>
       prev.map((c) => (c.name.toLowerCase() === oldName.toLowerCase() ? updatedCategory : c))
     );
+    dbService.upsertCategory(updatedCategory);
     if (oldName.toLowerCase() !== updatedCategory.name.toLowerCase()) {
       setProducts((prev) =>
         prev.map((p) =>
@@ -163,6 +195,7 @@ export default function App() {
 
   const handleDeleteCategory = (catName: string) => {
     setCategories((prev) => prev.filter((c) => c.name.toLowerCase() !== catName.toLowerCase()));
+    dbService.deleteCategory(catName);
     showToast(`Category "${catName}" removed.`);
   };
 
@@ -378,6 +411,7 @@ export default function App() {
   // Product Handlers for Production Admin (Full CRUD)
   const handleAddProduct = (newProduct: Product) => {
     setProducts((prev) => [newProduct, ...prev]);
+    dbService.upsertProduct(newProduct);
     showToast(`Published "${newProduct.name}" to live storefront catalog!`);
   };
 
@@ -385,6 +419,7 @@ export default function App() {
     setProducts((prev) =>
       prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
     );
+    dbService.upsertProduct(updatedProduct);
     showToast(`Updated "${updatedProduct.name}" details successfully!`);
   };
 
@@ -392,6 +427,7 @@ export default function App() {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
     setCartItems((prev) => prev.filter((item) => item.product.id !== productId));
     setWishlistIds((prev) => prev.filter((id) => id !== productId));
+    dbService.deleteProduct(productId);
     showToast('Product removed from live storefront catalog.');
   };
 
@@ -696,15 +732,17 @@ export default function App() {
     return [HERO_PRODUCT, ...VAULT_PRODUCTS].filter((p) => wishlistIds.includes(p.id));
   }, [wishlistIds]);
 
-  // Order Handlers (Full CRUD for Admin Operations)
+  // Order Handlers (Full CRUD for Admin Operations & Cloud Sync)
   const handleOrderPlaced = (newOrder: OrderItem) => {
     setOrders((prev) => [newOrder, ...prev]);
     setCartItems([]);
+    dbService.createOrder(newOrder);
     showToast(`Order #${newOrder.id} placed! Dispatched to Mumbai Atelier Ops.`);
   };
 
   const handleAddOrder = (newOrder: OrderItem) => {
     setOrders((prev) => [newOrder, ...prev]);
+    dbService.createOrder(newOrder);
     showToast(`Manual order #${newOrder.id} created successfully!`);
   };
 
@@ -712,15 +750,18 @@ export default function App() {
     setOrders((prev) =>
       prev.map((ord) => (ord.id === updatedOrder.id ? updatedOrder : ord))
     );
+    dbService.updateOrderStatus(updatedOrder.id, updatedOrder.status, updatedOrder.trackingNumber);
     showToast(`Order #${updatedOrder.id} updated successfully!`);
   };
 
   const handleDeleteOrder = (orderId: string) => {
     setOrders((prev) => prev.filter((ord) => ord.id !== orderId));
+    dbService.deleteOrder(orderId);
     showToast(`Order #${orderId} deleted from fulfillment queue.`);
   };
 
   const handleUpdateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
+    let trackingToUpdate: string | undefined;
     setOrders((prev) =>
       prev.map((ord) => {
         if (ord.id === orderId) {
@@ -729,11 +770,13 @@ export default function App() {
             const numPart = ord.id.replace(/[^0-9]/g, '') || Math.floor(100000 + Math.random() * 900000);
             tracking = `BD-${numPart}729`;
           }
+          trackingToUpdate = tracking;
           return { ...ord, status: newStatus, trackingNumber: tracking };
         }
         return ord;
       })
     );
+    dbService.updateOrderStatus(orderId, newStatus, trackingToUpdate);
   };
 
   const scrollToVault = () => {
