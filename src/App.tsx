@@ -675,6 +675,15 @@ export default function App() {
       const collection = prods.filter((p) => p.badge?.toUpperCase().includes('NEW COLLECTION') || p.badge?.toUpperCase().includes('VAULT'));
       return collection.length > 0 ? collection : prods;
     }
+    if (activeCategory === 'MINIMALIST') {
+      const mini = prods.filter((p) =>
+        p.name.toLowerCase().includes('minimal') ||
+        p.description.toLowerCase().includes('minimal') ||
+        p.category.toLowerCase().includes('minimal') ||
+        p.sku.toLowerCase().includes('mini')
+      );
+      return mini.length > 0 ? mini : prods;
+    }
     return prods.filter(
       (prod) => prod.category.toUpperCase() === activeCategory.toUpperCase()
     );
@@ -782,8 +791,23 @@ export default function App() {
   const scrollToVault = () => {
     const el = document.getElementById('vault-section');
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  };
+
+  const handleSelectCategory = (cat: string) => {
+    setActiveCategory(cat.toUpperCase());
+    setSelectedProduct(null);
+    if (activeTab !== 'home') {
+      setActiveTab('home');
+      try {
+        sessionStorage.setItem('parzio_last_tab', 'home');
+      } catch {}
+      window.history.pushState({ type: 'tab', tab: 'home' }, '', '#/');
+    }
+    setTimeout(() => {
+      scrollToVault();
+    }, 80);
   };
 
   // If Atelier Operations Hub view is active
@@ -902,7 +926,7 @@ export default function App() {
           onOpenCart={handleOpenCart}
           onOpenWishlist={handleOpenWishlist}
           activeCategory={activeCategory}
-          onSelectCategory={setActiveCategory}
+          onSelectCategory={handleSelectCategory}
           activeScreen={activeScreen}
           onToggleScreen={handleOpenAtelierOps}
           deviceMode="desktop"
@@ -1037,10 +1061,7 @@ export default function App() {
             {/* New Collections Round Categories */}
             <Categories
               categories={categories}
-              onSelectCategory={(cat) => {
-                setActiveCategory(cat.toUpperCase());
-                scrollToVault();
-              }}
+              onSelectCategory={handleSelectCategory}
               selectedCategory={activeCategory}
             />
 
@@ -1049,7 +1070,7 @@ export default function App() {
               products={filteredProducts}
               categories={categories}
               activeFilter={activeCategory}
-              onSelectFilter={setActiveCategory}
+              onSelectFilter={handleSelectCategory}
               onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}
               wishlistIds={wishlistIds}
