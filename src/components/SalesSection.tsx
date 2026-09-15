@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Product, SaleBannerConfig, SalePoster } from '../types';
-import { ArrowUp, Sparkles, Tag, ShieldCheck, Zap, ArrowRight } from 'lucide-react';
+import { ArrowUp, Sparkles, Tag, ShieldCheck, Zap, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SalesSectionProps {
   products: Product[];
@@ -18,6 +18,7 @@ const DEFAULT_SALE_CONFIG: SaleBannerConfig = {
 };
 
 const SALE_CATEGORIES = ['ALL SALE', 'NECKLACES', 'BRACELETS', 'EARRINGS', 'RINGS', 'ANKLETS'];
+const PRODUCTS_PER_PAGE = 12;
 
 export const SalesSection: React.FC<SalesSectionProps> = ({
   products,
@@ -28,6 +29,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
 }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('ALL SALE');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const bConfig = bannerConfig || DEFAULT_SALE_CONFIG;
 
@@ -40,12 +42,32 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Reset to page 1 whenever category filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
+
   const filteredSaleProducts = useMemo(() => {
     if (selectedCategory === 'ALL SALE') return products;
     return products.filter(
       (p) => p.category.toUpperCase() === selectedCategory.toUpperCase()
     );
   }, [products, selectedCategory]);
+
+  const totalPages = Math.ceil(filteredSaleProducts.length / PRODUCTS_PER_PAGE) || 1;
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const paginatedSaleProducts = filteredSaleProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    const gridEl = document.getElementById('sales-product-grid');
+    if (gridEl) {
+      gridEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 200, behavior: 'smooth' });
+    }
+  };
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -77,7 +99,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
             <span>•</span>
             <span className="flex items-center gap-1">
               <Tag className="w-3.5 h-3.5" />
-              Up to 92% Off
+              Up to 93% Off
             </span>
           </div>
         </div>
@@ -154,10 +176,10 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
         </div>
       )}
 
-      {/* 2-Column Product Grid */}
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 p-2 sm:p-4">
-          {filteredSaleProducts.map((product) => (
+      {/* 2-Column to 4-Column Product Grid */}
+      <div id="sales-product-grid" className="max-w-6xl mx-auto pt-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 p-2 sm:p-4">
+          {paginatedSaleProducts.map((product) => (
             <div
               key={product.id}
               className="bg-white flex flex-col justify-between overflow-hidden shadow-xs rounded-xl border border-[#eae5dc] select-none transition-all hover:shadow-md"
@@ -191,7 +213,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
                   </h4>
 
                   <p className="text-[10px] text-neutral-500 mt-0.5 truncate">
-                    316L Stainless Steel
+                    {product.category} • 316L Stainless Steel
                   </p>
 
                   {/* Uniform Price Row: Price, Strikethrough, and SAVE % Badge aligned on one row */}
@@ -214,7 +236,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => onAddToCart(product)}
-                  className="w-full mt-3 py-2 px-3 rounded-xl bg-[#141414] hover:bg-neutral-800 active:bg-black active:scale-[0.98] transition-all text-xs font-semibold text-white text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
+                  className="w-full mt-3 py-2 px-3 rounded-xl bg-[#141414] hover:bg-[#8c7138] active:scale-[0.98] transition-all text-xs font-semibold text-white text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
                 >
                   <Sparkles className="w-3 h-3 text-[#fed488]" />
                   Add to cart
@@ -223,6 +245,68 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
             </div>
           ))}
         </div>
+
+        {/* Sales Pagination Bar: Page 1, 2, 3... */}
+        {totalPages > 1 && (
+          <div className="mt-8 mb-4 px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <span className="text-xs text-[#747878] font-medium order-2 sm:order-1">
+              Showing <span className="font-bold text-[#141414]">{startIndex + 1}</span>–
+              <span className="font-bold text-[#141414]">{Math.min(startIndex + PRODUCTS_PER_PAGE, filteredSaleProducts.length)}</span> of{' '}
+              <span className="font-bold text-[#141414]">{filteredSaleProducts.length}</span> sale pieces
+            </span>
+
+            <div className="flex items-center gap-1.5 order-1 sm:order-2">
+              {/* Previous Page Button */}
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-xl flex items-center justify-center border text-xs font-semibold transition-all ${
+                  currentPage === 1
+                    ? 'border-[#eae5dc] text-[#c4c4c4] cursor-not-allowed bg-[#faf8f5]'
+                    : 'border-[#eae5dc] bg-white text-[#141414] hover:bg-[#8c7138] hover:text-white hover:border-[#8c7138] shadow-xs active:scale-95 cursor-pointer'
+                }`}
+                title="Previous Page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              {/* Numbered Page Buttons */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                const isActive = pageNum === currentPage;
+                return (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`min-w-9 h-9 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                      isActive
+                        ? 'bg-[#141414] border-[#141414] text-[#fed488] shadow-xs scale-105'
+                        : 'bg-white border-[#eae5dc] text-[#141414] hover:bg-[#f2ece1] hover:border-[#8c7138]'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              {/* Next Page Button */}
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-xl flex items-center justify-center border text-xs font-semibold transition-all ${
+                  currentPage === totalPages
+                    ? 'border-[#eae5dc] text-[#c4c4c4] cursor-not-allowed bg-[#faf8f5]'
+                    : 'border-[#eae5dc] bg-white text-[#141414] hover:bg-[#8c7138] hover:text-white hover:border-[#8c7138] shadow-xs active:scale-95 cursor-pointer'
+                }`}
+                title="Next Page"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Floating Scroll-To-Top Button */}

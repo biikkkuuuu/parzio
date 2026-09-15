@@ -1,5 +1,5 @@
-import React from 'react';
-import { Sparkles, Heart } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '../types';
 
 interface ProductVaultProps {
@@ -12,7 +12,8 @@ interface ProductVaultProps {
   onOpenProductModal: (product: Product) => void;
 }
 
-const FILTER_TABS = ['ALL (184)', 'NECKLACES', 'RINGS', 'BRACELETS', 'EARRINGS', 'ANKLETS'];
+const FILTER_TABS = ['ALL', 'NECKLACES', 'RINGS', 'BRACELETS', 'EARRINGS', 'ANKLETS'];
+const PRODUCTS_PER_PAGE = 12;
 
 export const ProductVault: React.FC<ProductVaultProps> = ({
   products,
@@ -23,6 +24,26 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
   wishlistIds,
   onOpenProductModal
 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to page 1 whenever filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeFilter]);
+
+  const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE) || 1;
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const paginatedProducts = products.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    const vaultElement = document.getElementById('vault-section');
+    if (vaultElement) {
+      vaultElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <section id="vault-section" className="py-8 sm:py-12 bg-[#fbf9f6] border-b border-[#eae5dc]">
       <div className="w-full max-w-[1800px] mx-auto px-3 sm:px-8 lg:px-12">
@@ -38,13 +59,13 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
               The ₹99 Anti-Tarnish Collection
             </h2>
             <p className="text-xs sm:text-sm text-[#747878] mt-1 max-w-xl">
-              Real 18K gold plated on pure stainless steel. 100% waterproof for everyday wear.
+              Real 18K gold plated on pure surgical stainless steel. 100% waterproof for everyday wear.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-[#f2ece1] text-[#8c7138] text-xs font-bold uppercase tracking-wider border border-[#dfd7ca]">
-              180+ Designs Available
+              {products.length} Designs Available
             </span>
           </div>
         </div>
@@ -52,17 +73,16 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
         {/* Filter Pills Tab Strip */}
         <div className="flex items-center sm:justify-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-6 px-1">
           {FILTER_TABS.map((tab) => {
-            const rawCat = tab.replace(/ \(\d+\)/, '');
             const isActive =
-              activeFilter.toUpperCase() === rawCat ||
-              (activeFilter === 'ALL' && rawCat === 'ALL') ||
-              (activeFilter === 'NEW ARRIVALS' && rawCat === 'ALL');
+              activeFilter.toUpperCase() === tab ||
+              (activeFilter === 'ALL' && tab === 'ALL') ||
+              (activeFilter === 'NEW ARRIVALS' && tab === 'ALL');
 
             return (
               <button
                 key={tab}
-                onClick={() => onSelectFilter(rawCat)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all uppercase tracking-wider ${
+                onClick={() => onSelectFilter(tab)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all uppercase tracking-wider cursor-pointer ${
                   isActive
                     ? 'bg-[#8c7138] text-white shadow-xs'
                     : 'bg-white text-[#747878] border border-[#eae5dc] hover:border-[#8c7138] hover:text-[#141414]'
@@ -76,7 +96,7 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
 
         {/* Clean E-Commerce Grid (2-col mobile, 3-col tablet, 4-col laptop, 5/6-col desktop) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-          {products.map((product) => {
+          {paginatedProducts.map((product) => {
             const isWishlisted = wishlistIds.includes(product.id);
             return (
               <div
@@ -94,6 +114,12 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
+                  {/* Badge */}
+                  {product.badge && (
+                    <span className="absolute top-2 left-2 bg-[#141414]/90 backdrop-blur-xs text-[#fed488] text-[9px] font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                      {product.badge}
+                    </span>
+                  )}
                   {/* Wishlist toggle button */}
                   <button
                     type="button"
@@ -112,8 +138,8 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                 <div className="p-3 sm:p-3.5 flex flex-col justify-between flex-1">
                   <div>
                     {/* Category / Subtitle */}
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7138] block mb-0.5">
-                      316L Stainless Steel
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7138] block mb-0.5 truncate">
+                      {product.category} • 316L Steel
                     </span>
 
                     {/* Title with single line truncation */}
@@ -125,7 +151,7 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                       {product.name}
                     </h4>
 
-                    {/* Uniform Price Row: Price, Strikethrough, and SAVE % Badge aligned on one row */}
+                    {/* Uniform Price Row: Price, Strikethrough, and SAVE % Badge */}
                     <div className="flex items-center justify-between gap-1.5 mt-2 pt-1.5 border-t border-[#f4efea]">
                       <div className="flex items-baseline gap-1.5 min-w-0">
                         <span className="font-bold text-sm sm:text-base text-[#141414]">
@@ -145,7 +171,7 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                   <button
                     type="button"
                     onClick={() => onAddToCart(product)}
-                    className="w-full mt-3 py-2 px-3 rounded-full bg-[#141414] hover:bg-[#8c7138] active:scale-[0.98] transition-all text-xs sm:text-sm font-bold text-white text-center shadow-xs"
+                    className="w-full mt-3 py-2 px-3 rounded-full bg-[#141414] hover:bg-[#8c7138] active:scale-[0.98] transition-all text-xs sm:text-sm font-bold text-white text-center shadow-xs cursor-pointer"
                   >
                     Add to cart
                   </button>
@@ -155,16 +181,67 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
           })}
         </div>
 
-        {/* View All Button */}
-        <div className="text-center mt-10">
-          <button
-            onClick={() => onSelectFilter('ALL')}
-            className="px-8 py-3 rounded-full bg-white border border-[#141414] text-[#141414] hover:bg-[#141414] hover:text-white transition-all text-xs sm:text-sm font-bold tracking-wider uppercase shadow-xs active:scale-95 inline-flex items-center gap-2"
-          >
-            <span>View All 180+ Pieces For ₹99</span>
-            <Sparkles className="w-4 h-4 text-[#8c7138]" />
-          </button>
-        </div>
+        {/* Luxury Pagination Bar: Page 1, 2, 3... */}
+        {totalPages > 1 && (
+          <div className="mt-10 pt-6 border-t border-[#eae5dc] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <span className="text-xs text-[#747878] font-medium order-2 sm:order-1">
+              Showing <span className="font-bold text-[#141414]">{startIndex + 1}</span>–
+              <span className="font-bold text-[#141414]">{Math.min(startIndex + PRODUCTS_PER_PAGE, products.length)}</span> of{' '}
+              <span className="font-bold text-[#141414]">{products.length}</span> designs
+            </span>
+
+            <div className="flex items-center gap-1.5 order-1 sm:order-2">
+              {/* Previous Page Button */}
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-xl flex items-center justify-center border text-xs font-semibold transition-all ${
+                  currentPage === 1
+                    ? 'border-[#eae5dc] text-[#c4c4c4] cursor-not-allowed bg-[#faf8f5]'
+                    : 'border-[#eae5dc] bg-white text-[#141414] hover:bg-[#8c7138] hover:text-white hover:border-[#8c7138] shadow-xs active:scale-95 cursor-pointer'
+                }`}
+                title="Previous Page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              {/* Numbered Page Buttons: 1, 2, 3... */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                const isActive = pageNum === currentPage;
+                return (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`min-w-9 h-9 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                      isActive
+                        ? 'bg-[#8c7138] border-[#8c7138] text-white shadow-xs scale-105'
+                        : 'bg-white border-[#eae5dc] text-[#141414] hover:bg-[#f2ece1] hover:border-[#8c7138]'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              {/* Next Page Button */}
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-xl flex items-center justify-center border text-xs font-semibold transition-all ${
+                  currentPage === totalPages
+                    ? 'border-[#eae5dc] text-[#c4c4c4] cursor-not-allowed bg-[#faf8f5]'
+                    : 'border-[#eae5dc] bg-white text-[#141414] hover:bg-[#8c7138] hover:text-white hover:border-[#8c7138] shadow-xs active:scale-95 cursor-pointer'
+                }`}
+                title="Next Page"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
     </section>
