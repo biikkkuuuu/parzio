@@ -4,7 +4,7 @@ import { Sparkles, Shield, Award, HeartHandshake } from 'lucide-react';
 export const BrandPromise: React.FC = () => {
   return (
     <section className="py-14 sm:py-18 bg-white border-b border-neutral-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12">
         
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center mb-16">
@@ -32,16 +32,16 @@ export const BrandPromise: React.FC = () => {
               The PARZIO Promise
             </span>
             <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl text-neutral-900 font-semibold tracking-tight">
-              Real Gold Look, Fair Price
+              316L Stainless Steel Jewellery, Fair Price
             </h2>
             <div className="text-xs sm:text-sm text-neutral-600 leading-relaxed space-y-3">
               <p>
-                PARZIO is made with care and love. We believe that beautiful jewellery should not be kept only
+                PARZIO is made with care and love. We believe that durable, elegant jewellery should not be kept only
                 for rare special days, but enjoyed every single day with confidence.
               </p>
               <p>
-                Our team makes every piece directly in-house without any middlemen.
-                This means you get real waterproof jewellery plated in 18K gold directly to your doorstep for just ₹99.
+                Our team crafts every piece directly in 316L Surgical Stainless Steel without any middlemen.
+                This means you get 100% anti-tarnish, sweatproof stainless steel jewellery delivered directly to your doorstep for just ₹99.
               </p>
             </div>
 

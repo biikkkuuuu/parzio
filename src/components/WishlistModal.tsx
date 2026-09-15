@@ -8,6 +8,7 @@ interface WishlistModalProps {
   wishlistProducts: Product[];
   onAddToCart: (product: Product) => void;
   onRemoveFromWishlist: (productId: string) => void;
+  onSelectProduct?: (product: Product) => void;
 }
 
 export const WishlistModal: React.FC<WishlistModalProps> = ({
@@ -15,7 +16,8 @@ export const WishlistModal: React.FC<WishlistModalProps> = ({
   onClose,
   wishlistProducts,
   onAddToCart,
-  onRemoveFromWishlist
+  onRemoveFromWishlist,
+  onSelectProduct
 }) => {
   if (!isOpen) return null;
 
@@ -55,10 +57,24 @@ export const WishlistModal: React.FC<WishlistModalProps> = ({
                 <img
                   src={prod.image}
                   alt={prod.name}
-                  className="w-14 h-14 object-contain rounded-xl bg-white p-1 border border-[#eae5dc]"
+                  onClick={() => {
+                    if (onSelectProduct) {
+                      onSelectProduct(prod);
+                      onClose();
+                    }
+                  }}
+                  className="w-14 h-14 object-contain rounded-xl bg-white p-1 border border-[#eae5dc] cursor-pointer hover:border-[#8c7138] transition-colors"
                 />
-                <div className="flex-1">
-                  <h4 className="font-display text-xs sm:text-sm font-bold text-[#141414] line-clamp-1">
+                <div
+                  className="flex-1 cursor-pointer"
+                  onClick={() => {
+                    if (onSelectProduct) {
+                      onSelectProduct(prod);
+                      onClose();
+                    }
+                  }}
+                >
+                  <h4 className="font-display text-xs sm:text-sm font-bold text-[#141414] line-clamp-1 hover:text-[#8c7138] transition-colors">
                     {prod.name}
                   </h4>
                   <div className="flex items-baseline gap-1.5 mt-0.5">

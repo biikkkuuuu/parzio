@@ -113,18 +113,14 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
       <div className="relative w-full max-w-sm sm:max-w-md bg-[#fbf9f6] text-[#141414] h-full flex flex-col shadow-2xl border-r border-[#eae5dc] z-10 animate-slideRight">
         
         {/* Drawer Header - Deep Onyx with Artisan Gold Accents */}
-        <div className="p-5 border-b border-[#2e3131] flex items-center justify-between bg-[#141414]">
-          <div className="flex items-center gap-3">
+        <div className="p-4 sm:p-5 border-b border-[#2e3131] flex items-center justify-between bg-[#141414]">
+          <div className="flex items-center gap-2.5">
             <Logo className="h-6 w-auto" isLight />
-            <div>
-              <h2 className="font-display font-bold text-sm tracking-wider uppercase text-[#f5f3f0]">
-                PARZIO ADMIN
-              </h2>
-              <div className="flex items-center gap-1.5 text-[11px] text-[#fed488]">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="font-medium">Store Dashboard</span>
-              </div>
-            </div>
+            <div className="h-4 w-px bg-white/20" />
+            <span className="px-3 py-1 rounded-full bg-[#8c7138]/20 border border-[#8c7138]/50 text-[#fed488] font-mono text-[10px] uppercase font-bold tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Store Dashboard
+            </span>
           </div>
 
           <button
@@ -147,7 +143,7 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
               <p className="text-[10px] text-[#747878] mt-0.5 font-medium">Full Access</p>
             </div>
           </div>
-          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-mono font-bold">
+          <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-mono font-bold">
             ONLINE
           </span>
         </div>
@@ -162,7 +158,7 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
                 <TrendingUp className="w-3.5 h-3.5 text-[#8c7138]" />
                 Main Dashboard
               </span>
-              <span className="text-[10px] font-semibold text-[#747878] bg-[#faf8f5] px-2 py-0.5 rounded-full border border-[#eae5dc]">
+              <span className="text-[10px] font-semibold text-[#747878] bg-[#faf8f5] px-2.5 py-0.5 rounded-full border border-[#eae5dc]">
                 Primary Hub
               </span>
             </div>
@@ -196,7 +192,7 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
                           Sales Overview
                         </span>
                         {activeTab === 'overview' && (
-                          <span className="px-2 py-0.5 rounded-full bg-[#8c7138]/40 text-[#fed488] text-[9px] font-bold uppercase tracking-wider">
+                          <span className="px-2.5 py-0.5 rounded-full bg-[#8c7138]/40 text-[#fed488] text-[9px] font-bold uppercase tracking-wider">
                             Active
                           </span>
                         )}
@@ -237,7 +233,7 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
                         <span className={`text-sm font-bold ${activeTab === 'orders' ? 'text-[#fed488]' : 'text-[#141414]'}`}>
                           Customer Orders
                         </span>
-                        <span className="px-2 py-0.5 rounded-full bg-[#fed488] text-[#141414] text-[10px] font-mono font-bold">
+                        <span className="px-2.5 py-0.5 rounded-full bg-[#fed488] text-[#141414] text-[10px] font-mono font-bold">
                           {orderCount} Orders
                         </span>
                       </div>
@@ -303,7 +299,7 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
                     <div className="flex items-center gap-2">
                       {item.badge && (
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                             isActive
                               ? 'bg-[#8c7138] text-white'
                               : item.badgeColor || 'bg-[#faf8f5] text-[#141414] border border-[#eae5dc]'

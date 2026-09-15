@@ -52,8 +52,8 @@ export const LivePurchaseToast: React.FC = () => {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-16 md:bottom-6 left-3 sm:left-6 z-30 max-w-[calc(100vw-24px)] sm:max-w-sm animate-slideRight">
-      <div className="bg-white/95 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl shadow-xl border border-[#eae5dc] flex items-center gap-3 relative">
+    <div className="fixed bottom-20 md:bottom-6 left-4 sm:left-6 z-40 max-w-xs sm:max-w-sm animate-slideRight">
+      <div className="bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-[#eae5dc] flex items-center gap-3 relative">
         <button
           onClick={() => setVisible(false)}
           className="absolute top-2 right-2 text-[#747878] hover:text-[#141414] p-0.5 rounded-full"

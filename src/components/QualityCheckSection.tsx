@@ -13,7 +13,7 @@ const STEP_ICONS = [
 export const QualityCheckSection: React.FC = () => {
   return (
     <section className="py-14 sm:py-20 bg-gradient-to-b from-[#fbf9f6] to-[#f4efea] border-b border-[#eae5dc]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12">
         
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">

@@ -11,35 +11,16 @@ export const HERO_PRODUCT: Product = {
   reviewsCount: 1420,
   colorways: 40,
   sku: 'BR-99-COIN',
-  material: 'Stainless Steel + 18K Real Gold Plated',
+  material: '316L Surgical Stainless Steel',
   isWaterproof: true,
   isAntiTarnish: true,
   badge: 'HERO DROP',
   quote: 'Wore it all summer in the pool and beach — zero blackening! Truly unbelievable quality for ₹99.',
   image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJ6KsGvMmDre3vW1DrMsKt5qGEuc3sAKPferGJypreLxK_7Y67atNQ4xomNX3mXsafI8KxVgwwIxAuSGRAMdU1nptUgdRG2egH30oAiQJPAMja-A9D7cmeTOcTjB4K4xMDXO1Jh0lOUQbTjY6ag3AcMy_FFMlynYLgIWldQSQ-kXA73U-4qhTyvLZlIuztQX18XRXyVMQVw4OkFAABmM7kQLZaJmDFCQgfCVkrUX-3u1FG5lCyJEWr',
-  description: 'Handmade with smooth links, coin charms, and shiny beads. Plated with real 18K gold for long-lasting daily shine.'
+  description: 'Handmade 316L surgical stainless steel with smooth links, coin charms, and shiny beads. 100% waterproof and anti-tarnish.'
 };
 
 export const VAULT_PRODUCTS: Product[] = [
-  {
-    id: 'prod-test-gateway-charm',
-    name: 'PARZIO 18K Micro Testing Charm',
-    category: 'Bracelets',
-    price: 1.5,
-    originalPrice: 199,
-    savePercent: 99,
-    rating: 5.0,
-    reviewsCount: 999,
-    colorways: 10,
-    sku: 'TEST-1.5-RAZORPAY',
-    material: '18K Gold Plated Demi-Fine Stainless Alloy',
-    isWaterproof: true,
-    isAntiTarnish: true,
-    badge: '₹1.5 TEST DROP',
-    quote: 'Official live test product to verify payment gateway checkout.',
-    image: 'https://images.unsplash.com/photo-1611591475883-9b932fcda12b?auto=format&fit=crop&w=600&q=80',
-    description: 'Special 18K gold micro charm for instant live payment gateway testing and verification.'
-  },
   {
     id: 'prod-pearl-double-necklace',
     name: 'PARZIO Necklace With Pearls',
@@ -51,12 +32,12 @@ export const VAULT_PRODUCTS: Product[] = [
     reviewsCount: 684,
     colorways: 40,
     sku: 'NK-99-PEARL',
-    material: 'Lustrous Shell Pearls + 18K Gold Clasp',
+    material: 'Lustrous Shell Pearls + 316L Steel Clasp',
     isWaterproof: true,
     isAntiTarnish: true,
     badge: 'SAVE 92%',
     image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
-    description: 'Double strand lustrous shell pearls with 18K gold-finished anti-tarnish lobster clasp.'
+    description: 'Double strand lustrous shell pearls with 316L stainless steel anti-tarnish lobster clasp.'
   },
   {
     id: 'prod-emerald-collar-necklace',
@@ -74,11 +55,11 @@ export const VAULT_PRODUCTS: Product[] = [
     isAntiTarnish: true,
     badge: 'SAVE 92%',
     image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
-    description: 'Vibrant emerald-cut lab gemstones prong-set along an 18K gold-finished anti-tarnish collar chain.'
+    description: 'Vibrant emerald-cut lab gemstones prong-set along a 316L stainless steel anti-tarnish collar chain.'
   },
   {
     id: 'prod-textured-gold-cuff',
-    name: 'PARZIO Bracelet Anti-Tarnish Gold Cuff',
+    name: 'PARZIO Bracelet Anti-Tarnish Steel Cuff',
     category: 'Bracelets',
     price: 99,
     originalPrice: 1200,
@@ -87,12 +68,12 @@ export const VAULT_PRODUCTS: Product[] = [
     reviewsCount: 540,
     colorways: 40,
     sku: 'BR-99-CUFF',
-    material: 'Stainless Steel + 18K Gold Plated',
+    material: '316L Surgical Stainless Steel',
     isWaterproof: true,
     isAntiTarnish: true,
     badge: 'SAVE 91%',
     image: 'https://images.unsplash.com/photo-1611591475155-4284fa28973b?auto=format&fit=crop&w=600&q=80',
-    description: 'Sparkling textured cuff bangle designed for all-day comfort and water resistance.'
+    description: 'Sparkling textured cuff bangle made from 316L surgical stainless steel for all-day comfort and water resistance.'
   },
   {
     id: 'prod-emerald-baguette-bracelet',
@@ -105,12 +86,12 @@ export const VAULT_PRODUCTS: Product[] = [
     reviewsCount: 622,
     colorways: 40,
     sku: 'BR-99-EMR-BRAC',
-    material: 'Stainless Steel + Emerald Cut Stones',
+    material: '316L Stainless Steel + Emerald Cut Stones',
     isWaterproof: true,
     isAntiTarnish: true,
     badge: 'SAVE 92%',
     image: 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=600&q=80',
-    description: 'Continuous tennis row of emerald-cut stones set in 18K gold-toned links.'
+    description: 'Continuous tennis row of emerald-cut stones set in 316L stainless steel links.'
   },
   {
     id: 'prod-coin-bracelet',
@@ -122,13 +103,13 @@ export const VAULT_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 428,
     colorways: 40,
-    sku: 'BR-99-COIN-LINK',
-    material: 'Stainless Steel, 18K Gold Plated',
+    sku: 'BR-99-COIN',
+    material: '316L Surgical Stainless Steel',
     isWaterproof: true,
     isAntiTarnish: true,
     badge: 'SAVE 91%',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJ6KsGvMmDre3vW1DrMsKt5qGEuc3sAKPferGJypreLxK_7Y67atNQ4xomNX3mXsafI8KxVgwwIxAuSGRAMdU1nptUgdRG2egH30oAiQJPAMja-A9D7cmeTOcTjB4K4xMDXO1Jh0lOUQbTjY6ag3AcMy_FFMlynYLgIWldQSQ-kXA73U-4qhTyvLZlIuztQX18XRXyVMQVw4OkFAABmM7kQLZaJmDFCQgfCVkrUX-3u1FG5lCyJEWr',
-    description: 'A gold-tone chain link bracelet decorated with dangling coin-shaped and smooth spherical charms.'
+    description: 'A 316L surgical stainless steel chain link bracelet decorated with dangling coin-shaped and smooth spherical charms.'
   },
   {
     id: 'prod-satellite-necklace',
@@ -141,12 +122,12 @@ export const VAULT_PRODUCTS: Product[] = [
     reviewsCount: 512,
     colorways: 40,
     sku: 'NK-99-SAT',
-    material: 'Stainless Steel, 18K Gold Plated',
+    material: '316L Surgical Stainless Steel',
     isWaterproof: true,
     isAntiTarnish: true,
     badge: 'SAVE 92%',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAqUkKFJYCEhNPuL8Yrk-1bZHkjI0dTRdPimW5TCXFzOsaOAS6Hq5BKAC95Od7rWfCG3wxEAcqTVU_GzdYXUzqvMU0yHKqWmqfL_Zpt_Ity4OorEQBbgLUWeK01kOemyuie3didb-fBpw90lp3VJy04Sf-d1yRhNlYrFID3i0KaxVVdR7sFupnv2Ttc1VVUY-Jfz0FpQQh7atDmZ29mD1kNiQoLwJSPNtsqiqmeswPp8FYJJk2EmSEi',
-    description: 'A delicate satellite chain necklace arranged with small, evenly spaced spherical beads.'
+    description: 'A delicate 316L surgical stainless steel satellite chain necklace arranged with small, evenly spaced spherical beads.'
   },
   {
     id: 'prod-bypass-ring',

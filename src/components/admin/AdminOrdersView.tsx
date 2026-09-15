@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { OrderItem, OrderStatus, Product } from '../../types';
 import { AdminOrderModal } from './AdminOrderModal';
+import { AdminOrderDetailPage } from './AdminOrderDetailPage';
 import {
   Search,
   Filter,
@@ -51,6 +52,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<OrderItem | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<OrderItem | null>(null);
+  const [selectedDetailOrder, setSelectedDetailOrder] = useState<OrderItem | null>(null);
 
   // Filter Orders
   const filteredOrders = orders.filter((order) => {
@@ -90,13 +92,23 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
     );
   };
 
-  // Pack & Dispatch Flow
+  // Pack & Dispatch Flow with Loading Animation
   const handlePack = (orderId: string) => {
     setPackingOrderId(orderId);
     setTimeout(() => {
       onUpdateOrderStatus(orderId, 'Dispatched');
       setPackingOrderId(null);
       onTriggerToast(`Order #${orderId} packed & BlueDart AWB generated!`);
+    }, 700);
+  };
+
+  // Animated Status Dropdown Handler
+  const handleSelectStatusWithAnimation = (orderId: string, newStatus: OrderStatus) => {
+    setPackingOrderId(orderId);
+    setTimeout(() => {
+      onUpdateOrderStatus(orderId, newStatus);
+      setPackingOrderId(null);
+      onTriggerToast(`Order #${orderId} status changed to ${newStatus}`);
     }, 700);
   };
 
@@ -141,6 +153,54 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
     onTriggerToast('Orders exported to BlueDart dispatch manifest CSV.');
   };
 
+  // Dedicated Full Page View for Selected Order
+  if (selectedDetailOrder) {
+    return (
+      <>
+        <AdminOrderDetailPage
+          order={selectedDetailOrder}
+          onBack={() => setSelectedDetailOrder(null)}
+          onUpdateOrderStatus={(id, status) => {
+            onUpdateOrderStatus(id, status);
+            // update local reference to reflect in UI
+            setSelectedDetailOrder((prev) => (prev && prev.id === id ? { ...prev, status } : prev));
+          }}
+          onEditOrder={(ord) => {
+            setEditingOrder(ord);
+            setIsOrderModalOpen(true);
+          }}
+          onDeleteOrder={(id) => {
+            onDeleteOrder(id);
+            setSelectedDetailOrder(null);
+          }}
+          onPrintOrder={onPrintOrder}
+          onTriggerToast={onTriggerToast}
+        />
+
+        {/* Add / Edit Order Modal */}
+        <AdminOrderModal
+          isOpen={isOrderModalOpen}
+          onClose={() => {
+            setIsOrderModalOpen(false);
+            setEditingOrder(null);
+          }}
+          initialOrder={editingOrder}
+          products={products}
+          onSaveOrder={(savedOrder) => {
+            if (editingOrder) {
+              onEditOrder(savedOrder);
+              setSelectedDetailOrder(savedOrder);
+              onTriggerToast(`Updated Order #${savedOrder.id} successfully!`);
+            } else {
+              onAddOrder(savedOrder);
+              onTriggerToast(`Manual Order #${savedOrder.id} added to live queue!`);
+            }
+          }}
+        />
+      </>
+    );
+  }
+
   return (
     <div className="space-y-6">
       
@@ -162,7 +222,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
               setEditingOrder(null);
               setIsOrderModalOpen(true);
             }}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#141414] text-white hover:bg-[#8c7138] text-xs font-bold uppercase tracking-wider transition-all shadow-sm active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#141414] text-white hover:bg-[#8c7138] text-xs font-bold uppercase tracking-wider transition-all shadow-xs active:scale-95"
           >
             <Plus className="w-3.5 h-3.5 text-[#fed488]" />
             <span>Add New Order</span>
@@ -180,7 +240,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
             <>
               <button
                 onClick={handleBulkPack}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm active:scale-95"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-xs active:scale-95"
               >
                 <Package className="w-3.5 h-3.5" />
                 <span>Mark as Shipped ({selectedOrderIds.length})</span>
@@ -188,7 +248,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
 
               <button
                 onClick={handleBulkDelete}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-colors"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Delete ({selectedOrderIds.length})</span>
@@ -226,9 +286,9 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
             <button
               key={flt.id}
               onClick={() => setStatusFilter(flt.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
                 statusFilter === flt.id
-                  ? 'bg-[#141414] text-white'
+                  ? 'bg-[#141414] text-white shadow-xs'
                   : 'bg-white text-[#444748] hover:bg-[#eae5dc] border border-[#eae5dc]'
               }`}
             >
@@ -281,8 +341,9 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
               return (
                 <div
                   key={order.id}
-                  className={`p-4 sm:p-5 transition-colors ${
-                    isSelected ? 'bg-[#faf6ee]' : isCancelled ? 'bg-rose-50/40 opacity-75' : 'hover:bg-[#faf8f5]'
+                  onClick={() => setSelectedDetailOrder(order)}
+                  className={`p-4 sm:p-5 transition-all cursor-pointer group ${
+                    isSelected ? 'bg-[#faf6ee]' : isCancelled ? 'bg-rose-50/40 opacity-75' : 'hover:bg-[#faf6ee]/70'
                   }`}
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -292,11 +353,12 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
                       <input
                         type="checkbox"
                         checked={isSelected}
+                        onClick={(e) => e.stopPropagation()}
                         onChange={() => handleToggleSelect(order.id)}
-                        className="mt-1 rounded text-[#8c7138] focus:ring-[#8c7138]"
+                        className="mt-1 rounded text-[#8c7138] focus:ring-[#8c7138] cursor-pointer"
                       />
 
-                      <div className="w-14 h-14 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] p-1 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <div className="w-14 h-14 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] p-1 flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
                         <img
                           src={order.image}
                           alt={order.productName}
@@ -306,11 +368,11 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
 
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-[#141414]">
+                          <span className="font-mono text-xs font-bold text-[#141414] bg-[#fed488]/30 px-2 py-0.5 rounded-md border border-[#fed488]/60 group-hover:bg-[#8c7138] group-hover:text-white transition-colors">
                             #{order.id}
                           </span>
                           <span className="text-[#747878]">•</span>
-                          <span className="font-semibold text-xs text-[#141414]">
+                          <span className="font-semibold text-xs text-[#141414] group-hover:text-[#8c7138] transition-colors">
                             {order.customerName}
                           </span>
                           {order.phone && (
@@ -329,7 +391,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
                         </p>
 
                         <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#747878]">
-                          <span className="font-mono text-[#8c7138]">{order.sku}</span>
+                          <span className="font-mono text-[#8c7138] font-bold">{order.sku}</span>
                           <span>•</span>
                           <span className="flex items-center gap-1">
                             <Truck className="w-3 h-3 text-[#8c7138]" />
@@ -350,56 +412,78 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
                     </div>
 
                     {/* Right: Badges, WhatsApp OTP, Status Dropdown & Actions */}
-                    <div className="flex flex-wrap items-center gap-2.5 lg:justify-end pl-8 lg:pl-0">
+                    <div className="flex flex-wrap items-center gap-2.5 lg:justify-end pl-8 lg:pl-0" onClick={(e) => e.stopPropagation()}>
                       
+                      {/* View Full Details Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDetailOrder(order);
+                        }}
+                        title="View Full Order Details"
+                        className="px-3.5 py-1.5 rounded-xl bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-[#fed488]" />
+                        <span>View Details</span>
+                      </button>
+
                       {/* RTO Risk Badge */}
                       {isHighRTO ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
-                          <AlertTriangle className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold">
+                          <AlertTriangle className="w-3 h-3 text-amber-600" />
                           RTO Risk {order.rtoPercent || 41}%
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                          <ShieldCheck className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
                           Low Risk
                         </span>
                       )}
 
                       {/* WhatsApp Verification */}
                       {isPhoneVerified ? (
-                        <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                        <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200">
                           <CheckCircle2 className="w-3 h-3" />
                           Phone Verified
                         </span>
                       ) : (
                         <button
                           onClick={() => handleVerifyWhatsapp(order.id)}
-                          className="text-[11px] font-bold text-[#8c7138] hover:text-[#141414] flex items-center gap-1 bg-[#fed488]/20 px-2.5 py-1 rounded-full border border-[#fed488]/60 transition-colors"
+                          className="text-[11px] font-bold text-[#8c7138] hover:text-[#141414] flex items-center gap-1 bg-[#faf8f5] px-2.5 py-1 rounded-xl border border-[#eae5dc] transition-colors"
                         >
                           <PhoneCall className="w-3 h-3" />
                           Verify OTP
                         </button>
                       )}
 
-                      {/* Status Dropdown */}
-                      <select
-                        value={order.status}
-                        onChange={(e) => onUpdateOrderStatus(order.id, e.target.value as OrderStatus)}
-                        className={`border rounded-full px-3 py-1 text-xs font-bold focus:outline-none focus:border-[#8c7138] ${
-                          isCancelled
-                            ? 'bg-rose-100 text-rose-800 border-rose-300'
-                            : 'bg-[#faf8f5] text-[#141414] border-[#eae5dc]'
-                        }`}
-                      >
-                        <option value="COD Confirmed">COD Confirmed</option>
-                        <option value="COD Pending">COD Pending</option>
-                        <option value="Prepaid UPI">Prepaid UPI</option>
-                        <option value="Packed">Packed</option>
-                        <option value="Dispatched">Dispatched</option>
-                        <option value="In Transit">In Transit</option>
-                        <option value="Delivered">Delivered</option>
-                        <option value="Cancelled">Cancelled</option>
-                      </select>
+                      {/* Status Dropdown / Status Badge */}
+                      <div className="relative">
+                        {packingOrderId === order.id ? (
+                          <div className="px-3.5 py-1.5 rounded-full bg-[#8c7138] text-white text-xs font-bold flex items-center gap-1.5 animate-pulse shadow-xs">
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#fed488]" />
+                            <span>Packing...</span>
+                          </div>
+                        ) : (
+                          <select
+                            value={order.status}
+                            onChange={(e) => handleSelectStatusWithAnimation(order.id, e.target.value as OrderStatus)}
+                            className={`border rounded-full px-3.5 py-1.5 text-xs font-bold focus:outline-none focus:border-[#8c7138] cursor-pointer transition-colors ${
+                              isCancelled
+                                ? 'bg-rose-50 text-rose-800 border-rose-200'
+                                : 'bg-[#faf8f5] text-[#141414] border-[#eae5dc]'
+                            }`}
+                          >
+                            <option value="COD Confirmed">COD Confirmed</option>
+                            <option value="COD Pending">COD Pending</option>
+                            <option value="Prepaid UPI">Prepaid UPI</option>
+                            <option value="Packed">Packed</option>
+                            <option value="Dispatched">Dispatched</option>
+                            <option value="In Transit">In Transit</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                          </select>
+                        )}
+                      </div>
 
                       {/* Edit Order Button */}
                       <button
@@ -408,7 +492,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
                           setIsOrderModalOpen(true);
                         }}
                         title="Edit Order Details"
-                        className="p-1.5 rounded-full bg-[#faf8f5] hover:bg-[#eae5dc] text-[#141414] transition-colors border border-[#eae5dc]"
+                        className="p-1.5 rounded-full bg-[#faf8f5] hover:bg-[#eae5dc] text-[#141414] transition-colors border border-[#eae5dc] cursor-pointer"
                       >
                         <Edit2 className="w-3.5 h-3.5 text-[#141414]" />
                       </button>
@@ -417,7 +501,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
                       <button
                         onClick={() => onPrintOrder(order)}
                         title="Print Shipping Label & Tax Invoice"
-                        className="p-1.5 rounded-full bg-[#faf8f5] hover:bg-[#eae5dc] text-[#141414] transition-colors border border-[#eae5dc]"
+                        className="p-1.5 rounded-full bg-[#faf8f5] hover:bg-[#eae5dc] text-[#141414] transition-colors border border-[#eae5dc] cursor-pointer"
                       >
                         <Printer className="w-3.5 h-3.5 text-[#8c7138]" />
                       </button>
@@ -426,14 +510,14 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
                       <button
                         onClick={() => setOrderToDelete(order)}
                         title="Delete Order from Queue"
-                        className="p-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200"
+                        className="p-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
 
                       {/* Pack & Dispatch Trigger */}
                       {isDispatched ? (
-                        <span className="px-3.5 py-1.5 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center gap-1">
+                        <span className="px-3.5 py-1.5 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 shadow-xs">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           Dispatched
                         </span>
@@ -441,11 +525,11 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
                         <button
                           disabled={packingOrderId === order.id}
                           onClick={() => handlePack(order.id)}
-                          className="px-4 py-1.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                          className="px-4 py-1.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
                         >
                           {packingOrderId === order.id ? (
                             <>
-                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#fed488]" />
                               <span>Packing...</span>
                             </>
                           ) : (

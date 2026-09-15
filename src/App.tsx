@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Product, CartItem, OrderItem, ActiveScreen, OrderStatus, EmergencyShutdownConfig, MarqueeItem, StoreBanner } from './types';
+import { Product, CartItem, OrderItem, ActiveScreen, OrderStatus, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster } from './types';
 import { HERO_PRODUCT, VAULT_PRODUCTS } from './data/products';
 import { INITIAL_ORDERS } from './data/orders';
-import { INITIAL_BANNERS, INITIAL_TOP_MARQUEE, INITIAL_BANNER_MARQUEE } from './data/bannerData';
+import { INITIAL_BANNERS, INITIAL_TOP_MARQUEE, INITIAL_BANNER_MARQUEE, INITIAL_SALE_POSTERS } from './data/bannerData';
 import { Header } from './components/Header';
 import { HeroBanner } from './components/HeroBanner';
 import { MobileHeader } from './components/MobileHeader';
@@ -18,16 +18,13 @@ import { Footer } from './components/Footer';
 import { TrackOrderView } from './components/TrackOrderView';
 import { ExchangeView } from './components/ExchangeView';
 import { AccountView } from './components/AccountView';
+import { AtelierOpsHub } from './components/AtelierOpsHub';
 import { EmergencyStorefrontLockdown } from './components/EmergencyStorefrontLockdown';
-import { NotFoundPage } from './components/NotFoundPage';
-
-// Lazy-load heavy Atelier Operations Admin suite for faster storefront loading
-const AtelierOpsHub = React.lazy(() => import('./components/AtelierOpsHub').then(m => ({ default: m.AtelierOpsHub })));
 import { CartDrawer } from './components/CartDrawer';
 import { ProductModal } from './components/ProductModal';
+import { ProductDetailView } from './components/ProductDetailView';
 import { CheckoutModal } from './components/CheckoutModal';
 import { WishlistModal } from './components/WishlistModal';
-import { PolicyModal, PolicyTab } from './components/PolicyModal';
 import { SearchModal } from './components/SearchModal';
 import { SalesSection } from './components/SalesSection';
 import { WhatsAppSupport } from './components/WhatsAppSupport';
@@ -114,6 +111,77 @@ export default function App() {
     }
   });
 
+  const [skinSafeConfig, setSkinSafeConfig] = useState<SkinSafeConfig>(() => {
+    try {
+      const saved = localStorage.getItem('parzio_skin_banner_config');
+      return saved
+        ? JSON.parse(saved)
+        : {
+            eyebrow: 'DERMATOLOGICALLY TESTED',
+            title: '100% Skin Safe & Hypoallergenic Guarantee',
+            item1Title: 'NICKEL FREE',
+            item1Desc: 'Zero skin irritation or itching',
+            item2Title: 'LEAD FREE',
+            item2Desc: 'Pure non-toxic demi-fine metal',
+            item3Title: 'CADMIUM FREE',
+            item3Desc: 'Certified safe for daily wear',
+            item4Title: '100% WATERPROOF',
+            item4Desc: 'Wear in gym, shower & pool'
+          };
+    } catch {
+      return {
+        eyebrow: 'DERMATOLOGICALLY TESTED',
+        title: '100% Skin Safe & Hypoallergenic Guarantee',
+        item1Title: 'NICKEL FREE',
+        item1Desc: 'Zero skin irritation or itching',
+        item2Title: 'LEAD FREE',
+        item2Desc: 'Pure non-toxic demi-fine metal',
+        item3Title: 'CADMIUM FREE',
+        item3Desc: 'Certified safe for daily wear',
+        item4Title: '100% WATERPROOF',
+        item4Desc: 'Wear in gym, shower & pool'
+      };
+    }
+  });
+
+  const [saleBannerConfig, setSaleBannerConfig] = useState<SaleBannerConfig>(() => {
+    try {
+      const saved = localStorage.getItem('parzio_sale_banner_config');
+      return saved
+        ? JSON.parse(saved)
+        : {
+            badge: 'FLAT ₹99 MEGA SALE',
+            title: 'PARZIO',
+            highlightText: 'Sale Collection',
+            subtitle: '316L Surgical Grade Stainless Steel • 100% Anti-Tarnish, Waterproof & Hypoallergenic'
+          };
+    } catch {
+      return {
+        badge: 'FLAT ₹99 MEGA SALE',
+        title: 'PARZIO',
+        highlightText: 'Sale Collection',
+        subtitle: '316L Surgical Grade Stainless Steel • 100% Anti-Tarnish, Waterproof & Hypoallergenic'
+      };
+    }
+  });
+
+  const [salePosters, setSalePosters] = useState<SalePoster[]>(() => {
+    try {
+      const saved = localStorage.getItem('parzio_sale_posters');
+      return saved ? JSON.parse(saved) : INITIAL_SALE_POSTERS;
+    } catch {
+      return INITIAL_SALE_POSTERS;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('parzio_sale_posters', JSON.stringify(salePosters));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [salePosters]);
+
   useEffect(() => {
     try {
       localStorage.setItem('parzio_banners', JSON.stringify(banners));
@@ -138,22 +206,30 @@ export default function App() {
     }
   }, [bannerMarqueeItems]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('parzio_skin_banner_config', JSON.stringify(skinSafeConfig));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [skinSafeConfig]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('parzio_sale_banner_config', JSON.stringify(saleBannerConfig));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [saleBannerConfig]);
+
   // Emergency Storefront Shutdown Configuration
   const [emergencyConfig, setEmergencyConfig] = useState<EmergencyShutdownConfig>({
     isActive: false,
     mode: 'full-lockdown',
     reason: 'Security & Gateway Audit',
-    customMessage: 'Our digital vault and order processing are temporarily paused for security maintenance. Placed orders remain safe.'
+    customMessage: 'Our digital vault and order processing are temporarily paused for security maintenance. Placed orders remain safe.',
+    activatedAt: undefined
   });
-
-  // Legal & Compliance Policy Modal State (Razorpay & DPDPA)
-  const [isPolicyOpen, setIsPolicyOpen] = useState<boolean>(false);
-  const [policyInitialTab, setPolicyInitialTab] = useState<PolicyTab>('privacy');
-
-  const handleOpenPolicy = (tab: PolicyTab = 'privacy') => {
-    setPolicyInitialTab(tab);
-    setIsPolicyOpen(true);
-  };
 
   // Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -195,6 +271,11 @@ export default function App() {
         p.id === productId ? { ...p, isLive: p.isLive === false ? true : false } : p
       )
     );
+  };
+
+  const handleSelectProduct = (product: Product) => {
+    setSelectedProduct(product);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   };
 
   // Cart Totals
@@ -305,7 +386,17 @@ export default function App() {
 
   const handleUpdateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
     setOrders((prev) =>
-      prev.map((ord) => (ord.id === orderId ? { ...ord, status: newStatus } : ord))
+      prev.map((ord) => {
+        if (ord.id === orderId) {
+          let tracking = ord.trackingNumber;
+          if ((newStatus === 'Packed' || newStatus === 'Dispatched' || newStatus === 'In Transit') && !tracking) {
+            const numPart = ord.id.replace(/[^0-9]/g, '') || Math.floor(100000 + Math.random() * 900000);
+            tracking = `BD-${numPart}729`;
+          }
+          return { ...ord, status: newStatus, trackingNumber: tracking };
+        }
+        return ord;
+      })
     );
   };
 
@@ -319,58 +410,37 @@ export default function App() {
   // If Atelier Operations Hub view is active
   if (activeScreen === 'atelier-ops') {
     return (
-      <React.Suspense fallback={
-        <div className="min-h-screen bg-[#141414] text-white flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-10 h-10 border-2 border-[#8c7138] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="font-display tracking-widest uppercase text-xs text-[#fed488]">Loading Atelier Operations Hub...</p>
-          </div>
-        </div>
-      }>
-        <AtelierOpsHub
-          orders={orders}
-          products={products}
-          onBackToStore={() => setActiveScreen('storefront')}
-          onLogout={() => {
-            setActiveScreen('storefront');
-            showToast('Admin session logged out successfully.');
-          }}
-          onUpdateOrderStatus={handleUpdateOrderStatus}
-          onAddOrder={handleAddOrder}
-          onEditOrder={handleEditOrder}
-          onDeleteOrder={handleDeleteOrder}
-          onAddProduct={handleAddProduct}
-          onEditProduct={handleEditProduct}
-          onDeleteProduct={handleDeleteProduct}
-          onUpdateStock={handleUpdateStock}
-          onToggleLive={handleToggleLive}
-          emergencyConfig={emergencyConfig}
-          onUpdateEmergencyConfig={setEmergencyConfig}
-          topMarqueeItems={topMarqueeItems}
-          bannerMarqueeItems={bannerMarqueeItems}
-          banners={banners}
-          onUpdateTopMarquee={setTopMarqueeItems}
-          onUpdateBannerMarquee={setBannerMarqueeItems}
-          onUpdateBanners={setBanners}
-        />
-      </React.Suspense>
-    );
-  }
-
-  // If 404 Page Not Found view is requested
-  if (activeScreen === '404') {
-    return (
-      <NotFoundPage
-        onBackToHome={() => setActiveScreen('storefront')}
-        onExploreVault={() => {
+      <AtelierOpsHub
+        orders={orders}
+        products={products}
+        onBackToStore={() => setActiveScreen('storefront')}
+        onLogout={() => {
           setActiveScreen('storefront');
-          setTimeout(() => scrollToVault(), 100);
+          showToast('Admin session logged out successfully.');
         }}
-        onSearch={(q) => {
-          setSearchQuery(q);
-          setActiveScreen('storefront');
-          setTimeout(() => scrollToVault(), 100);
-        }}
+        onUpdateOrderStatus={handleUpdateOrderStatus}
+        onAddOrder={handleAddOrder}
+        onEditOrder={handleEditOrder}
+        onDeleteOrder={handleDeleteOrder}
+        onAddProduct={handleAddProduct}
+        onEditProduct={handleEditProduct}
+        onDeleteProduct={handleDeleteProduct}
+        onUpdateStock={handleUpdateStock}
+        onToggleLive={handleToggleLive}
+        emergencyConfig={emergencyConfig}
+        onUpdateEmergencyConfig={setEmergencyConfig}
+        topMarqueeItems={topMarqueeItems}
+        bannerMarqueeItems={bannerMarqueeItems}
+        banners={banners}
+        salePosters={salePosters}
+        skinSafeConfig={skinSafeConfig}
+        saleBannerConfig={saleBannerConfig}
+        onUpdateTopMarquee={setTopMarqueeItems}
+        onUpdateBannerMarquee={setBannerMarqueeItems}
+        onUpdateBanners={setBanners}
+        onUpdateSalePosters={setSalePosters}
+        onUpdateSkinSafeConfig={setSkinSafeConfig}
+        onUpdateSaleBannerConfig={setSaleBannerConfig}
       />
     );
   }
@@ -425,176 +495,115 @@ export default function App() {
         </div>
       )}
 
-      {/* Mobile and PC views render automatically based on responsive screen width */}
+      {/* Full Responsive Storefront */}
+      <div className="flex-1 w-full bg-[#fbf9f6]">
+        {/* Full Storefront Header */}
+        <Header
+          cartCount={cartCount}
+          cartTotal={cartTotal}
+          wishlistCount={wishlistIds.length}
+          onOpenCart={() => setIsCartOpen(true)}
+          onOpenWishlist={() => setIsWishlistOpen(true)}
+          activeCategory={activeCategory}
+          onSelectCategory={setActiveCategory}
+          activeScreen={activeScreen}
+          onToggleScreen={setActiveScreen}
+          deviceMode="desktop"
+          onToggleDeviceMode={() => {}}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          topMarqueeItems={topMarqueeItems}
+        />
 
-      {/* ========================================================================= */}
-      {/* 1. PHONE VERSION: Responsive full-screen mobile app layout */}
-      {/* ========================================================================= */}
-      {isPhone ? (
-        <div className="flex-1 flex justify-center items-start w-full bg-[#fbf9f6]">
-          <div className="w-full max-w-md min-h-screen bg-[#fbf9f6] flex flex-col relative pb-20 md:border-x md:border-[#eae5dc] md:shadow-2xl">
-            
-            {/* Top Fixed Mobile Header */}
-            <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#eae5dc]">
-              <MobileHeader
-                onOpenDrawer={() => setIsDrawerOpen(true)}
-                onOpenSearch={() => setIsSearchOpen(true)}
-                onOpenCart={() => setIsCartOpen(true)}
-                cartCount={cartCount}
-                topMarqueeItems={topMarqueeItems}
-              />
-            </div>
-
-            {/* Content Area */}
-            <main
-              id="phone-scroll-area"
-              className="flex-1 bg-[#fbf9f6]"
-            >
-              {/* Home Tab */}
-              {activeTab === 'home' && (
-                <div>
-                  {/* 1. Skin Safe Jewellery Banner matching exact Phone View screenshot */}
-                  <SkinSafeBanner
-                    onExploreNewArrivals={() => {
-                      setActiveCategory('NEW ARRIVALS');
-                      scrollToVault();
-                    }}
-                  />
-
-                  {/* Category Filter Pills */}
-                  <Categories
-                    onSelectCategory={(cat) => {
-                      setActiveCategory(cat.toUpperCase());
-                      scrollToVault();
-                    }}
-                    selectedCategory={activeCategory}
-                  />
-
-                  {/* The ₹99 Anti-Tarnish Vault (Exact WhatsApp Image Cards) */}
-                  <ProductVault
-                    products={filteredProducts}
-                    activeFilter={activeCategory}
-                    onSelectFilter={setActiveCategory}
-                    onAddToCart={handleAddToCart}
-                    onToggleWishlist={handleToggleWishlist}
-                    wishlistIds={wishlistIds}
-                    onOpenProductModal={setSelectedProduct}
-                  />
-
-                  {/* 5-Step Quality Check Standards */}
-                  <QualityCheckSection />
-
-                  {/* Google Verified Reviews */}
-                  <ReviewsSection />
-
-                  {/* The PRAO Promise */}
-                  <BrandPromise />
-
-                  {/* Footer */}
-                  <Footer
-                    onSelectCategory={(cat) => {
-                      setActiveCategory(cat.toUpperCase());
-                      scrollToVault();
-                    }}
-                    onOpenQualityModal={() => {
-                      const el = document.getElementById('quality-section');
-                      el?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
-                    onOpenPolicy={handleOpenPolicy}
-                  />
-                </div>
-              )}
-
-              {/* Sale Tab: Exact WhatsApp Image 2026-09-14 at 3.25.42 PM.jpeg 2-column view */}
-              {activeTab === 'sale' && (
-                <SalesSection
-                  products={VAULT_PRODUCTS}
-                  onAddToCart={handleAddToCart}
-                  onOpenProductModal={setSelectedProduct}
-                />
-              )}
-
-              {/* Track Order Tab */}
-              {activeTab === 'track' && (
-                <TrackOrderView orders={orders} />
-              )}
-
-              {/* Exchange Tab */}
-              {activeTab === 'exchange' && (
-                <ExchangeView orders={orders} />
-              )}
-
-              {/* Account Tab */}
-              {activeTab === 'account' && (
-                <AccountView
-                  orders={orders}
-                  onOpenWishlist={() => setIsWishlistOpen(true)}
-                  onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
-                  onTrackOrder={() => setActiveTab('track')}
-                />
-              )}
-            </main>
-
-            {/* FIRMLY PINNED BOTTOM NAVIGATION BAR */}
-            <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-md border-t border-[#eae5dc] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
-              <BottomNav
-                activeTab={activeTab}
-                onTabChange={(tab) => {
-                  setActiveTab(tab);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              />
-            </div>
-
-          </div>
-        </div>
-      ) : (
-        /* ========================================================================= */
-        /* 2. PC VERSION (Full Desktop Storefront — NO BOTTOM BUTTONS!)               */
-        /* ========================================================================= */
-        <div className="flex-1 w-full bg-[#fbf9f6]">
-          {/* Full Desktop Header */}
-          <Header
-            cartCount={cartCount}
-            cartTotal={cartTotal}
-            wishlistCount={wishlistIds.length}
-            onOpenCart={() => setIsCartOpen(true)}
-            onOpenWishlist={() => setIsWishlistOpen(true)}
-            activeCategory={activeCategory}
-            onSelectCategory={setActiveCategory}
-            activeScreen={activeScreen}
-            onToggleScreen={setActiveScreen}
-            deviceMode="desktop"
-            onToggleDeviceMode={() => setViewMode('phone')}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            topMarqueeItems={topMarqueeItems}
+        {selectedProduct ? (
+          <ProductDetailView
+            product={selectedProduct}
+            onBack={() => {
+              setSelectedProduct(null);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onAddToCart={(p, qty) => {
+              for (let i = 0; i < (qty || 1); i++) {
+                handleAddToCart(p);
+              }
+              showToast(`Added ${qty || 1} x ${p.name} to your bag!`);
+            }}
+            onBuyNow={(p, qty) => {
+              for (let i = 0; i < (qty || 1); i++) {
+                handleAddToCart(p);
+              }
+              setIsCartOpen(false);
+              setIsCheckoutOpen(true);
+            }}
+            onToggleWishlist={handleToggleWishlist}
+            isWishlisted={wishlistIds.includes(selectedProduct.id)}
+            onSelectProduct={(p) => {
+              handleSelectProduct(p);
+            }}
           />
-
-          <main>
-            {/* Desktop Hero Section */}
+        ) : activeTab === 'sale' ? (
+          <main className="pb-16 md:pb-0">
+            <SalesSection
+              products={products}
+              onAddToCart={handleAddToCart}
+              onOpenProductModal={handleSelectProduct}
+              bannerConfig={saleBannerConfig}
+              salePosters={salePosters}
+            />
+            <Footer
+              onSelectCategory={(cat) => {
+                setActiveTab('home');
+                setActiveCategory(cat.toUpperCase());
+                scrollToVault();
+              }}
+              onOpenQualityModal={() => {
+                setActiveTab('home');
+                setTimeout(() => {
+                  const el = document.getElementById('quality-section');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
+            />
+          </main>
+        ) : activeTab === 'track' ? (
+          <main className="pb-16 md:pb-0">
+            <TrackOrderView
+              orders={orders}
+            />
+          </main>
+        ) : activeTab === 'exchange' ? (
+          <main className="pb-16 md:pb-0">
+            <ExchangeView
+              orders={orders}
+            />
+          </main>
+        ) : activeTab === 'account' ? (
+          <main className="pb-16 md:pb-0">
+            <AccountView
+              orders={orders}
+              onOpenWishlist={() => setIsWishlistOpen(true)}
+              onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
+              onTrackOrder={() => {
+                setActiveTab('track');
+                window.scrollTo({ top: 0, behavior: 'instant' });
+              }}
+            />
+          </main>
+        ) : (
+          <main className="pb-16 md:pb-0">
+            {/* Hero Section */}
             <HeroBanner
               heroProduct={HERO_PRODUCT}
               onExploreVault={scrollToVault}
               onScrollToVault={scrollToVault}
               onAddToCart={handleAddToCart}
-              onOpenProductModal={setSelectedProduct}
+              onOpenProductModal={handleSelectProduct}
               banners={banners}
               bannerMarqueeItems={bannerMarqueeItems}
             />
 
-            {/* Skin Safe Quality Banner */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              <SkinSafeBanner
-                onExploreNewArrivals={() => {
-                  setActiveCategory('NEW ARRIVALS');
-                  scrollToVault();
-                }}
-              />
-            </div>
-
-            {/* Category Nav */}
+            {/* New Collections Round Categories */}
             <Categories
               onSelectCategory={(cat) => {
                 setActiveCategory(cat.toUpperCase());
@@ -611,7 +620,16 @@ export default function App() {
               onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}
               wishlistIds={wishlistIds}
-              onOpenProductModal={setSelectedProduct}
+              onOpenProductModal={handleSelectProduct}
+            />
+
+            {/* Skin Safe Quality Guarantee Banner */}
+            <SkinSafeBanner
+              config={skinSafeConfig}
+              onExploreNewArrivals={() => {
+                setActiveCategory('NEW ARRIVALS');
+                scrollToVault();
+              }}
             />
 
             {/* 5-Step Quality Check Standards */}
@@ -623,7 +641,7 @@ export default function App() {
             {/* The PRAO Promise */}
             <BrandPromise />
 
-            {/* Desktop Footer (NO bottom buttons here!) */}
+            {/* Footer */}
             <Footer
               onSelectCategory={(cat) => {
                 setActiveCategory(cat.toUpperCase());
@@ -634,11 +652,10 @@ export default function App() {
                 el?.scrollIntoView({ behavior: 'smooth' });
               }}
               onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
-              onOpenPolicy={handleOpenPolicy}
             />
           </main>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Global Modals & Drawers */}
       <MobileDrawer
@@ -659,7 +676,7 @@ export default function App() {
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         products={products}
-        onSelectProduct={setSelectedProduct}
+        onSelectProduct={handleSelectProduct}
         onAddToCart={handleAddToCart}
       />
 
@@ -679,11 +696,7 @@ export default function App() {
         }}
       />
 
-      <ProductModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-        onAddToCart={handleAddToCart}
-      />
+
 
       <CheckoutModal
         isOpen={isCheckoutOpen}
@@ -699,22 +712,31 @@ export default function App() {
         wishlistProducts={wishlistProducts}
         onAddToCart={handleAddToCart}
         onRemoveFromWishlist={handleToggleWishlist}
+        onSelectProduct={handleSelectProduct}
       />
 
-      <PolicyModal
-        isOpen={isPolicyOpen}
-        onClose={() => setIsPolicyOpen(false)}
-        initialTab={policyInitialTab}
-      />
-
-      {/* Storefront Enhancements: WhatsApp Concierge & Live Purchase Social Proof */}
+      {/* Storefront Enhancements: WhatsApp Concierge (Draggable) */}
       {activeScreen === 'storefront' && !emergencyConfig.isActive && (
         <>
-          <LivePurchaseToast />
           <WhatsAppSupport
             onNavigateTrackOrder={() => {
               setActiveTab('track');
               window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+          <BottomNav
+            activeTab={activeTab}
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              setSelectedProduct(null);
+              window.scrollTo({ top: 0, behavior: 'instant' });
+            }}
+            cartCount={cartCount}
+            onOpenCart={() => setIsCartOpen(true)}
+            onOpenProducts={() => {
+              setActiveTab('sale');
+              setSelectedProduct(null);
+              window.scrollTo({ top: 0, behavior: 'instant' });
             }}
           />
         </>

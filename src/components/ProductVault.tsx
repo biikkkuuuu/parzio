@@ -25,7 +25,7 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
 }) => {
   return (
     <section id="vault-section" className="py-8 sm:py-12 bg-[#fbf9f6] border-b border-[#eae5dc]">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1800px] mx-auto px-3 sm:px-8 lg:px-12">
         
         {/* Header Title */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 px-1">
@@ -49,7 +49,7 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
           </div>
         </div>
 
-        {/* Filter Pills Tab Strip - Centered on desktop */}
+        {/* Filter Pills Tab Strip */}
         <div className="flex items-center sm:justify-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-6 px-1">
           {FILTER_TABS.map((tab) => {
             const rawCat = tab.replace(/ \(\d+\)/, '');
@@ -74,8 +74,8 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
           })}
         </div>
 
-        {/* Clean E-Commerce Grid (2-col mobile, 4-col desktop) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Clean E-Commerce Grid (2-col mobile, 3-col tablet, 4-col laptop, 5/6-col desktop) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
           {products.map((product) => {
             const isWishlisted = wishlistIds.includes(product.id);
             return (
@@ -111,24 +111,31 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                 {/* Product Meta & Pricing Area */}
                 <div className="p-3 sm:p-3.5 flex flex-col justify-between flex-1">
                   <div>
+                    {/* Category / Subtitle */}
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7138] block mb-0.5">
+                      316L Stainless Steel
+                    </span>
+
                     {/* Title with single line truncation */}
                     <h4
                       onClick={() => onOpenProductModal(product)}
-                      className="text-[13px] sm:text-[14px] font-semibold text-[#141414] truncate cursor-pointer hover:text-[#8c7138] transition-colors leading-tight"
+                      className="text-[12px] sm:text-[14px] font-semibold text-[#141414] truncate cursor-pointer hover:text-[#8c7138] transition-colors leading-tight min-h-[1.25rem]"
                       title={product.name}
                     >
                       {product.name}
                     </h4>
 
-                    {/* Price Row: ₹99  ₹1,300  SAVE 92% */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 flex-wrap">
-                      <span className="font-bold text-sm sm:text-base text-[#141414]">
-                        ₹{product.price}
-                      </span>
-                      <span className="text-xs sm:text-sm text-[#a3a3a3] line-through font-normal">
-                        ₹{product.originalPrice.toLocaleString('en-IN')}
-                      </span>
-                      <span className="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200/70 px-1.5 py-0.5 rounded tracking-wider uppercase">
+                    {/* Uniform Price Row: Price, Strikethrough, and SAVE % Badge aligned on one row */}
+                    <div className="flex items-center justify-between gap-1.5 mt-2 pt-1.5 border-t border-[#f4efea]">
+                      <div className="flex items-baseline gap-1.5 min-w-0">
+                        <span className="font-bold text-sm sm:text-base text-[#141414]">
+                          ₹{product.price}
+                        </span>
+                        <span className="text-[11px] sm:text-xs text-[#a3a3a3] line-through font-normal">
+                          ₹{product.originalPrice.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-extrabold text-rose-700 bg-rose-50 border border-rose-200/80 px-1.5 py-0.5 rounded-md tracking-wider uppercase shrink-0 whitespace-nowrap">
                         SAVE {product.savePercent}%
                       </span>
                     </div>

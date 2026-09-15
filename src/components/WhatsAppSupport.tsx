@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { MessageCircle, X, Send, Sparkles, Truck, ShieldCheck, PhoneCall, ExternalLink } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { MessageCircle, X, Sparkles, Truck, ShieldCheck, ExternalLink, GripVertical, Move } from 'lucide-react';
 
 interface WhatsAppSupportProps {
   onNavigateTrackOrder?: () => void;
@@ -8,6 +8,18 @@ interface WhatsAppSupportProps {
 export const WhatsAppSupport: React.FC<WhatsAppSupportProps> = ({ onNavigateTrackOrder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeFaqAnswer, setActiveFaqAnswer] = useState<string | null>(null);
+
+  // Draggable position state
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number; moved: boolean }>({
+    startX: 0,
+    startY: 0,
+    initialX: 0,
+    initialY: 0,
+    moved: false
+  });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const WHATSAPP_NUMBER = '919876543210';
   const DEFAULT_MESSAGE = encodeURIComponent('Hi Parzio! I need help with jewellery and placing my order.');
@@ -30,9 +42,90 @@ export const WhatsAppSupport: React.FC<WhatsAppSupportProps> = ({ onNavigateTrac
     }
   ];
 
+  const handleStart = (clientX: number, clientY: number) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const currentX = position ? position.x : rect.left;
+    const currentY = position ? position.y : rect.top;
+
+    dragRef.current = {
+      startX: clientX,
+      startY: clientY,
+      initialX: currentX,
+      initialY: currentY,
+      moved: false
+    };
+    setIsDragging(true);
+  };
+
+  const handleMove = (clientX: number, clientY: number) => {
+    if (!isDragging || !containerRef.current) return;
+    const dx = clientX - dragRef.current.startX;
+    const dy = clientY - dragRef.current.startY;
+
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      dragRef.current.moved = true;
+    }
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const newX = Math.max(10, Math.min(window.innerWidth - rect.width - 10, dragRef.current.initialX + dx));
+    const newY = Math.max(10, Math.min(window.innerHeight - rect.height - 10, dragRef.current.initialY + dy));
+
+    setPosition({ x: newX, y: newY });
+  };
+
+  const handleEnd = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    const onTouchMove = (e: TouchEvent) => {
+      if (isDragging && e.touches.length > 0) {
+        handleMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    };
+    const onMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        handleMove(e.clientX, e.clientY);
+      }
+    };
+    const onEnd = () => {
+      handleEnd();
+    };
+
+    if (isDragging) {
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchmove', onTouchMove, { passive: false });
+      window.addEventListener('touchend', onEnd);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onEnd);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onEnd);
+    };
+  }, [isDragging, position]);
+
+  const handleButtonClick = () => {
+    if (!dragRef.current.moved) {
+      setIsOpen(!isOpen);
+    }
+  };
+
   return (
-    <div className="fixed bottom-16 md:bottom-6 right-3 sm:right-6 z-30 flex flex-col items-end">
-      
+    <div
+      ref={containerRef}
+      style={
+        position
+          ? { left: `${position.x}px`, top: `${position.y}px`, bottom: 'auto', right: 'auto' }
+          : undefined
+      }
+      className={`fixed z-50 flex flex-col items-end select-none ${
+        !position ? 'bottom-20 md:bottom-6 right-4 sm:right-6' : ''
+      }`}
+    >
       {/* Concierge Popover Window */}
       {isOpen && (
         <div className="mb-3 w-80 sm:w-88 bg-[#fbf9f6] rounded-3xl shadow-2xl border border-[#eae5dc] overflow-hidden animate-slideUp text-[#141414]">
@@ -112,23 +205,35 @@ export const WhatsAppSupport: React.FC<WhatsAppSupportProps> = ({ onNavigateTrac
           </div>
 
           {/* Footer note */}
-          <div className="px-4 py-2 bg-[#f3efe9] border-t border-[#eae5dc] text-center text-[10px] text-[#747878] font-medium">
-            Atelier Customer Care: 10:00 AM – 9:00 PM IST
+          <div className="px-4 py-2 bg-[#f3efe9] border-t border-[#eae5dc] text-center text-[10px] text-[#747878] font-medium flex items-center justify-between">
+            <span>Atelier Customer Care: 10 AM – 9 PM</span>
+            <span className="text-[#8c7138] flex items-center gap-1 font-bold">
+              <Move className="w-3 h-3" /> Drag to move
+            </span>
           </div>
         </div>
       )}
 
-      {/* Floating Trigger Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        title="Chat with Atelier Concierge on WhatsApp"
-        className="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#141414] text-white border border-[#8c7138]/40 hover:border-[#fed488] shadow-2xl hover:bg-[#202222] transition-all group active:scale-95"
+      {/* Floating Draggable Trigger Button */}
+      <div
+        onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
+        onTouchStart={(e) => {
+          if (e.touches.length > 0) {
+            handleStart(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }}
+        onClick={handleButtonClick}
+        title="Drag anywhere or click for Help"
+        className={`flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-[#141414] text-white border border-[#8c7138]/50 hover:border-[#fed488] shadow-2xl hover:bg-[#202222] transition-shadow cursor-grab active:cursor-grabbing touch-none group ${
+          isDragging ? 'scale-105 ring-2 ring-[#fed488]' : ''
+        }`}
       >
+        <GripVertical className="w-3.5 h-3.5 text-[#8c7138] group-hover:text-[#fed488] transition-colors shrink-0" />
         <div className="w-6 h-6 rounded-full bg-[#25D366] text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
           <MessageCircle className="w-3.5 h-3.5 fill-white text-white" />
         </div>
-        <div className="text-left hidden sm:block">
-          <p className="text-[10px] uppercase tracking-wider text-[#fed488] font-bold leading-none">
+        <div className="text-left hidden sm:block pr-1">
+          <p className="text-[9px] uppercase tracking-wider text-[#fed488] font-bold leading-none">
             Help &amp; WhatsApp
           </p>
           <p className="text-xs font-bold text-white leading-tight">
@@ -136,8 +241,7 @@ export const WhatsAppSupport: React.FC<WhatsAppSupportProps> = ({ onNavigateTrac
           </p>
         </div>
         <span className="sm:hidden font-bold text-xs text-[#fed488]">Help</span>
-      </button>
-
+      </div>
     </div>
   );
 };

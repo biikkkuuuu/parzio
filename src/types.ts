@@ -74,6 +74,37 @@ export interface StoreBanner {
   active: boolean;
 }
 
+export interface SkinSafeConfig {
+  eyebrow: string;
+  title: string;
+  item1Title: string;
+  item1Desc: string;
+  item2Title: string;
+  item2Desc: string;
+  item3Title: string;
+  item3Desc: string;
+  item4Title: string;
+  item4Desc: string;
+}
+
+export interface SaleBannerConfig {
+  badge: string;
+  title: string;
+  highlightText: string;
+  subtitle: string;
+}
+
+export interface SalePoster {
+  id: string;
+  title: string;
+  subtitle: string;
+  badge: string;
+  image: string;
+  linkCategory: string;
+  buttonText: string;
+  active: boolean;
+}
+
 export type AdminTab =
   | 'overview'
   | 'orders'
@@ -126,6 +157,7 @@ export interface OrderItem {
   image: string;
   tag: string;
   courier: string;
+  trackingNumber?: string;
   phoneVerified: boolean;
   notes?: string;
 }
@@ -147,7 +179,7 @@ export interface QCStep {
   passed: boolean;
 }
 
-export type ActiveScreen = 'storefront' | 'atelier-ops' | '404';
+export type ActiveScreen = 'storefront' | 'atelier-ops';
 export type DeviceMode = 'desktop' | 'mobile';
 
 export interface EmergencyShutdownConfig {

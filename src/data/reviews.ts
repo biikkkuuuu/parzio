@@ -61,9 +61,9 @@ export const QC_STEPS_DATA: QCStep[] = [
   },
   {
     id: 2,
-    title: '18K Real Gold Plating',
-    standard: 'Long-Lasting Shine',
-    description: 'Real 18-karat gold layer bonded securely so the golden shine lasts for years without fading.',
+    title: '316L Steel PVD Finish',
+    standard: '100% Anti-Tarnish',
+    description: 'High-durability PVD vacuum coating bonded on surgical steel so the finish stays brilliant without fading.',
     passed: true
   },
   {

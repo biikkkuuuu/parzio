@@ -62,7 +62,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
       <div
         className="relative w-full max-w-2xl bg-[#fbf9f6] rounded-3xl overflow-hidden shadow-2xl border border-[#eae5dc] flex flex-col md:flex-row max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}

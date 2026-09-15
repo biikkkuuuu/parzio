@@ -14,11 +14,9 @@ import {
   RefreshCw,
   Sparkles,
   Clock,
-  Check,
-  ExternalLink
+  Check
 } from 'lucide-react';
 import { HIGH_RISK_PINCODES } from '../data/adminData';
-import { apiService } from '../services/api';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -40,19 +38,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [phone, setPhone] = useState('9876543210');
   const [address, setAddress] = useState('Flat 402, Lotus Towers, Andheri West');
   const [city, setCity] = useState('Mumbai');
-  const [state, setState] = useState('Maharashtra');
   const [pincode, setPincode] = useState('400053');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'Prepaid UPI'>('COD');
-
-  const INDIAN_STATES = [
-    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
-    'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
-    'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
-    'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-    'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
-    'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
-  ];
 
   // Checkout Steps: 'details' | 'otp' | 'success'
   const [step, setStep] = useState<'details' | 'otp' | 'success'>('details');
@@ -70,7 +57,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [placedOrderId, setPlacedOrderId] = useState('');
   const [placedOrderData, setPlacedOrderData] = useState<OrderItem | null>(null);
-  const [whatsappDispatchUrl, setWhatsappDispatchUrl] = useState<string>('');
 
   // Delivery Date & City Inference
   const getEstimatedDelivery = (pin: string) => {
@@ -97,21 +83,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
     if (cleaned.length === 6) {
       setDeliveryDate(getEstimatedDelivery(cleaned));
-      if (cleaned.startsWith('11')) { setCity('Delhi'); setState('Delhi'); }
-      else if (cleaned.startsWith('40')) { setCity('Mumbai'); setState('Maharashtra'); }
-      else if (cleaned.startsWith('41')) { setCity('Pune'); setState('Maharashtra'); }
-      else if (cleaned.startsWith('56')) { setCity('Bengaluru'); setState('Karnataka'); }
-      else if (cleaned.startsWith('70')) { setCity('Kolkata'); setState('West Bengal'); }
-      else if (cleaned.startsWith('50')) { setCity('Hyderabad'); setState('Telangana'); }
-      else if (cleaned.startsWith('60')) { setCity('Chennai'); setState('Tamil Nadu'); }
-      else if (cleaned.startsWith('30')) { setCity('Jaipur'); setState('Rajasthan'); }
-      else if (cleaned.startsWith('38')) { setCity('Ahmedabad'); setState('Gujarat'); }
-      else if (cleaned.startsWith('22')) { setCity('Lucknow'); setState('Uttar Pradesh'); }
-      else if (cleaned.startsWith('14')) { setCity('Amritsar'); setState('Punjab'); }
-      else if (cleaned.startsWith('80')) { setCity('Patna'); setState('Bihar'); }
-      else if (cleaned.startsWith('78')) { setCity('Guwahati'); setState('Assam'); }
-      else if (cleaned.startsWith('68')) { setCity('Kochi'); setState('Kerala'); }
-      else if (cleaned.startsWith('46')) { setCity('Bhopal'); setState('Madhya Pradesh'); }
+      if (cleaned.startsWith('11')) setCity('Delhi');
+      else if (cleaned.startsWith('40')) setCity('Mumbai');
+      else if (cleaned.startsWith('56')) setCity('Bengaluru');
+      else if (cleaned.startsWith('70')) setCity('Kolkata');
+      else if (cleaned.startsWith('50')) setCity('Hyderabad');
+      else if (cleaned.startsWith('60')) setCity('Chennai');
+      else if (cleaned.startsWith('30')) setCity('Jaipur');
+      else if (cleaned.startsWith('38')) setCity('Ahmedabad');
+      else if (cleaned.startsWith('22')) setCity('Lucknow');
+      else if (cleaned.startsWith('41')) setCity('Pune');
     }
   };
 
@@ -134,115 +115,22 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Razorpay Gateway Checkout Handler
-  const launchRazorpayCheckout = async () => {
-    setIsSubmitting(true);
-    try {
-      // 1. Create order on backend
-      const rzpOrderData = await apiService.createRazorpayOrder(totalAmount);
-      const keyId = rzpOrderData.keyId;
-      const order = rzpOrderData.order;
-
-      // 2. Setup Razorpay options
-      const options = {
-        key: keyId,
-        amount: order.amount,
-        currency: order.currency || 'INR',
-        name: 'PARZIO Demi-Fine Jewellery',
-        description: `Luxury Vault Order (${cartItems.reduce((acc, c) => acc + c.quantity, 0)} items)`,
-        image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=200&q=80',
-        order_id: order.id,
-        prefill: {
-          name: name,
-          contact: phone,
-          email: `${name.toLowerCase().replace(/\s+/g, '')}@parzio.in`
-        },
-        theme: {
-          color: '#141414'
-        },
-        modal: {
-          ondismiss: () => {
-            setIsSubmitting(false);
-          }
-        },
-        handler: async (response: any) => {
-          try {
-            // 3. Verify signature on backend
-            await apiService.verifyRazorpayPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            });
-
-            // 4. Finalize order with verified payment IDs
-            finalizeOrder(true, {
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature
-            });
-          } catch (verifyErr: any) {
-            console.error('Payment verification failed:', verifyErr);
-            alert('Payment was processed but verification failed. Please contact PARZIO support.');
-            setIsSubmitting(false);
-          }
-        }
-      };
-
-      // 3. Open Razorpay Popup
-      if (typeof (window as any).Razorpay !== 'undefined') {
-        const rzp = new (window as any).Razorpay(options);
-        rzp.on('payment.failed', function (response: any) {
-          setIsSubmitting(false);
-          alert(`Payment Failed: ${response.error.description || 'Transaction declined'}`);
-        });
-        rzp.open();
-      } else {
-        // Fallback if Razorpay SDK script is blocked or offline
-        console.warn('Razorpay SDK not loaded, proceeding with instant prepaid confirmation');
-        finalizeOrder(true, {
-          razorpayOrderId: order.id,
-          razorpayPaymentId: `pay_sim_${Date.now()}`,
-          razorpaySignature: 'sim_sig_verified'
-        });
-      }
-    } catch (err: any) {
-      console.error('Razorpay initialization error:', err);
-      setIsSubmitting(false);
-      // Fallback
-      finalizeOrder(true);
-    }
-  };
-
-  // Server-generated OTP hint for test UI
-  const [serverOtpHint, setServerOtpHint] = useState<string>('');
-
   // Handler to Proceed from Details
-  const handleProceedToNextStep = async (e: React.FormEvent) => {
+  const handleProceedToNextStep = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (paymentMethod === 'Prepaid UPI') {
-      // Launch Razorpay Payment Gateway (UPI / QR / Cards / NetBanking)
-      launchRazorpayCheckout();
+      // Prepaid orders bypass OTP entirely (Low RTO risk guaranteed)
+      finalizeOrder(true);
     } else {
-      // Cash On Delivery requires 4-digit Server OTP verification
-      setIsSubmitting(true);
-      try {
-        const res = await apiService.sendOtp(phone);
-        if (res.testCodeHint) {
-          setServerOtpHint(res.testCodeHint);
-        }
-        setStep('otp');
-        setResendTimer(30);
-        setIsResendDisabled(true);
-        setOtpValues(['', '', '', '']);
-        setOtpError(null);
-        setOtpSentNotification(true);
-        setTimeout(() => setOtpSentNotification(false), 5000);
-      } catch (err: any) {
-        alert(err.message || 'Failed to send OTP to mobile. Please check number.');
-      } finally {
-        setIsSubmitting(false);
-      }
+      // Cash On Delivery requires 4-digit OTP verification
+      setStep('otp');
+      setResendTimer(30);
+      setIsResendDisabled(true);
+      setOtpValues(['', '', '', '']);
+      setOtpError(null);
+      setOtpSentNotification(true);
+      setTimeout(() => setOtpSentNotification(false), 4500);
     }
   };
 
@@ -267,16 +155,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     }
   };
 
-  // Auto-fill Server Test OTP
+  // Auto-fill Demo OTP
   const handleAutoFillOtp = () => {
-    if (serverOtpHint && serverOtpHint.length === 4) {
-      setOtpValues(serverOtpHint.split(''));
-      setOtpError(null);
-    }
+    setOtpValues(['4', '8', '2', '9']);
+    setOtpError(null);
   };
 
-  // Verify Server OTP and Place Order
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+  // Verify OTP and Place Order
+  const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault();
     const entered = otpValues.join('');
     if (entered.length < 4) {
@@ -284,44 +170,27 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       return;
     }
 
-    setIsSubmitting(true);
-    setOtpError(null);
-
-    try {
-      const verifyRes = await apiService.verifyOtp(phone, entered);
-      if (verifyRes.verified) {
-        finalizeOrder(true);
-      } else {
-        setOtpError('Verification failed. Invalid OTP code.');
-        setIsSubmitting(false);
-      }
-    } catch (err: any) {
-      setOtpError(err.message || 'Invalid or expired OTP code.');
-      setIsSubmitting(false);
+    if (entered !== DEMO_OTP) {
+      setOtpError(`Invalid code. For this demo, please enter ${DEMO_OTP}.`);
+      return;
     }
+
+    finalizeOrder(true);
   };
 
-  // Resend OTP via Server API
-  const handleResendOtp = async () => {
+  // Resend OTP
+  const handleResendOtp = () => {
     if (isResendDisabled) return;
-    try {
-      const res = await apiService.sendOtp(phone);
-      if (res.testCodeHint) {
-        setServerOtpHint(res.testCodeHint);
-      }
-      setResendTimer(30);
-      setIsResendDisabled(true);
-      setOtpValues(['', '', '', '']);
-      setOtpError(null);
-      setOtpSentNotification(true);
-      setTimeout(() => setOtpSentNotification(false), 5000);
-    } catch (err: any) {
-      setOtpError(err.message || 'Failed to resend OTP.');
-    }
+    setResendTimer(30);
+    setIsResendDisabled(true);
+    setOtpValues(['', '', '', '']);
+    setOtpError(null);
+    setOtpSentNotification(true);
+    setTimeout(() => setOtpSentNotification(false), 4500);
   };
 
   // Finalize Order
-  const finalizeOrder = (isPhoneVerified: boolean, paymentData?: { razorpayOrderId?: string; razorpayPaymentId?: string; razorpaySignature?: string }) => {
+  const finalizeOrder = (isPhoneVerified: boolean) => {
     setIsSubmitting(true);
     const generatedId = `PARZIO-${Math.floor(10000 + Math.random() * 90000)}`;
     setPlacedOrderId(generatedId);
@@ -333,7 +202,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       id: generatedId,
       customerName: name,
       phone: `+91 ${phone}`,
-      location: `${city}, ${state} (${pincode})`,
+      location: `${city} (${pincode})`,
       pincode: pincode,
       rtoRisk: paymentMethod === 'Prepaid UPI' ? 'Low' : isHighRiskPincode ? 'Medium' : 'Low',
       amount: totalAmount,
@@ -346,71 +215,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       tag: paymentMethod === 'COD' ? 'OTP Verified' : 'Prepaid Fast-Track',
       courier: 'BlueDart Air Express',
       phoneVerified: isPhoneVerified,
-      notes: `Doorstep delivery at ${address}, ${city}, ${state} - ${pincode} • Delivery by ${deliveryDate}`
+      notes: `Doorstep delivery at ${address}, Pin: ${pincode} • Delivery by ${deliveryDate}`
     };
 
-    // Sync order with High-Scale Production Backend
-    apiService.createOrder({
-      customerName: name,
-      phone: phone,
-      address: address,
-      city: city,
-      state: state,
-      pincode: pincode,
-      items: cartItems,
-      paymentMethod: paymentMethod,
-      totalAmount: totalAmount,
-      razorpayOrderId: paymentData?.razorpayOrderId,
-      razorpayPaymentId: paymentData?.razorpayPaymentId,
-      razorpaySignature: paymentData?.razorpaySignature
-    }).catch((err) => {
-      console.warn('Backend order sync notification:', err.message);
-    });
-
     setPlacedOrderData(newOrder);
-
-    // Business Standard Dispatch Notification to Atelier Owner WhatsApp
-    const ADMIN_WHATSAPP_NUMBER = '919106694317';
-    
-    // Generate professional business message
-    const businessMessage = [
-      `💎 *PARZIO ATELIER — NEW ORDER RECEIVED*`,
-      `━━━━━━━━━━━━━━━━━━━━━━━━━`,
-      `📦 *Order Reference:* #${generatedId}`,
-      `📅 *Date & Time:* ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`,
-      ``,
-      `👤 *CUSTOMER PROFILE:*`,
-      `• *Name:* ${name}`,
-      `• *Contact Number:* +91 ${phone}`,
-      `• *Delivery Address:* ${address}`,
-      `• *City / State:* ${city}, ${state}`,
-      `• *PIN Code:* ${pincode}`,
-      ``,
-      `💍 *ORDER PARTICULARS:*`,
-      ...cartItems.map((item, idx) => `  ${idx + 1}. ${item.product.name} (Qty: ${item.quantity}) — ₹${item.product.price * item.quantity}`),
-      ``,
-      `💳 *COMMERCIAL SUMMARY:*`,
-      `• *Total Items:* ${cartItems.reduce((acc, c) => acc + c.quantity, 0)} Units`,
-      `• *Payment Mode:* ${paymentMethod} (${paymentMethod === 'COD' ? 'Cash On Delivery' : 'Prepaid Fast-Track'})`,
-      `• *Total Amount Payable:* ₹${totalAmount}`,
-      `• *Courier Partner:* BlueDart Air Express`,
-      `• *Expected Delivery:* ${deliveryDate}`,
-      `━━━━━━━━━━━━━━━━━━━━━━━━━`,
-      `🔒 *Status:* Verified & Queued for Quality Inspection.`
-    ].join('\n');
-
-    // Trigger WhatsApp notification via window.open / API
-    const encodedMsg = encodeURIComponent(businessMessage);
-    const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodedMsg}`;
-    setWhatsappDispatchUrl(whatsappUrl);
-
-    // Background call/dispatch & prepare direct action link
-    try {
-      // Open in background tab or store for instant 1-click dispatch
-      window.open(whatsappUrl, '_blank');
-    } catch {
-      // Safe fallback if popups blocked
-    }
 
     setTimeout(() => {
       setIsSubmitting(false);
@@ -544,37 +352,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 />
               </div>
 
-              {/* City & State (All Indian States & UTs Enabled) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-[#141414] mb-1">City / Town</label>
-                  <input
-                    type="text"
-                    required
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="City"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#141414] mb-1">
-                    State / UT <span className="text-emerald-700 text-[10px] font-bold">● All India Delivery</span>
-                  </label>
-                  <select
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    required
-                    className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138] cursor-pointer"
-                  >
-                    {INDIAN_STATES.map((st) => (
-                      <option key={st} value={st}>
-                        {st}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* City & State */}
+              <div>
+                <label className="block text-xs font-bold text-[#141414] mb-1">City / Town</label>
+                <input
+                  type="text"
+                  required
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="City"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                />
               </div>
 
               {/* Dynamic Pincode Delivery Estimator Badge */}
@@ -626,7 +414,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     </p>
                   </button>
 
-                  {/* Prepaid Razorpay UPI Card */}
+                  {/* Prepaid UPI Card */}
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('Prepaid UPI')}
@@ -639,14 +427,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 font-bold text-xs text-[#141414]">
                         <CreditCard className="w-4 h-4 text-[#8c7138]" />
-                        <span>Razorpay UPI / Cards</span>
+                        <span>Prepaid UPI</span>
                       </div>
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
-                        Zero Risk
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">
+                        Fast-Track
                       </span>
                     </div>
                     <p className="text-[11px] text-[#747878] mt-1.5 leading-snug">
-                      GPay, PhonePe, Paytm, Cards & NetBanking via Razorpay.
+                      Instant 1-Click order. Zero verification needed.
                     </p>
                   </button>
                 </div>
@@ -683,14 +471,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   </>
                 )}
               </button>
-
-              <div className="text-center pt-1">
-                <p className="text-[10px] text-[#747878]">
-                  By proceeding, you agree to our 100% Anti-Tarnish Guarantee,{' '}
-                  <span className="underline cursor-pointer hover:text-[#141414]">7-Day Easy Returns</span> &amp;{' '}
-                  <span className="underline cursor-pointer hover:text-[#141414]">Privacy Safeguards</span>.
-                </p>
-              </div>
             </form>
           )}
 
@@ -714,21 +494,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   <div className="flex items-center gap-2.5">
                     <MessageSquare className="w-4 h-4 text-[#fed488]" />
                     <div className="text-xs">
-                      <p className="font-bold text-[#fed488]">Server Cryptographic OTP Dispatched</p>
+                      <p className="font-bold text-[#fed488]">WhatsApp &amp; SMS Sent</p>
                       <p className="text-[11px] text-white/80">
-                        PARZIO Code: <strong className="text-white underline">{serverOtpHint || '••••'}</strong>
+                        PARZIO Code: <strong className="text-white underline">4829</strong>
                       </p>
                     </div>
                   </div>
-                  {serverOtpHint && (
-                    <button
-                      type="button"
-                      onClick={handleAutoFillOtp}
-                      className="px-2.5 py-1 rounded-full bg-[#8c7138] text-white text-[10px] font-bold hover:bg-[#fed488] hover:text-[#141414] transition-colors cursor-pointer"
-                    >
-                      Auto-Fill
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={handleAutoFillOtp}
+                    className="px-2.5 py-1 rounded-full bg-[#8c7138] text-white text-[10px] font-bold hover:bg-[#fed488] hover:text-[#141414] transition-colors cursor-pointer"
+                  >
+                    Auto-Fill
+                  </button>
                 </div>
               )}
 
@@ -748,22 +526,20 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 </p>
               </div>
 
-              {/* Live Server Code Indicator */}
-              {serverOtpHint && (
-                <div className="p-3 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-[#141414]">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Server Verified Code: <strong className="font-mono text-[#8c7138] font-bold">{serverOtpHint}</strong></span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAutoFillOtp}
-                    className="text-xs font-bold text-[#8c7138] hover:underline cursor-pointer"
-                  >
-                    Click to Fill
-                  </button>
+              {/* Demo Helper Banner */}
+              <div className="p-3 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs text-[#141414]">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Demo Test OTP: <strong className="font-mono text-[#8c7138] font-bold">4829</strong></span>
                 </div>
-              )}
+                <button
+                  type="button"
+                  onClick={handleAutoFillOtp}
+                  className="text-xs font-bold text-[#8c7138] hover:underline cursor-pointer"
+                >
+                  Click to Fill
+                </button>
+              </div>
 
               {/* OTP Form */}
               <form onSubmit={handleVerifyOtp} className="space-y-4">
@@ -851,7 +627,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
               <div>
                 <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold font-mono">
-                  {placedOrderData.paymentMethod === 'COD' ? '✓ COD PHONE VERIFIED' : '✓ RAZORPAY UPI VERIFIED'}
+                  {placedOrderData.paymentMethod === 'COD' ? '✓ COD PHONE VERIFIED' : '✓ 100% PREPAID UPI'}
                 </span>
                 <h3 className="font-display text-2xl font-bold text-[#141414] mt-2">
                   Order Successfully Placed!
@@ -901,36 +677,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   <p className="text-[10px] text-[#747878]">
                     Your package includes our official authentic warranty card and blue velvet jewellery pouch.
                   </p>
-                </div>
-              </div>
-
-              {/* Atelier WhatsApp Dispatch Status */}
-              <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-left flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#25D366] text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
-                  <MessageSquare className="w-4 h-4 fill-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-emerald-950">Atelier WhatsApp Alert Sent</p>
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      +91 91066 94317
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-emerald-800/90 mt-0.5 leading-snug">
-                    Standard business order notification with customer address, product particulars and payable amount has been dispatched.
-                  </p>
-                  {whatsappDispatchUrl && (
-                    <a
-                      href={whatsappDispatchUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-[#141414] bg-white hover:bg-emerald-100/50 border border-emerald-300 px-3 py-1.5 rounded-full transition-colors shadow-2xs"
-                    >
-                      <span>Open WhatsApp Thread</span>
-                      <ExternalLink className="w-3 h-3 text-emerald-700" />
-                    </a>
-                  )}
                 </div>
               </div>
 

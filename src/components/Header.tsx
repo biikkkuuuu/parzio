@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Heart, ShoppingBag, User, ShieldCheck, Droplet, Truck, LayoutDashboard, Store, Smartphone, Monitor } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User } from 'lucide-react';
 import { Logo } from './Logo';
 import { ActiveScreen, DeviceMode, MarqueeItem } from '../types';
 import { MarqueeBar } from './MarqueeBar';
@@ -59,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Main Header Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between gap-4">
+      <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12 py-3 sm:py-4 flex items-center justify-between gap-4">
         {/* Brand Logo */}
         <div className="flex items-center gap-3">
           <button
@@ -73,8 +73,8 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* Center: Search Bar */}
-        <div className="flex-1 max-w-xl hidden md:flex items-center">
+        {/* Center: Search */}
+        <div className="flex-1 max-w-xl hidden md:flex">
           <div className="relative w-full">
             <input
               type="text"
@@ -118,18 +118,18 @@ export const Header: React.FC<HeaderProps> = ({
             <User className="w-5 h-5" />
           </button>
 
-          {/* Cart Bag Pill */}
+          {/* Cart Bag Icon Button - identical to Wishlist and Search */}
           <button
             onClick={onOpenCart}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-[#141414] text-white hover:bg-[#8c7138] transition-colors duration-200 group shadow-xs"
+            className="relative p-2 rounded-full text-[#141414] hover:bg-[#faf8f5] transition-colors cursor-pointer"
+            title="Cart"
           >
-            <ShoppingBag className="w-4 h-4 text-[#fed488] group-hover:scale-105 transition-transform" />
-            <span className="text-xs sm:text-sm font-bold tracking-tight">
-              ₹{cartTotal.toLocaleString('en-IN')}
-            </span>
-            <span className="w-5 h-5 rounded-full bg-[#8c7138] text-white text-[11px] font-bold flex items-center justify-center">
-              {cartCount}
-            </span>
+            <ShoppingBag className="w-5 h-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#8c7138] text-white text-[10px] font-bold flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -151,9 +151,9 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       )}
 
-      {/* Category Navigation Bar - Centered */}
-      <nav className="border-t border-[#eae5dc] bg-white overflow-x-auto no-scrollbar">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center gap-6 sm:gap-10 py-2.5 whitespace-nowrap text-xs font-bold tracking-[0.06em] text-[#747878]">
+      {/* Category Navigation Bar (Desktop Only) */}
+      <nav className="hidden md:block border-t border-[#eae5dc] bg-white overflow-x-auto no-scrollbar">
+        <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-center gap-4 sm:gap-8 py-2.5 whitespace-nowrap text-xs font-bold tracking-[0.06em] text-[#747878]">
           {CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat;
             return (

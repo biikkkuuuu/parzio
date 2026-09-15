@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { OrderItem, OrderStatus, Product, AdminTab, EmergencyShutdownConfig, MarqueeItem, StoreBanner } from '../types';
+import { OrderItem, OrderStatus, Product, AdminTab, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster } from '../types';
 import { Logo } from './Logo';
 import { AdminAnalyticsView } from './admin/AdminAnalyticsView';
 import { AdminOrdersView } from './admin/AdminOrdersView';
@@ -54,9 +54,15 @@ interface AtelierOpsHubProps {
   topMarqueeItems: MarqueeItem[];
   bannerMarqueeItems: MarqueeItem[];
   banners: StoreBanner[];
+  salePosters: SalePoster[];
+  skinSafeConfig: SkinSafeConfig;
+  saleBannerConfig: SaleBannerConfig;
   onUpdateTopMarquee: (items: MarqueeItem[]) => void;
   onUpdateBannerMarquee: (items: MarqueeItem[]) => void;
   onUpdateBanners: (banners: StoreBanner[]) => void;
+  onUpdateSalePosters: (posters: SalePoster[]) => void;
+  onUpdateSkinSafeConfig: (config: SkinSafeConfig) => void;
+  onUpdateSaleBannerConfig: (config: SaleBannerConfig) => void;
 }
 
 export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
@@ -78,9 +84,15 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
   topMarqueeItems,
   bannerMarqueeItems,
   banners,
+  salePosters,
+  skinSafeConfig,
+  saleBannerConfig,
   onUpdateTopMarquee,
   onUpdateBannerMarquee,
-  onUpdateBanners
+  onUpdateBanners,
+  onUpdateSalePosters,
+  onUpdateSkinSafeConfig,
+  onUpdateSaleBannerConfig
 }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
@@ -141,15 +153,15 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
 
       {/* Top Admin App Bar */}
       <header className="sticky top-0 z-40 bg-[#141414] text-white border-b border-[#2d2c2a] px-4 sm:px-8 py-3 shadow-md">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+        <div className="w-full max-w-[1800px] mx-auto flex items-center justify-between gap-3">
           
-          {/* Left: Hamburger Button & Logo */}
+          {/* Left: Hamburger Button & Logo Branding */}
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* Hamburger Button (Luxury Warm Standard) */}
+            {/* Hamburger Button */}
             <button
               onClick={() => setIsHamburgerOpen(true)}
               title="Open Atelier Ops Navigation Menu"
-              className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#8c7138] hover:bg-[#fed488] text-white hover:text-[#141414] text-xs font-bold transition-all shadow-sm active:scale-95 group border border-[#fed488]/30"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#8c7138] hover:bg-[#fed488] text-white hover:text-[#141414] text-xs font-bold transition-all shadow-sm active:scale-95 group border border-[#fed488]/30 cursor-pointer"
             >
               <Menu className="w-4 h-4 group-hover:scale-110 transition-transform" />
               <span className="uppercase tracking-wider font-bold text-[11px]">
@@ -159,39 +171,20 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
 
             <div className="h-6 w-px bg-white/20 hidden sm:block" />
 
+            {/* Branding Logo */}
             <div className="flex items-center gap-3">
               <Logo className="h-6 w-auto" isLight />
-              <div className="hidden md:block">
-                <div className="flex items-center gap-2">
-                  <h1 className="font-display text-sm font-bold tracking-wider uppercase text-[#f5f3f0]">
-                    PARZIO ADMIN
-                  </h1>
-                  <span className="px-2 py-0.2 rounded bg-white/10 text-[#fed488] text-[10px] font-mono font-bold border border-white/15">
-                    STORE
-                  </span>
-                </div>
-              </div>
             </div>
-
-            {/* Current Active Section Badge (clickable to trigger hamburger) */}
-            <button
-              onClick={() => setIsHamburgerOpen(true)}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white/90 text-xs font-semibold transition-colors border border-white/10"
-            >
-              <span className="text-[#fed488] text-[10px] uppercase tracking-wider font-bold">Viewing:</span>
-              <span>{tabLabels[activeTab]}</span>
-              <ChevronDown className="w-3 h-3 text-white/50" />
-            </button>
           </div>
 
-          {/* Right: Quick Action Controls */}
+          {/* Right: Emergency Stop & Logout Controls Only */}
           <div className="flex items-center gap-2">
             
-            {/* Emergency Shutdown Quick Trigger */}
+            {/* Emergency Shutdown Trigger */}
             <button
               onClick={() => setIsEmergencyModalOpen(true)}
               title="Pause Store Orders"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 emergencyConfig.isActive
                   ? 'bg-rose-600 text-white animate-pulse shadow-md shadow-rose-950'
                   : 'bg-rose-500/20 text-rose-300 hover:bg-rose-600 hover:text-white border border-rose-500/40'
@@ -203,30 +196,11 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
               </span>
             </button>
 
-            {/* Add Product Shortcut */}
-            <button
-              onClick={() => setIsNewProductModalOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all border border-white/10"
-            >
-              <Plus className="w-3.5 h-3.5 text-[#fed488]" />
-              <span>Add Product</span>
-            </button>
-
-            {/* Store Dekho (View Storefront) Button */}
-            <button
-              onClick={onBackToStore}
-              title="Store Dekho / View Live Storefront"
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-[#fed488] hover:text-[#141414] text-white text-xs font-bold transition-colors border border-white/10"
-            >
-              <Store className="w-3.5 h-3.5 text-[#fed488]" />
-              <span className="hidden xs:inline">Store Dekho</span>
-            </button>
-
             {/* Admin Logout Button */}
             <button
               onClick={onLogout}
               title="Logout from Admin Panel"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-rose-950/70 hover:text-rose-300 text-white/70 text-xs font-bold transition-colors border border-white/10 hover:border-rose-800/60"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-rose-950/70 hover:text-rose-300 text-white/70 text-xs font-bold transition-colors border border-white/10 hover:border-rose-800/60 cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span className="hidden md:inline">Logout</span>
@@ -239,7 +213,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
 
       {/* Live Telemetry Ticker */}
       <div className="bg-[#1e1e1e] text-white/90 border-b border-black/40 text-xs py-2.5 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 font-mono text-[11px]">
+        <div className="w-full max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-4 font-mono text-[11px]">
           <div className="flex items-center gap-2 text-[#fed488]">
             <Clock className="w-3.5 h-3.5" />
             <span>LIVE SALES SPEED: 241 ORDERS/HOUR</span>
@@ -258,7 +232,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
       </div>
 
       {/* Main Admin Workspace Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
         
         {/* Module Header & Hamburger Switcher Bar */}
         <div className="mb-6 bg-white p-4 sm:p-5 rounded-3xl border border-[#eae5dc] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -300,9 +274,9 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
             </div>
           </div>
 
-          {/* Quick Menu Button to Change Module & Direct Tab Bar */}
+          {/* Direct Tab Bar */}
           <div className="flex flex-wrap items-center gap-2">
-            <div className="hidden md:flex items-center gap-1.5 p-1 bg-[#faf8f5] border border-[#eae5dc] rounded-full text-xs">
+            <div className="flex items-center gap-1.5 p-1 bg-[#faf8f5] border border-[#eae5dc] rounded-full text-xs">
               <button
                 onClick={() => setActiveTab('banners')}
                 className={`px-3 py-1.5 rounded-full font-bold transition-all ${
@@ -311,7 +285,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
                     : 'text-neutral-600 hover:text-neutral-900'
                 }`}
               >
-                Banners & Marquee
+                Banners &amp; Marquee
               </button>
               <button
                 onClick={() => setActiveTab('orders')}
@@ -334,14 +308,6 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
                 Stock ({products.length})
               </button>
             </div>
-
-            <button
-              onClick={() => setIsHamburgerOpen(true)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold transition-all shadow-sm active:scale-95 group cursor-pointer"
-            >
-              <Menu className="w-4 h-4 text-[#fed488] group-hover:scale-110 transition-transform" />
-              <span>All Modules (Menu)</span>
-            </button>
           </div>
         </div>
 
@@ -358,9 +324,15 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
             topMarqueeItems={topMarqueeItems}
             bannerMarqueeItems={bannerMarqueeItems}
             banners={banners}
+            salePosters={salePosters}
+            skinSafeConfig={skinSafeConfig}
+            saleBannerConfig={saleBannerConfig}
             onUpdateTopMarquee={onUpdateTopMarquee}
             onUpdateBannerMarquee={onUpdateBannerMarquee}
             onUpdateBanners={onUpdateBanners}
+            onUpdateSalePosters={onUpdateSalePosters}
+            onUpdateSkinSafeConfig={onUpdateSkinSafeConfig}
+            onUpdateSaleBannerConfig={onUpdateSaleBannerConfig}
             onTriggerToast={triggerToast}
           />
         )}

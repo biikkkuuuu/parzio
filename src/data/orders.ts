@@ -16,6 +16,7 @@ export const INITIAL_ORDERS: OrderItem[] = [
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJ6KsGvMmDre3vW1DrMsKt5qGEuc3sAKPferGJypreLxK_7Y67atNQ4xomNX3mXsafI8KxVgwwIxAuSGRAMdU1nptUgdRG2egH30oAiQJPAMja-A9D7cmeTOcTjB4K4xMDXO1Jh0lOUQbTjY6ag3AcMy_FFMlynYLgIWldQSQ-kXA73U-4qhTyvLZlIuztQX18XRXyVMQVw4OkFAABmM7kQLZaJmDFCQgfCVkrUX-3u1FG5lCyJEWr',
     tag: '18K PVD Verified',
     courier: 'BlueDart Surface Express',
+    trackingNumber: 'BD-982410729',
     phoneVerified: true,
     notes: 'Address Pin: 400050 (Low RTO Risk)'
   },
