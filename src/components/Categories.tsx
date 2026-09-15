@@ -1,16 +1,21 @@
 import React from 'react';
 import { CATEGORIES_DATA } from '../data/products';
+import { CategoryItem } from '../types';
 import { Sparkles, ChevronRight } from 'lucide-react';
 
 interface CategoriesProps {
   onSelectCategory: (categoryName: string) => void;
   selectedCategory: string;
+  categories?: CategoryItem[];
 }
 
 export const Categories: React.FC<CategoriesProps> = ({
   onSelectCategory,
-  selectedCategory
+  selectedCategory,
+  categories
 }) => {
+  const displayCategories = categories && categories.length > 0 ? categories : CATEGORIES_DATA;
+
   return (
     <section className="py-10 sm:py-14 bg-[#fbf9f6] border-b border-[#eae5dc]">
       <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12">
@@ -31,7 +36,7 @@ export const Categories: React.FC<CategoriesProps> = ({
 
         {/* Round Circular Collections Row - Horizontal Swipe on Mobile, Centered Grid on Desktop */}
         <div className="flex items-center overflow-x-auto no-scrollbar sm:flex-wrap sm:justify-center gap-5 sm:gap-10 lg:gap-14 pb-2 px-1 snap-x snap-mandatory sm:snap-none">
-          {CATEGORIES_DATA.map((cat) => {
+          {displayCategories.map((cat) => {
             const isSelected = selectedCategory.toLowerCase() === cat.name.toLowerCase();
             return (
               <button

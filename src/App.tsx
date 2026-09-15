@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Product, CartItem, OrderItem, ActiveScreen, OrderStatus, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster } from './types';
-import { HERO_PRODUCT, VAULT_PRODUCTS } from './data/products';
+import { Product, CategoryItem, CartItem, OrderItem, ActiveScreen, OrderStatus, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster } from './types';
+import { HERO_PRODUCT, VAULT_PRODUCTS, CATEGORIES_DATA } from './data/products';
 import { INITIAL_ORDERS } from './data/orders';
 import { INITIAL_BANNERS, INITIAL_TOP_MARQUEE, INITIAL_BANNER_MARQUEE, INITIAL_SALE_POSTERS } from './data/bannerData';
 import { Header } from './components/Header';
@@ -123,6 +123,48 @@ export default function App() {
   const [products, setProducts] = useState<Product[]>(VAULT_PRODUCTS);
   const [activeCategory, setActiveCategory] = useState('NEW ARRIVALS');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Categories State (Persisted in localStorage with fallback to default collections)
+  const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('parzio_categories');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return CATEGORIES_DATA;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('parzio_categories', JSON.stringify(categories));
+    } catch {}
+  }, [categories]);
+
+  const handleAddCategory = (newCat: CategoryItem) => {
+    setCategories((prev) => [...prev, newCat]);
+    showToast(`Category "${newCat.name}" created!`);
+  };
+
+  const handleEditCategory = (oldName: string, updatedCategory: CategoryItem) => {
+    setCategories((prev) =>
+      prev.map((c) => (c.name.toLowerCase() === oldName.toLowerCase() ? updatedCategory : c))
+    );
+    if (oldName.toLowerCase() !== updatedCategory.name.toLowerCase()) {
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.category.toLowerCase() === oldName.toLowerCase()
+            ? { ...p, category: updatedCategory.name }
+            : p
+        )
+      );
+    }
+    showToast(`Category "${updatedCategory.name}" updated!`);
+  };
+
+  const handleDeleteCategory = (catName: string) => {
+    setCategories((prev) => prev.filter((c) => c.name.toLowerCase() !== catName.toLowerCase()));
+    showToast(`Category "${catName}" removed.`);
+  };
+
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(() => {
     if (initialRoute.type === 'product' && initialRoute.id) {
       return [HERO_PRODUCT, ...VAULT_PRODUCTS].find((p) => p.id === initialRoute.id) || null;
@@ -717,6 +759,10 @@ export default function App() {
         onAddProduct={handleAddProduct}
         onEditProduct={handleEditProduct}
         onDeleteProduct={handleDeleteProduct}
+        categories={categories}
+        onAddCategory={handleAddCategory}
+        onEditCategory={handleEditCategory}
+        onDeleteCategory={handleDeleteCategory}
         onUpdateStock={handleUpdateStock}
         onToggleLive={handleToggleLive}
         emergencyConfig={emergencyConfig}
@@ -931,6 +977,7 @@ export default function App() {
 
             {/* New Collections Round Categories */}
             <Categories
+              categories={categories}
               onSelectCategory={(cat) => {
                 setActiveCategory(cat.toUpperCase());
                 scrollToVault();
@@ -941,6 +988,7 @@ export default function App() {
             {/* The ₹99 Anti-Tarnish Vault */}
             <ProductVault
               products={filteredProducts}
+              categories={categories}
               activeFilter={activeCategory}
               onSelectFilter={setActiveCategory}
               onAddToCart={handleAddToCart}

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Product } from '../../types';
+import React, { useState, useMemo } from 'react';
+import { CategoryItem, Product } from '../../types';
 import { AdminProductModal } from './AdminProductModal';
 import {
   Plus,
@@ -17,6 +17,7 @@ import {
 
 interface AdminInventoryViewProps {
   products: Product[];
+  categories?: CategoryItem[];
   onOpenNewProductModal: () => void;
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
@@ -27,6 +28,7 @@ interface AdminInventoryViewProps {
 
 export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
   products,
+  categories,
   onOpenNewProductModal,
   onEditProduct,
   onDeleteProduct,
@@ -40,6 +42,19 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
   // Modals for Edit and Delete
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+
+  const filterCategories = useMemo(() => {
+    const set = new Set<string>(['ALL']);
+    if (categories) {
+      categories.forEach((c) => {
+        if (c.name) set.add(c.name.toUpperCase());
+      });
+    }
+    products.forEach((p) => {
+      if (p.category) set.add(p.category.toUpperCase());
+    });
+    return Array.from(set);
+  }, [categories, products]);
 
   const filteredProducts = products.filter((prod) => {
     const matchesSearch =
@@ -101,7 +116,7 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-          {['ALL', 'NECKLACES', 'EARRINGS', 'RINGS', 'BRACELETS', 'ANKLETS'].map((cat) => (
+          {filterCategories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
@@ -266,6 +281,7 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
         <AdminProductModal
           isOpen={true}
           initialProduct={editingProduct}
+          categories={categories}
           onClose={() => setEditingProduct(null)}
           onSaveProduct={(updated) => {
             onEditProduct(updated);

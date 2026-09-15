@@ -15,7 +15,8 @@ import {
   AlertOctagon,
   Store,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Layers
 } from 'lucide-react';
 
 interface AdminHamburgerDrawerProps {
@@ -26,6 +27,7 @@ interface AdminHamburgerDrawerProps {
   orderCount: number;
   productCount: number;
   bannerCount?: number;
+  categoriesCount?: number;
   onViewStore: () => void;
   onLogout: () => void;
   onOpenEmergencyModal: () => void;
@@ -40,6 +42,7 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
   orderCount,
   productCount,
   bannerCount = 2,
+  categoriesCount = 5,
   onViewStore,
   onLogout,
   onOpenEmergencyModal,
@@ -55,6 +58,14 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
     badge?: string;
     badgeColor?: string;
   }[] = [
+    {
+      id: 'categories',
+      label: 'Categories & Collections',
+      sublabel: 'Create new categories and manage jewelry collections',
+      icon: <Layers className="w-4 h-4" />,
+      badge: `${categoriesCount} Collections`,
+      badgeColor: 'bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc]'
+    },
     {
       id: 'banners',
       label: 'Banners & Running Marquee',

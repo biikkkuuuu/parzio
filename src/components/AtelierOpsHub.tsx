@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { OrderItem, OrderStatus, Product, AdminTab, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster } from '../types';
+import { OrderItem, OrderStatus, Product, CategoryItem, AdminTab, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster } from '../types';
 import { Logo } from './Logo';
 import { AdminAnalyticsView } from './admin/AdminAnalyticsView';
 import { AdminOrdersView } from './admin/AdminOrdersView';
 import { AdminInventoryView } from './admin/AdminInventoryView';
+import { AdminCategoriesView } from './admin/AdminCategoriesView';
 import { AdminBannersView } from './admin/AdminBannersView';
 import { AdminRtoShieldView } from './admin/AdminRtoShieldView';
 import { AdminExchangesView } from './admin/AdminExchangesView';
@@ -32,12 +33,14 @@ import {
   LogOut,
   AlertOctagon,
   ChevronDown,
-  Power
+  Power,
+  Layers
 } from 'lucide-react';
 
 interface AtelierOpsHubProps {
   orders: OrderItem[];
   products: Product[];
+  categories?: CategoryItem[];
   onBackToStore: () => void;
   onLogout: () => void;
   onUpdateOrderStatus: (orderId: string, newStatus: OrderStatus) => void;
@@ -47,6 +50,9 @@ interface AtelierOpsHubProps {
   onAddProduct: (product: Product) => void;
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
+  onAddCategory?: (category: CategoryItem) => void;
+  onEditCategory?: (oldName: string, updatedCategory: CategoryItem) => void;
+  onDeleteCategory?: (categoryName: string) => void;
   onUpdateStock: (productId: string, newStock: number) => void;
   onToggleLive: (productId: string) => void;
   emergencyConfig: EmergencyShutdownConfig;
@@ -68,6 +74,7 @@ interface AtelierOpsHubProps {
 export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
   orders,
   products,
+  categories = [],
   onBackToStore,
   onLogout,
   onUpdateOrderStatus,
@@ -77,6 +84,9 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
   onAddProduct,
   onEditProduct,
   onDeleteProduct,
+  onAddCategory,
+  onEditCategory,
+  onDeleteCategory,
   onUpdateStock,
   onToggleLive,
   emergencyConfig,
@@ -110,6 +120,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
     overview: 'Sales Overview',
     orders: 'Customer Orders',
     inventory: 'Products & Stock',
+    categories: 'Categories & Collections',
     banners: 'Banners & Marquee',
     'rto-shield': 'Cash on Delivery Safety',
     exchanges: 'Exchanges & Returns',
@@ -241,6 +252,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
               {activeTab === 'overview' && <BarChart3 className="w-5 h-5" />}
               {activeTab === 'orders' && <Package className="w-5 h-5" />}
               {activeTab === 'inventory' && <Sparkles className="w-5 h-5" />}
+              {activeTab === 'categories' && <Layers className="w-5 h-5" />}
               {activeTab === 'banners' && <Sparkles className="w-5 h-5" />}
               {activeTab === 'rto-shield' && <ShieldCheck className="w-5 h-5" />}
               {activeTab === 'exchanges' && <RotateCcw className="w-5 h-5" />}
@@ -262,6 +274,11 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
                     {products.length} items
                   </span>
                 )}
+                {activeTab === 'categories' && (
+                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.2 rounded-full">
+                    {categories.length} categories
+                  </span>
+                )}
                 {activeTab === 'banners' && (
                   <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.2 rounded-full">
                     {banners.length} banners
@@ -278,14 +295,24 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1.5 p-1 bg-[#faf8f5] border border-[#eae5dc] rounded-full text-xs">
               <button
-                onClick={() => setActiveTab('banners')}
+                onClick={() => setActiveTab('categories')}
                 className={`px-3 py-1.5 rounded-full font-bold transition-all ${
-                  activeTab === 'banners'
+                  activeTab === 'categories'
                     ? 'bg-[#141414] text-[#fed488] shadow-xs'
                     : 'text-neutral-600 hover:text-neutral-900'
                 }`}
               >
-                Banners &amp; Marquee
+                Categories ({categories.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('inventory')}
+                className={`px-3 py-1.5 rounded-full font-bold transition-all ${
+                  activeTab === 'inventory'
+                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                    : 'text-neutral-600 hover:text-neutral-900'
+                }`}
+              >
+                Stock ({products.length})
               </button>
               <button
                 onClick={() => setActiveTab('orders')}
@@ -298,14 +325,14 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
                 Orders ({orders.length})
               </button>
               <button
-                onClick={() => setActiveTab('inventory')}
+                onClick={() => setActiveTab('banners')}
                 className={`px-3 py-1.5 rounded-full font-bold transition-all ${
-                  activeTab === 'inventory'
+                  activeTab === 'banners'
                     ? 'bg-[#141414] text-[#fed488] shadow-xs'
                     : 'text-neutral-600 hover:text-neutral-900'
                 }`}
               >
-                Stock ({products.length})
+                Banners
               </button>
             </div>
           </div>
@@ -353,11 +380,34 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
         {activeTab === 'inventory' && (
           <AdminInventoryView
             products={products}
+            categories={categories}
             onOpenNewProductModal={() => setIsNewProductModalOpen(true)}
             onEditProduct={onEditProduct}
             onDeleteProduct={onDeleteProduct}
             onUpdateStock={onUpdateStock}
             onToggleLive={onToggleLive}
+            onTriggerToast={triggerToast}
+          />
+        )}
+
+        {activeTab === 'categories' && (
+          <AdminCategoriesView
+            categories={categories}
+            products={products}
+            onAddCategory={(cat) => {
+              if (onAddCategory) onAddCategory(cat);
+              triggerToast(`Created category "${cat.name}"!`);
+            }}
+            onEditCategory={(oldName, updated) => {
+              if (onEditCategory) onEditCategory(oldName, updated);
+              triggerToast(`Updated category "${updated.name}"!`);
+            }}
+            onDeleteCategory={(catName) => {
+              if (onDeleteCategory) onDeleteCategory(catName);
+              triggerToast(`Removed category "${catName}".`);
+            }}
+            onAddProduct={onAddProduct}
+            onEditProduct={onEditProduct}
             onTriggerToast={triggerToast}
           />
         )}
@@ -390,6 +440,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
         }}
         orderCount={orders.length}
         productCount={products.length}
+        categoriesCount={categories.length}
         bannerCount={banners.length}
         onViewStore={onBackToStore}
         onLogout={onLogout}
@@ -422,9 +473,19 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
       <AdminProductModal
         isOpen={isNewProductModalOpen}
         onClose={() => setIsNewProductModalOpen(false)}
+        categories={categories}
         onSaveProduct={(newProd) => {
           onAddProduct(newProd);
           triggerToast(`Published "${newProd.name}" directly to live storefront!`);
+        }}
+        onAddNewCategory={(newCat) => {
+          if (onAddCategory) {
+            onAddCategory({
+              name: newCat,
+              subtitle: `${newCat} Collection`,
+              image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=400&q=80'
+            });
+          }
         }}
       />
 

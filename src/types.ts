@@ -1,7 +1,14 @@
+export interface CategoryItem {
+  id?: string;
+  name: string;
+  subtitle: string;
+  image: string;
+}
+
 export interface Product {
   id: string;
   name: string;
-  category: 'Necklaces' | 'Earrings' | 'Rings' | 'Bracelets' | 'Anklets';
+  category: string;
   price: number;
   originalPrice: number;
   savePercent: number;
@@ -109,6 +116,7 @@ export type AdminTab =
   | 'overview'
   | 'orders'
   | 'inventory'
+  | 'categories'
   | 'banners'
   | 'rto-shield'
   | 'exchanges'

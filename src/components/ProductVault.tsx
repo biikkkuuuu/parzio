@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Sparkles, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Product } from '../types';
+import { Product, CategoryItem } from '../types';
 
 interface ProductVaultProps {
   products: Product[];
+  categories?: CategoryItem[];
   activeFilter: string;
   onSelectFilter: (filter: string) => void;
   onAddToCart: (product: Product) => void;
@@ -12,11 +13,12 @@ interface ProductVaultProps {
   onOpenProductModal: (product: Product) => void;
 }
 
-const FILTER_TABS = ['ALL', 'NECKLACES', 'RINGS', 'BRACELETS', 'EARRINGS', 'ANKLETS'];
+const DEFAULT_FILTER_TABS = ['ALL', 'NECKLACES', 'RINGS', 'BRACELETS', 'EARRINGS', 'ANKLETS'];
 const PRODUCTS_PER_PAGE = 12;
 
 export const ProductVault: React.FC<ProductVaultProps> = ({
   products,
+  categories,
   activeFilter,
   onSelectFilter,
   onAddToCart,
@@ -24,6 +26,16 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
   wishlistIds,
   onOpenProductModal
 }) => {
+  const filterTabs = useMemo(() => {
+    const list = new Set<string>(DEFAULT_FILTER_TABS);
+    if (categories) {
+      categories.forEach((c) => list.add(c.name.toUpperCase()));
+    }
+    products.forEach((p) => {
+      if (p.category) list.add(p.category.toUpperCase());
+    });
+    return Array.from(list);
+  }, [categories, products]);
   const [currentPage, setCurrentPage] = useState(1);
   const isFirstMount = useRef(true);
 
@@ -93,7 +105,7 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
 
         {/* Filter Pills Tab Strip */}
         <div className="flex items-center sm:justify-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-6 px-1">
-          {FILTER_TABS.map((tab) => {
+          {filterTabs.map((tab) => {
             const isActive =
               activeFilter.toUpperCase() === tab ||
               (activeFilter === 'ALL' && tab === 'ALL') ||

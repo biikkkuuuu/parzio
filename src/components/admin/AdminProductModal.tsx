@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Product } from '../../types';
-import { X, Sparkles, Image, Tag, Droplet, ShieldCheck, DollarSign, Package } from 'lucide-react';
+import { X, Sparkles, Image, Tag, Droplet, ShieldCheck, DollarSign, Package, Plus, Check } from 'lucide-react';
 
 interface AdminProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaveProduct: (product: Product) => void;
   initialProduct?: Product | null; // If present, edit mode; otherwise create mode
+  categories?: (string | { name: string })[];
+  defaultCategory?: string;
+  onAddNewCategory?: (name: string) => void;
 }
 
-const CATEGORIES: Product['category'][] = [
+const DEFAULT_CATEGORIES = [
   'Necklaces',
   'Earrings',
   'Rings',
@@ -21,12 +24,18 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   isOpen,
   onClose,
   onSaveProduct,
-  initialProduct
+  initialProduct,
+  categories,
+  defaultCategory,
+  onAddNewCategory
 }) => {
   const isEditing = !!initialProduct;
 
   const [name, setName] = useState('');
-  const [category, setCategory] = useState<Product['category']>('Necklaces');
+  const [category, setCategory] = useState<string>('Necklaces');
+  const [isAddingNewCat, setIsAddingNewCat] = useState(false);
+  const [newCatInput, setNewCatInput] = useState('');
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [price, setPrice] = useState('99');
   const [originalPrice, setOriginalPrice] = useState('1499');
   const [sku, setSku] = useState('PRZ-DROP-01');
@@ -37,6 +46,19 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [isAntiTarnish, setIsAntiTarnish] = useState(true);
   const [badge, setBadge] = useState('₹99 VAULT SPECIAL');
   const [description, setDescription] = useState('Anti-tarnish, sweat-proof, perfume-safe demi-fine jewelry designed for daily luxury.');
+
+  const allCategories = useMemo(() => {
+    const set = new Set<string>(DEFAULT_CATEGORIES);
+    if (categories) {
+      categories.forEach((c) => {
+        const catName = typeof c === 'string' ? c : c.name;
+        if (catName) set.add(catName);
+      });
+    }
+    customCategories.forEach((c) => set.add(c));
+    if (category) set.add(category);
+    return Array.from(set);
+  }, [categories, customCategories, category]);
 
   useEffect(() => {
     if (initialProduct) {
@@ -54,7 +76,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       setDescription(initialProduct.description);
     } else {
       setName('');
-      setCategory('Necklaces');
+      setCategory(defaultCategory || 'Necklaces');
       setPrice('99');
       setOriginalPrice('1499');
       setSku(`PRZ-${Date.now().toString().slice(-5)}`);
@@ -66,7 +88,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       setBadge('₹99 VAULT SPECIAL');
       setDescription('Anti-tarnish, sweat-proof, perfume-safe demi-fine jewelry designed for daily luxury.');
     }
-  }, [initialProduct, isOpen]);
+  }, [initialProduct, isOpen, defaultCategory]);
 
   if (!isOpen) return null;
 
@@ -151,18 +173,84 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
-                Category *
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value as Product['category'])}
-                className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-xs font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[10px] font-bold uppercase text-[#747878]">
+                  Category *
+                </label>
+                {!isAddingNewCat ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingNewCat(true)}
+                    className="text-[10px] text-[#8c7138] hover:text-[#141414] font-bold flex items-center gap-0.5 cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>New</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingNewCat(false)}
+                    className="text-[10px] text-[#747878] hover:text-rose-600 font-bold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+
+              {isAddingNewCat ? (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={newCatInput}
+                    onChange={(e) => setNewCatInput(e.target.value)}
+                    placeholder="New category..."
+                    className="flex-1 bg-[#faf8f5] border border-[#8c7138] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-[#141414] focus:outline-none"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newCatInput.trim()) {
+                          const formatted = newCatInput.trim();
+                          setCustomCategories((prev) => [...prev, formatted]);
+                          setCategory(formatted);
+                          if (onAddNewCategory) onAddNewCategory(formatted);
+                          setNewCatInput('');
+                          setIsAddingNewCat(false);
+                        }
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newCatInput.trim()) {
+                        const formatted = newCatInput.trim();
+                        setCustomCategories((prev) => [...prev, formatted]);
+                        setCategory(formatted);
+                        if (onAddNewCategory) onAddNewCategory(formatted);
+                        setNewCatInput('');
+                        setIsAddingNewCat(false);
+                      }
+                    }}
+                    className="p-2 rounded-xl bg-[#8c7138] text-white hover:bg-[#141414] transition-colors cursor-pointer"
+                    title="Add Category"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-xs font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                >
+                  {allCategories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
 
