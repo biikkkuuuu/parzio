@@ -11,6 +11,7 @@ import {
   Share2,
   Check,
   ChevronRight,
+  ChevronLeft,
   ChevronDown,
   Sparkles
 } from 'lucide-react';
@@ -40,6 +41,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [copiedLink, setCopiedLink] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
 
   // Scroll to absolute top whenever product changes
   useEffect(() => {
@@ -56,6 +58,30 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=800',
     'https://images.unsplash.com/photo-1611591475179-42cd3423e89d?auto=format&fit=crop&q=80&w=800'
   ];
+
+  const handlePrevImage = () => {
+    setSelectedImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = () => {
+    setSelectedImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart - touchEnd;
+    if (diff > 35) {
+      handleNextImage(); // Swiped left -> Next
+    } else if (diff < -35) {
+      handlePrevImage(); // Swiped right -> Prev
+    }
+    setTouchStart(null);
+  };
 
   // Related products
   const relatedProducts = VAULT_PRODUCTS.filter(
@@ -115,19 +141,26 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
       <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start">
           
-          {/* Left Column: Image Gallery (5 Cols on Desktop) */}
+          {/* Left Column: Image Gallery with Interactive Slider & Swipe (5 Cols on Desktop) */}
           <div className="lg:col-span-5 flex flex-col gap-2">
-            {/* Main Image Stage - constrained height for PC screens */}
-            <div className="relative aspect-square max-h-[380px] sm:max-h-[420px] lg:max-h-[440px] w-full rounded-2xl overflow-hidden bg-white border border-[#eae5dc] shadow-xs group mx-auto">
+            {/* Main Image Stage with Floating < and > Arrows and Swipe Gestures */}
+            <div
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              className="relative aspect-square max-h-[380px] sm:max-h-[420px] lg:max-h-[440px] w-full rounded-2xl overflow-hidden bg-white border border-[#eae5dc] shadow-xs select-none group mx-auto"
+            >
+              {/* Image with smooth transition */}
               <img
+                key={selectedImageIndex}
                 src={galleryImages[selectedImageIndex] || product.image}
                 alt={product.name}
-                className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-full object-cover object-center animate-fadeIn"
+                draggable={false}
               />
 
               {/* Minimal Clean Badge */}
               {product.badge && (
-                <span className="absolute top-2.5 left-2.5 bg-[#141414] text-[#fed488] text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shadow-xs">
+                <span className="absolute top-2.5 left-2.5 bg-[#141414] text-[#fed488] text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shadow-xs z-10">
                   {product.badge}
                 </span>
               )}
@@ -136,29 +169,55 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               <button
                 type="button"
                 onClick={() => onToggleWishlist(product.id)}
-                className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#141414] hover:text-rose-500 shadow-xs transition-transform active:scale-90 cursor-pointer"
+                className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#141414] hover:text-rose-500 shadow-xs transition-transform active:scale-90 cursor-pointer z-10"
                 title="Save to Wishlist"
               >
                 <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
               </button>
-            </div>
 
-            {/* Compact Thumbnail Row */}
-            <div className="flex gap-2 overflow-x-auto no-scrollbar py-0.5 justify-center sm:justify-start">
-              {galleryImages.map((img, idx) => (
+              {/* Floating Left Arrow (<) */}
+              {galleryImages.length > 1 && (
                 <button
-                  key={idx}
                   type="button"
-                  onClick={() => setSelectedImageIndex(idx)}
-                  className={`w-13 h-13 sm:w-14 sm:h-14 rounded-lg overflow-hidden border transition-all flex-shrink-0 cursor-pointer ${
-                    selectedImageIndex === idx
-                      ? 'border-[#8c7138] ring-1 ring-[#8c7138] shadow-xs scale-102'
-                      : 'border-[#eae5dc] opacity-70 hover:opacity-100'
-                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrevImage();
+                  }}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-white text-[#141414] shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-90 z-20 cursor-pointer border border-[#eae5dc]/80"
+                  title="Previous image"
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-              ))}
+              )}
+
+              {/* Floating Right Arrow (>) */}
+              {galleryImages.length > 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNextImage();
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-white text-[#141414] shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-90 z-20 cursor-pointer border border-[#eae5dc]/80"
+                  title="Next image"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* Subtle Slide Dots Indicator */}
+              {galleryImages.length > 1 && (
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-xs pointer-events-none">
+                  {galleryImages.map((_, idx) => (
+                    <span
+                      key={idx}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        selectedImageIndex === idx ? 'w-4 bg-white' : 'w-1.5 bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
