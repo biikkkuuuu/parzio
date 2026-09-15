@@ -73,6 +73,7 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [selectedTrackOrderId, setSelectedTrackOrderId] = useState<string | null>(null);
 
   // Cart & Wishlist
   const [cartItems, setCartItems] = useState<CartItem[]>([
@@ -273,10 +274,140 @@ export default function App() {
     );
   };
 
+  // Browser History & Navigation Handlers (Back Button support)
   const handleSelectProduct = (product: Product) => {
+    window.history.pushState({ type: 'product', id: product.id }, '');
     setSelectedProduct(product);
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   };
+
+  const handleCloseProduct = () => {
+    if (selectedProduct) {
+      window.history.back();
+    }
+  };
+
+  const handleTabChange = (newTab: TabType) => {
+    if (newTab === activeTab && !selectedProduct && !selectedTrackOrderId) return;
+    window.history.pushState({ type: 'tab', tab: newTab }, '');
+    setActiveTab(newTab);
+    setSelectedProduct(null);
+    setSelectedTrackOrderId(null);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleOpenCart = () => {
+    window.history.pushState({ modal: 'cart' }, '');
+    setIsCartOpen(true);
+  };
+
+  const handleOpenWishlist = () => {
+    window.history.pushState({ modal: 'wishlist' }, '');
+    setIsWishlistOpen(true);
+  };
+
+  const handleOpenCheckout = () => {
+    window.history.pushState({ modal: 'checkout' }, '');
+    setIsCheckoutOpen(true);
+  };
+
+  const handleOpenSearch = () => {
+    window.history.pushState({ modal: 'search' }, '');
+    setIsSearchOpen(true);
+  };
+
+  const handleOpenDrawer = () => {
+    window.history.pushState({ modal: 'drawer' }, '');
+    setIsDrawerOpen(true);
+  };
+
+  const handleOpenAtelierOps = () => {
+    window.history.pushState({ view: 'atelier-ops' }, '');
+    setActiveScreen('atelier-ops');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleSelectTrackOrder = (order: OrderItem) => {
+    window.history.pushState({ type: 'order', id: order.id }, '');
+    setSelectedTrackOrderId(order.id);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleBackFromTrackOrder = () => {
+    window.history.back();
+  };
+
+  // Global popstate event listener for hardware / browser back button
+  useEffect(() => {
+    if (!window.history.state) {
+      window.history.replaceState({ type: 'root', tab: 'home' }, '');
+    }
+
+    const handlePopState = () => {
+      // 1. Checkout modal open? Close it
+      if (isCheckoutOpen) {
+        setIsCheckoutOpen(false);
+        return;
+      }
+      // 2. Cart drawer open? Close it
+      if (isCartOpen) {
+        setIsCartOpen(false);
+        return;
+      }
+      // 3. Wishlist open? Close it
+      if (isWishlistOpen) {
+        setIsWishlistOpen(false);
+        return;
+      }
+      // 4. Search open? Close it
+      if (isSearchOpen) {
+        setIsSearchOpen(false);
+        return;
+      }
+      // 5. Drawer open? Close it
+      if (isDrawerOpen) {
+        setIsDrawerOpen(false);
+        return;
+      }
+      // 6. Product Detail View open? Return to catalog
+      if (selectedProduct) {
+        setSelectedProduct(null);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      // 7. Atelier Ops open? Return to customer storefront
+      if (activeScreen === 'atelier-ops') {
+        setActiveScreen('storefront');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      // 8. Order detail inside Track open? Return to orders list
+      if (selectedTrackOrderId) {
+        setSelectedTrackOrderId(null);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      // 9. If on another tab, return to Home tab
+      if (activeTab !== 'home') {
+        setActiveTab('home');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [
+    isCheckoutOpen,
+    isCartOpen,
+    isWishlistOpen,
+    isSearchOpen,
+    isDrawerOpen,
+    selectedProduct,
+    activeScreen,
+    selectedTrackOrderId,
+    activeTab
+  ]);
 
   // Cart Totals
   const cartCount = useMemo(
@@ -413,7 +544,13 @@ export default function App() {
       <AtelierOpsHub
         orders={orders}
         products={products}
-        onBackToStore={() => setActiveScreen('storefront')}
+        onBackToStore={() => {
+          if (activeScreen === 'atelier-ops') {
+            window.history.back();
+          } else {
+            setActiveScreen('storefront');
+          }
+        }}
         onLogout={() => {
           setActiveScreen('storefront');
           showToast('Admin session logged out successfully.');
@@ -502,12 +639,12 @@ export default function App() {
           cartCount={cartCount}
           cartTotal={cartTotal}
           wishlistCount={wishlistIds.length}
-          onOpenCart={() => setIsCartOpen(true)}
-          onOpenWishlist={() => setIsWishlistOpen(true)}
+          onOpenCart={handleOpenCart}
+          onOpenWishlist={handleOpenWishlist}
           activeCategory={activeCategory}
           onSelectCategory={setActiveCategory}
           activeScreen={activeScreen}
-          onToggleScreen={setActiveScreen}
+          onToggleScreen={handleOpenAtelierOps}
           deviceMode="desktop"
           onToggleDeviceMode={() => {}}
           searchQuery={searchQuery}
@@ -518,10 +655,7 @@ export default function App() {
         {selectedProduct ? (
           <ProductDetailView
             product={selectedProduct}
-            onBack={() => {
-              setSelectedProduct(null);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+            onBack={handleCloseProduct}
             onAddToCart={(p, qty) => {
               for (let i = 0; i < (qty || 1); i++) {
                 handleAddToCart(p);
@@ -533,7 +667,7 @@ export default function App() {
                 handleAddToCart(p);
               }
               setIsCartOpen(false);
-              setIsCheckoutOpen(true);
+              handleOpenCheckout();
             }}
             onToggleWishlist={handleToggleWishlist}
             isWishlisted={wishlistIds.includes(selectedProduct.id)}
@@ -552,24 +686,27 @@ export default function App() {
             />
             <Footer
               onSelectCategory={(cat) => {
-                setActiveTab('home');
+                handleTabChange('home');
                 setActiveCategory(cat.toUpperCase());
                 scrollToVault();
               }}
               onOpenQualityModal={() => {
-                setActiveTab('home');
+                handleTabChange('home');
                 setTimeout(() => {
                   const el = document.getElementById('quality-section');
                   el?.scrollIntoView({ behavior: 'smooth' });
                 }, 100);
               }}
-              onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
+              onOpenAtelierOps={handleOpenAtelierOps}
             />
           </main>
         ) : activeTab === 'track' ? (
           <main className="pb-16 md:pb-0">
             <TrackOrderView
               orders={orders}
+              selectedOrderId={selectedTrackOrderId}
+              onSelectOrder={handleSelectTrackOrder}
+              onBackToOrders={handleBackFromTrackOrder}
             />
           </main>
         ) : activeTab === 'exchange' ? (
@@ -582,11 +719,10 @@ export default function App() {
           <main className="pb-16 md:pb-0">
             <AccountView
               orders={orders}
-              onOpenWishlist={() => setIsWishlistOpen(true)}
-              onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
+              onOpenWishlist={handleOpenWishlist}
+              onOpenAtelierOps={handleOpenAtelierOps}
               onTrackOrder={() => {
-                setActiveTab('track');
-                window.scrollTo({ top: 0, behavior: 'instant' });
+                handleTabChange('track');
               }}
             />
           </main>
@@ -674,7 +810,9 @@ export default function App() {
 
       <SearchModal
         isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
+        onClose={() => {
+          if (isSearchOpen) window.history.back();
+        }}
         products={products}
         onSelectProduct={handleSelectProduct}
         onAddToCart={handleAddToCart}
@@ -682,7 +820,9 @@ export default function App() {
 
       <CartDrawer
         isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
+        onClose={() => {
+          if (isCartOpen) window.history.back();
+        }}
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveFromCart}
@@ -692,15 +832,15 @@ export default function App() {
             return;
           }
           setIsCartOpen(false);
-          setIsCheckoutOpen(true);
+          handleOpenCheckout();
         }}
       />
 
-
-
       <CheckoutModal
         isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
+        onClose={() => {
+          if (isCheckoutOpen) window.history.back();
+        }}
         cartItems={cartItems}
         totalAmount={cartTotal}
         onOrderPlaced={handleOrderPlaced}
@@ -708,7 +848,9 @@ export default function App() {
 
       <WishlistModal
         isOpen={isWishlistOpen}
-        onClose={() => setIsWishlistOpen(false)}
+        onClose={() => {
+          if (isWishlistOpen) window.history.back();
+        }}
         wishlistProducts={wishlistProducts}
         onAddToCart={handleAddToCart}
         onRemoveFromWishlist={handleToggleWishlist}
@@ -720,23 +862,16 @@ export default function App() {
         <>
           <WhatsAppSupport
             onNavigateTrackOrder={() => {
-              setActiveTab('track');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              handleTabChange('track');
             }}
           />
           <BottomNav
             activeTab={activeTab}
-            onTabChange={(tab) => {
-              setActiveTab(tab);
-              setSelectedProduct(null);
-              window.scrollTo({ top: 0, behavior: 'instant' });
-            }}
+            onTabChange={handleTabChange}
             cartCount={cartCount}
-            onOpenCart={() => setIsCartOpen(true)}
+            onOpenCart={handleOpenCart}
             onOpenProducts={() => {
-              setActiveTab('sale');
-              setSelectedProduct(null);
-              window.scrollTo({ top: 0, behavior: 'instant' });
+              handleTabChange('sale');
             }}
           />
         </>

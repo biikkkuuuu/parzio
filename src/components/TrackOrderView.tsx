@@ -16,17 +16,43 @@ import {
 
 interface TrackOrderViewProps {
   orders: OrderItem[];
-  initialOrderId?: string | null;
+  selectedOrderId?: string | null;
+  onSelectOrder?: (order: OrderItem) => void;
+  onBackToOrders?: () => void;
 }
 
 export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
   orders,
-  initialOrderId = null
+  selectedOrderId = null,
+  onSelectOrder,
+  onBackToOrders
 }) => {
-  const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(
-    initialOrderId ? orders.find((o) => o.id === initialOrderId) || null : null
-  );
+  const [localSelectedOrder, setLocalSelectedOrder] = useState<OrderItem | null>(null);
   const [copiedAwb, setCopiedAwb] = useState(false);
+
+  // Active selected order is either controlled by parent (selectedOrderId) or local state
+  const selectedOrder = selectedOrderId
+    ? orders.find((o) => o.id === selectedOrderId) || null
+    : localSelectedOrder;
+
+  const handleSelect = (order: OrderItem) => {
+    if (onSelectOrder) {
+      onSelectOrder(order);
+    } else {
+      window.history.pushState({ type: 'order', id: order.id }, '');
+      setLocalSelectedOrder(order);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  };
+
+  const handleBack = () => {
+    if (onBackToOrders) {
+      onBackToOrders();
+    } else {
+      setLocalSelectedOrder(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const handleCopyAwb = (awb: string) => {
     if (navigator.clipboard) {
@@ -98,10 +124,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
         {/* Top Navigation */}
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#eae5dc]">
           <button
-            onClick={() => {
-              setSelectedOrder(null);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+            onClick={handleBack}
             className="flex items-center gap-1.5 text-xs font-bold text-[#141414] hover:text-[#8c7138] transition-colors py-1.5 px-3.5 rounded-full bg-white border border-[#eae5dc] shadow-2xs cursor-pointer active:scale-95"
           >
             <ArrowLeft className="w-3.5 h-3.5 text-[#8c7138]" />
@@ -344,10 +367,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
           </a>
 
           <button
-            onClick={() => {
-              setSelectedOrder(null);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+            onClick={handleBack}
             className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-neutral-50 border border-[#eae5dc] text-neutral-800 text-xs font-bold transition-colors cursor-pointer"
           >
             Back to Orders List
@@ -362,23 +382,20 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
   /* ========================================================================= */
   return (
     <div className="min-h-[85vh] bg-[#fbf9f6] pb-28 px-4 pt-4 max-w-lg mx-auto animate-fadeIn">
-      {/* Clean Header */}
+      {/* Clean E-Commerce Header */}
       <div className="mb-4 px-1">
         <h2 className="font-display text-2xl font-bold text-[#141414] tracking-tight">
           My Orders
         </h2>
       </div>
 
-      {/* Orders List Cards */}
+      {/* Clean Orders List Cards */}
       {orders.length > 0 ? (
         <div className="space-y-3.5">
           {orders.map((order) => (
             <div
               key={order.id}
-              onClick={() => {
-                setSelectedOrder(order);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onClick={() => handleSelect(order)}
               className="group bg-white rounded-3xl p-4 border border-[#eae5dc] hover:border-[#8c7138] shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer text-left relative overflow-hidden active:scale-99"
             >
               {/* Order Card Header */}
