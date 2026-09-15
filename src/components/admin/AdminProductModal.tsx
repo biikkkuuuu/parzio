@@ -352,14 +352,49 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
-                Promo Badge Text
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[10px] font-bold uppercase text-[#747878]">
+                  Product Tag / Promo Badge
+                </label>
+                {badge && (
+                  <button
+                    type="button"
+                    onClick={() => setBadge('')}
+                    className="text-[10px] font-bold text-rose-500 hover:underline cursor-pointer"
+                  >
+                    Clear Tag
+                  </button>
+                )}
+              </div>
+
+              {/* 1-Click Tag Presets */}
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {[
+                  { label: '✨ NEW LAUNCH', value: 'NEW LAUNCH' },
+                  { label: '🔥 BEST SELLER', value: 'BEST SELLER' },
+                  { label: '👑 NEW COLLECTION', value: 'NEW COLLECTION' },
+                  { label: '⚡ ₹99 SPECIAL', value: '₹99 VAULT SPECIAL' }
+                ].map((tag) => (
+                  <button
+                    key={tag.value}
+                    type="button"
+                    onClick={() => setBadge(tag.value)}
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                      badge === tag.value
+                        ? 'bg-[#8c7138] text-white shadow-2xs'
+                        : 'bg-white text-[#747878] border border-[#eae5dc] hover:border-[#8c7138] hover:text-[#141414]'
+                    }`}
+                  >
+                    {tag.label}
+                  </button>
+                ))}
+              </div>
+
               <input
                 type="text"
                 value={badge}
                 onChange={(e) => setBadge(e.target.value)}
-                placeholder="e.g. ₹99 VAULT SPECIAL or BEST SELLER"
+                placeholder="Or type custom badge..."
                 className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
               />
             </div>

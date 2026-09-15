@@ -628,8 +628,20 @@ export default function App() {
           p.description.toLowerCase().includes(q)
       );
     }
-    if (activeCategory === 'NEW ARRIVALS' || activeCategory === 'ALL' || activeCategory === 'BEST SELLERS') {
+    if (activeCategory === 'NEW ARRIVALS' || activeCategory === 'ALL') {
       return prods;
+    }
+    if (activeCategory === 'BEST SELLERS' || activeCategory === 'BEST SELLER') {
+      const best = prods.filter((p) => p.badge?.toUpperCase().includes('BEST SELLER'));
+      return best.length > 0 ? best : prods.filter((p) => p.rating >= 4.9);
+    }
+    if (activeCategory === 'NEW LAUNCH') {
+      const launched = prods.filter((p) => p.badge?.toUpperCase().includes('NEW LAUNCH') || p.badge?.toUpperCase().includes('HERO'));
+      return launched.length > 0 ? launched : prods.slice(0, 12);
+    }
+    if (activeCategory === 'NEW COLLECTION') {
+      const collection = prods.filter((p) => p.badge?.toUpperCase().includes('NEW COLLECTION') || p.badge?.toUpperCase().includes('VAULT'));
+      return collection.length > 0 ? collection : prods;
     }
     return prods.filter(
       (prod) => prod.category.toUpperCase() === activeCategory.toUpperCase()

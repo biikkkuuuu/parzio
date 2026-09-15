@@ -13,7 +13,7 @@ interface ProductVaultProps {
   onOpenProductModal: (product: Product) => void;
 }
 
-const DEFAULT_FILTER_TABS = ['ALL', 'NECKLACES', 'RINGS', 'BRACELETS', 'EARRINGS', 'ANKLETS'];
+const DEFAULT_FILTER_TABS = ['ALL', 'NEW LAUNCH', 'BEST SELLERS', 'NEW COLLECTION', 'NECKLACES', 'RINGS', 'BRACELETS', 'EARRINGS', 'ANKLETS'];
 const PRODUCTS_PER_PAGE = 12;
 
 export const ProductVault: React.FC<ProductVaultProps> = ({
@@ -147,10 +147,23 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
-                  {/* Badge */}
+                  {/* Promo Badge */}
                   {product.badge && (
-                    <span className="absolute top-2 left-2 bg-[#141414]/90 backdrop-blur-xs text-[#fed488] text-[9px] font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider">
-                      {product.badge}
+                    <span
+                      className={`absolute top-2 left-2 text-[8.5px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm backdrop-blur-xs flex items-center gap-1 ${
+                        product.badge.toUpperCase().includes('BEST SELLER')
+                          ? 'bg-rose-950 text-rose-200 border border-rose-700/60'
+                          : product.badge.toUpperCase().includes('NEW LAUNCH')
+                          ? 'bg-[#141414] text-[#fed488] border border-[#fed488]/40'
+                          : product.badge.toUpperCase().includes('NEW COLLECTION')
+                          ? 'bg-[#0d211a] text-[#7de3bf] border border-[#2e6d57]'
+                          : 'bg-[#141414]/90 text-[#fed488]'
+                      }`}
+                    >
+                      {product.badge.toUpperCase().includes('NEW LAUNCH') && <Sparkles className="w-2.5 h-2.5 text-[#fed488]" />}
+                      {product.badge.toUpperCase().includes('BEST SELLER') && <span className="text-[9px]">🔥</span>}
+                      {product.badge.toUpperCase().includes('NEW COLLECTION') && <span className="text-[9px]">👑</span>}
+                      <span>{product.badge}</span>
                     </span>
                   )}
                   {/* Wishlist toggle button */}
