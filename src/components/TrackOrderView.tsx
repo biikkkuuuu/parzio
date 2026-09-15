@@ -110,21 +110,21 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
 
     return (
       <div className="min-h-screen bg-[#fbf9f6] pb-28 pt-4 px-4 max-w-lg mx-auto animate-fadeIn">
-        {/* Top Back Navigation Bar */}
+        {/* Top Navigation */}
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#eae5dc]">
           <button
             onClick={() => {
               setSelectedOrder(null);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="flex items-center gap-1.5 text-xs font-bold text-[#141414] hover:text-[#8c7138] transition-colors py-1.5 px-3 rounded-full bg-white border border-[#eae5dc] shadow-2xs cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#141414] hover:text-[#8c7138] transition-colors py-1.5 px-3.5 rounded-full bg-white border border-[#eae5dc] shadow-2xs cursor-pointer active:scale-95"
           >
             <ArrowLeft className="w-3.5 h-3.5 text-[#8c7138]" />
-            <span>Back to Orders</span>
+            <span>All Orders</span>
           </button>
 
-          {/* Status shown inside */}
-          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${getStatusColor(selectedOrder.status)}`}>
+          {/* Status Badge */}
+          <span className={`text-[11px] font-bold px-3 py-1 rounded-full border uppercase tracking-wider ${getStatusColor(selectedOrder.status)}`}>
             {selectedOrder.status}
           </span>
         </div>
@@ -133,62 +133,60 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
         <div className="bg-white rounded-3xl p-5 border border-[#eae5dc] shadow-xs mb-4">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-mono font-bold text-[#8c7138] uppercase tracking-wider block">
-                Order ID
-              </span>
-              <h2 className="font-mono text-lg font-bold text-[#141414]">
+              <span className="text-[11px] text-[#747878] font-medium block">Order Number</span>
+              <h2 className="font-mono text-lg font-bold text-[#141414] mt-0.5">
                 #{selectedOrder.id}
               </h2>
-              <p className="text-xs text-[#747878] mt-0.5">
-                Placed for <strong className="text-[#141414]">{selectedOrder.customerName}</strong>
+              <p className="text-xs text-[#747878] mt-1">
+                For <strong className="text-[#141414]">{selectedOrder.customerName}</strong>
               </p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-semibold text-[#747878] block">Payable</span>
+              <span className="text-[11px] text-[#747878] font-medium block">Total</span>
               <span className="font-display text-xl font-bold text-[#141414]">
                 ₹{selectedOrder.amount}
               </span>
-              <span className="text-[10px] text-emerald-700 font-bold block">
-                {selectedOrder.paymentMethod === 'COD' ? 'Cash on Delivery' : '100% Prepaid UPI'}
+              <span className="text-[11px] text-emerald-700 font-semibold block mt-0.5">
+                {selectedOrder.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Prepaid (UPI)'}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Courier & Live Tracking Details Card */}
+        {/* Courier & Tracking Card */}
         <div className="bg-white rounded-3xl p-5 border border-[#eae5dc] shadow-xs mb-4 space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-[#eae5dc]">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-[#faf6ef] border border-[#ebd7be] flex items-center justify-center text-[#8c7138]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#faf6ef] border border-[#ebd7be] flex items-center justify-center text-[#8c7138]">
                 <Truck className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-[#141414]">Courier Partner</h4>
-                <p className="text-[11px] text-[#747878]">{selectedOrder.courier || 'BlueDart Surface Express'}</p>
+                <h4 className="text-xs font-bold text-[#141414]">Courier Delivery</h4>
+                <p className="text-[11px] text-[#747878]">{selectedOrder.courier || 'BlueDart Express'}</p>
               </div>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Live Telemetry
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Live
             </span>
           </div>
 
-          {/* AWB Tracking Code Box */}
-          <div className="p-3.5 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] space-y-2">
+          {/* Tracking Number AWB Box */}
+          <div className="p-3.5 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] space-y-1.5">
             <span className="text-[10px] font-bold text-[#747878] uppercase tracking-wider block">
-              Air Waybill (AWB) Tracking Number
+              Tracking Number (AWB)
             </span>
             <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-sm font-bold text-[#141414] tracking-wider select-all">
+              <span className="font-mono text-sm font-bold text-[#141414] select-all">
                 {selectedOrder.trackingNumber || `BD-${selectedOrder.id.replace(/[^0-9]/g, '')}729`}
               </span>
               <button
                 onClick={() => handleCopyAwb(selectedOrder.trackingNumber || `BD-${selectedOrder.id.replace(/[^0-9]/g, '')}729`)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-neutral-100 border border-[#eae5dc] text-[11px] font-bold text-[#141414] transition-colors cursor-pointer active:scale-95"
+                className="flex items-center gap-1 px-3 py-1 rounded-lg bg-white hover:bg-neutral-100 border border-[#eae5dc] text-[11px] font-bold text-[#141414] transition-colors cursor-pointer active:scale-95"
               >
                 {copiedAwb ? (
                   <>
                     <Check className="w-3 h-3 text-emerald-600" />
-                    <span className="text-emerald-700">Copied!</span>
+                    <span className="text-emerald-700">Copied</span>
                   </>
                 ) : (
                   <>
@@ -211,22 +209,22 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
             <ExternalLink className="w-3.5 h-3.5 text-[#fed488]" />
           </a>
 
-          {/* Delivery Estimate Banner */}
+          {/* Estimated Delivery */}
           <div className="flex items-center gap-2 text-xs text-[#747878] pt-1">
             <Clock className="w-4 h-4 text-[#8c7138] flex-shrink-0" />
             <span>
-              Estimated Doorstep Delivery: <strong className="text-[#141414]">2 - 3 Business Days</strong>
+              Estimated Delivery: <strong className="text-[#141414]">2 - 3 Business Days</strong>
             </span>
           </div>
         </div>
 
-        {/* Visual Live Journey Timeline Stepper */}
+        {/* Live Delivery Journey */}
         <div className="bg-white rounded-3xl p-5 border border-[#eae5dc] shadow-xs mb-4 space-y-5">
           <div className="flex items-center justify-between pb-2 border-b border-[#eae5dc]">
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#141414] flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-[#8c7138]" /> Live Journey
+              <Clock className="w-4 h-4 text-[#8c7138]" /> Order Journey
             </h4>
-            <span className="text-[10px] font-bold text-[#8c7138]">Step {currentStep} of 5</span>
+            <span className="text-[11px] font-semibold text-[#8c7138]">Step {currentStep} of 5</span>
           </div>
 
           <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#eae5dc]">
@@ -239,8 +237,8 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
               >
                 <CheckCircle2 className="w-3 h-3" />
               </div>
-              <h5 className="text-xs font-bold text-[#141414]">Order Confirmed &amp; Logged</h5>
-              <p className="text-[11px] text-[#747878]">Customer details &amp; order payload verified</p>
+              <h5 className="text-xs font-bold text-[#141414]">Order Confirmed</h5>
+              <p className="text-[11px] text-[#747878]">Order details received and verified</p>
             </div>
 
             {/* Step 2: Quality Check */}
@@ -252,8 +250,8 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
               >
                 <CheckCircle2 className="w-3 h-3" />
               </div>
-              <h5 className="text-xs font-bold text-[#141414]">5-Step Quality Check Passed</h5>
-              <p className="text-[11px] text-[#747878]">18K PVD coating, skin-safe &amp; saline test certified</p>
+              <h5 className="text-xs font-bold text-[#141414]">Quality Check Passed</h5>
+              <p className="text-[11px] text-[#747878]">18K gold coating &amp; anti-tarnish verified</p>
             </div>
 
             {/* Step 3: Packed */}
@@ -265,8 +263,8 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
               >
                 {currentStep >= 3 ? <CheckCircle2 className="w-3 h-3" /> : <Package className="w-2.5 h-2.5" />}
               </div>
-              <h5 className="text-xs font-bold text-[#141414]">Packed in Anti-Tarnish Velvet Pouch</h5>
-              <p className="text-[11px] text-[#747878]">Sealed at Mumbai Atelier Hub 01</p>
+              <h5 className="text-xs font-bold text-[#141414]">Packed &amp; Sealed</h5>
+              <p className="text-[11px] text-[#747878]">Secured in anti-tarnish luxury velvet pouch</p>
             </div>
 
             {/* Step 4: Dispatched / In Transit */}
@@ -279,10 +277,10 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
                 <Truck className="w-2.5 h-2.5" />
               </div>
               <h5 className={`text-xs font-bold ${currentStep >= 4 ? 'text-[#8c7138]' : 'text-neutral-500'}`}>
-                Handed over to {selectedOrder.courier?.split(' ')[0] || 'BlueDart'} Express
+                In Transit with {selectedOrder.courier?.split(' ')[0] || 'Courier'}
               </h5>
               <p className="text-[11px] text-[#747878]">
-                {currentStep >= 4 ? 'In Transit • Tracking AWB active' : 'Scheduled for dispatch pickup'}
+                {currentStep >= 4 ? 'Package is on its way to your destination' : 'Ready for courier dispatch pickup'}
               </p>
             </div>
 
@@ -295,54 +293,51 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
               >
                 {currentStep >= 5 && <CheckCircle2 className="w-3 h-3" />}
               </div>
-              <h5 className="text-xs font-bold text-[#141414]">Doorstep Delivery &amp; Handover</h5>
+              <h5 className="text-xs font-bold text-[#141414]">Out for Delivery</h5>
               <p className="text-[11px] text-[#747878]">
-                {currentStep >= 5 ? 'Successfully delivered to customer' : 'Zero-contact verification available on delivery'}
+                {currentStep >= 5 ? 'Delivered successfully' : 'Arriving at your doorstep soon'}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Ordered Item Particulars */}
+        {/* Ordered Item Details */}
         <div className="bg-white rounded-3xl p-5 border border-[#eae5dc] shadow-xs mb-4 space-y-3">
           <h4 className="text-xs font-bold uppercase tracking-wider text-[#141414] flex items-center gap-1.5 pb-2 border-b border-[#eae5dc]">
-            <Package className="w-4 h-4 text-[#8c7138]" /> Ordered Items ({selectedOrder.quantity || 1})
+            <Package className="w-4 h-4 text-[#8c7138]" /> Ordered Item
           </h4>
 
-          <div className="flex items-center gap-3.5 py-2">
+          <div className="flex items-center gap-3.5 py-1">
             <img
               src={selectedOrder.image}
               alt={selectedOrder.productName}
               className="w-16 h-16 object-cover rounded-2xl bg-[#faf8f5] p-1 border border-[#eae5dc]"
             />
             <div className="flex-1 min-w-0">
-              <h5 className="text-xs font-bold text-[#141414] leading-snug truncate">
+              <h5 className="text-xs font-bold text-[#141414] leading-snug line-clamp-2">
                 {selectedOrder.productName}
               </h5>
               <p className="text-[11px] text-[#747878] font-mono mt-0.5">{selectedOrder.sku}</p>
               <div className="flex items-center gap-2 mt-1.5 text-xs">
                 <span className="font-bold text-[#141414]">₹{selectedOrder.amount}</span>
                 <span className="text-[#747878]">• Qty: {selectedOrder.quantity || 1}</span>
-                <span className="px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 text-[10px] font-bold">
-                  {selectedOrder.tag || '18K PVD Verified'}
-                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Delivery Address & Customer Details */}
-        <div className="bg-white rounded-3xl p-5 border border-[#eae5dc] shadow-xs mb-4 space-y-3">
+        {/* Delivery Address */}
+        <div className="bg-white rounded-3xl p-5 border border-[#eae5dc] shadow-xs mb-4 space-y-2.5">
           <div className="flex items-center justify-between pb-2 border-b border-[#eae5dc]">
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#141414] flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-[#8c7138]" /> Delivery Address
+              <MapPin className="w-4 h-4 text-[#8c7138]" /> Shipping Address
             </h4>
             <span className="text-[10px] font-mono font-bold text-[#8c7138]">PIN: {selectedOrder.pincode}</span>
           </div>
 
           <div className="text-xs space-y-1">
             <p className="font-bold text-[#141414]">{selectedOrder.customerName}</p>
-            <p className="text-[#747878]">{selectedOrder.location}</p>
+            <p className="text-[#747878] leading-relaxed">{selectedOrder.location}</p>
             {selectedOrder.phone && (
               <p className="text-[#747878] flex items-center gap-1 pt-1">
                 <Phone className="w-3 h-3 text-[#8c7138]" /> {selectedOrder.phone}
@@ -360,7 +355,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
             className="w-full py-3 px-4 rounded-2xl bg-[#faf6ef] hover:bg-[#ebd7be] border border-[#ebd7be] text-[#8c7138] text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <Phone className="w-3.5 h-3.5" />
-            <span>Need Help? Chat with Mumbai Atelier on WhatsApp</span>
+            <span>Need Help? Chat on WhatsApp</span>
           </a>
 
           <button
@@ -370,7 +365,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
             }}
             className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-neutral-50 border border-[#eae5dc] text-neutral-800 text-xs font-bold transition-colors cursor-pointer"
           >
-            View All Other Orders
+            Back to Orders List
           </button>
         </div>
       </div>
@@ -378,30 +373,29 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
   }
 
   /* ========================================================================= */
-  /* SCREEN 2: ALL ORDERS LIST VIEW (Clean, without outer status/filter clutter)*/
+  /* SCREEN 2: CLEAN ALL ORDERS LIST VIEW (Real E-Commerce Standard)          */
   /* ========================================================================= */
   return (
     <div className="min-h-[85vh] bg-[#fbf9f6] pb-28 px-4 pt-4 max-w-lg mx-auto animate-fadeIn">
-      {/* Page Header */}
-      <div className="text-center mb-5">
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8c7138] block mb-1">
-          PARZIO ATELIER LOGISTICS
-        </span>
-        <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#141414]">
-          My Orders
-        </h2>
-        <p className="text-xs text-[#747878] mt-1 max-w-xs mx-auto leading-relaxed">
-          Select an order to view full live journey, tracking number, and courier updates.
-        </p>
+      {/* Clean E-Commerce Header */}
+      <div className="flex items-baseline justify-between mb-4 px-1">
+        <div>
+          <h2 className="font-display text-2xl font-bold text-[#141414] tracking-tight">
+            My Orders
+          </h2>
+          <p className="text-xs text-[#747878] mt-0.5">
+            {orders.length} {orders.length === 1 ? 'order' : 'orders'} placed
+          </p>
+        </div>
       </div>
 
-      {/* Clean Search Bar */}
+      {/* Clean Search Input */}
       <div className="relative mb-4">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by Order ID (e.g. 98241) or item name..."
+          placeholder="Search by Order ID or item..."
           className="w-full bg-white pl-10 pr-10 py-3 rounded-2xl border border-[#eae5dc] text-xs font-medium text-[#141414] placeholder-[#9ca3af] focus:outline-none focus:border-[#8c7138] shadow-2xs"
         />
         <Search className="w-4 h-4 text-[#747878] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -427,7 +421,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
               }}
               className="group bg-white rounded-3xl p-4 border border-[#eae5dc] hover:border-[#8c7138] shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer text-left relative overflow-hidden active:scale-99"
             >
-              {/* Clean Order Card Top Row */}
+              {/* Order Card Header */}
               <div className="flex items-center justify-between pb-3 border-b border-[#eae5dc]">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs font-bold text-[#8c7138]">
@@ -439,12 +433,12 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
                   </span>
                 </div>
                 <span className="text-xs font-bold text-[#8c7138] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-                  <span>View Details</span>
+                  <span>Track</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               </div>
 
-              {/* Order Product Particulars */}
+              {/* Order Item Details */}
               <div className="flex items-center gap-3 py-3">
                 <img
                   src={order.image}
@@ -460,7 +454,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
                     <span className="font-bold text-[#141414]">₹{order.amount}</span>
                     <span className="text-[#9ca3af]">•</span>
                     <span className="text-[10px] text-[#747878] font-medium">
-                      {order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Prepaid UPI'}
+                      {order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Prepaid'}
                     </span>
                   </div>
                 </div>
@@ -470,17 +464,17 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
               <div className="pt-2.5 border-t border-[#f3efe8] flex items-center justify-between text-[11px]">
                 <span className="flex items-center gap-1 text-[#747878]">
                   <Truck className="w-3.5 h-3.5 text-[#8c7138]" />
-                  <span>{order.courier || 'BlueDart Air'}</span>
+                  <span>{order.courier || 'BlueDart Express'}</span>
                 </span>
-                <span className="text-[11px] font-bold text-[#141414] group-hover:text-[#8c7138] flex items-center gap-0.5">
-                  Track Live Status &rarr;
+                <span className="text-xs font-bold text-[#141414] group-hover:text-[#8c7138] flex items-center gap-0.5">
+                  View Status &rarr;
                 </span>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        /* Empty State */
+        /* Clean Empty State */
         <div className="bg-white rounded-3xl p-8 text-center border border-[#eae5dc] shadow-xs">
           <div className="w-12 h-12 rounded-full bg-[#faf6ef] text-[#8c7138] flex items-center justify-center mx-auto mb-3">
             <Package className="w-6 h-6" />
@@ -488,8 +482,8 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
           <h4 className="font-display text-base font-bold text-[#141414]">No Orders Found</h4>
           <p className="text-xs text-[#747878] mt-1 max-w-xs mx-auto">
             {searchQuery
-              ? `No shipments matched "${searchQuery}". Try searching with another ID or name.`
-              : 'You have no active orders in your history.'}
+              ? `No orders matching "${searchQuery}".`
+              : 'You have not placed any orders yet.'}
           </p>
           {searchQuery && (
             <button
