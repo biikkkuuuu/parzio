@@ -7,18 +7,13 @@ import {
   Truck,
   Package,
   Clock,
-  ShieldCheck,
   MapPin,
   ExternalLink,
   Copy,
   Check,
   Phone,
-  Printer,
   ChevronRight,
-  Sparkles,
-  AlertCircle,
-  X,
-  CreditCard
+  X
 } from 'lucide-react';
 
 interface TrackOrderViewProps {
@@ -34,26 +29,18 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
     initialOrderId ? orders.find((o) => o.id === initialOrderId) || null : null
   );
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'All' | 'Confirmed' | 'In Transit' | 'Delivered'>('All');
   const [copiedAwb, setCopiedAwb] = useState(false);
 
-  // Filter orders based on search and status
+  // Filter orders based on search
   const filteredOrders = orders.filter((order) => {
     const query = searchQuery.trim().toLowerCase();
-    const matchesSearch =
-      !query ||
+    if (!query) return true;
+    return (
       order.id.toLowerCase().includes(query) ||
       order.customerName.toLowerCase().includes(query) ||
       order.productName.toLowerCase().includes(query) ||
-      (order.trackingNumber && order.trackingNumber.toLowerCase().includes(query));
-
-    const matchesStatus =
-      statusFilter === 'All' ||
-      (statusFilter === 'Confirmed' && (order.status === 'COD Confirmed' || order.status === 'Prepaid UPI')) ||
-      (statusFilter === 'In Transit' && (order.status === 'In Transit' || order.status === 'Dispatched' || order.status === 'Packed')) ||
-      (statusFilter === 'Delivered' && order.status === 'Delivered');
-
-    return matchesSearch && matchesStatus;
+      (order.trackingNumber && order.trackingNumber.toLowerCase().includes(query))
+    );
   });
 
   const handleCopyAwb = (awb: string) => {
@@ -136,6 +123,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
             <span>Back to Orders</span>
           </button>
 
+          {/* Status shown inside */}
           <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${getStatusColor(selectedOrder.status)}`}>
             {selectedOrder.status}
           </span>
@@ -152,11 +140,11 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
                 #{selectedOrder.id}
               </h2>
               <p className="text-xs text-[#747878] mt-0.5">
-                Placed by <strong className="text-[#141414]">{selectedOrder.customerName}</strong>
+                Placed for <strong className="text-[#141414]">{selectedOrder.customerName}</strong>
               </p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-semibold text-[#747878] block">Total Amount</span>
+              <span className="text-[10px] font-semibold text-[#747878] block">Payable</span>
               <span className="font-display text-xl font-bold text-[#141414]">
                 ₹{selectedOrder.amount}
               </span>
@@ -180,7 +168,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
               </div>
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Active Telemetry
+              Live Telemetry
             </span>
           </div>
 
@@ -390,30 +378,30 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
   }
 
   /* ========================================================================= */
-  /* SCREEN 2: ALL ORDERS LIST VIEW                                           */
+  /* SCREEN 2: ALL ORDERS LIST VIEW (Clean, without outer status/filter clutter)*/
   /* ========================================================================= */
   return (
     <div className="min-h-[85vh] bg-[#fbf9f6] pb-28 px-4 pt-4 max-w-lg mx-auto animate-fadeIn">
       {/* Page Header */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-5">
         <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8c7138] block mb-1">
           PARZIO ATELIER LOGISTICS
         </span>
         <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#141414]">
-          My Orders &amp; Tracking
+          My Orders
         </h2>
         <p className="text-xs text-[#747878] mt-1 max-w-xs mx-auto leading-relaxed">
-          Select any order to view live parcel journey, AWB tracking link, and doorstep telemetry.
+          Select an order to view full live journey, tracking number, and courier updates.
         </p>
       </div>
 
-      {/* Search Input */}
-      <div className="relative mb-3">
+      {/* Clean Search Bar */}
+      <div className="relative mb-4">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by Order ID (e.g. 98241), item, or AWB..."
+          placeholder="Search by Order ID (e.g. 98241) or item name..."
           className="w-full bg-white pl-10 pr-10 py-3 rounded-2xl border border-[#eae5dc] text-xs font-medium text-[#141414] placeholder-[#9ca3af] focus:outline-none focus:border-[#8c7138] shadow-2xs"
         />
         <Search className="w-4 h-4 text-[#747878] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -427,24 +415,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
         )}
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-3 mb-3">
-        {(['All', 'Confirmed', 'In Transit', 'Delivered'] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setStatusFilter(tab)}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-              statusFilter === tab
-                ? 'bg-[#141414] text-white shadow-2xs'
-                : 'bg-white text-[#747878] border border-[#eae5dc] hover:border-[#8c7138]'
-            }`}
-          >
-            {tab === 'All' ? `All Orders (${orders.length})` : tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Orders List Cards */}
+      {/* Clean Orders List Cards */}
       {filteredOrders.length > 0 ? (
         <div className="space-y-3.5">
           {filteredOrders.map((order) => (
@@ -456,19 +427,20 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
               }}
               className="group bg-white rounded-3xl p-4 border border-[#eae5dc] hover:border-[#8c7138] shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer text-left relative overflow-hidden active:scale-99"
             >
-              {/* Order Card Header */}
+              {/* Clean Order Card Top Row */}
               <div className="flex items-center justify-between pb-3 border-b border-[#eae5dc]">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs font-bold text-[#8c7138]">
                     #{order.id}
                   </span>
                   <span className="text-[10px] text-[#9ca3af]">•</span>
-                  <span className="text-[11px] font-medium text-[#747878] truncate max-w-[120px]">
+                  <span className="text-[11px] font-medium text-[#747878] truncate max-w-[150px]">
                     {order.customerName}
                   </span>
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider ${getStatusColor(order.status)}`}>
-                  {order.status}
+                <span className="text-xs font-bold text-[#8c7138] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                  <span>View Details</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               </div>
 
@@ -488,26 +460,20 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
                     <span className="font-bold text-[#141414]">₹{order.amount}</span>
                     <span className="text-[#9ca3af]">•</span>
                     <span className="text-[10px] text-[#747878] font-medium">
-                      {order.paymentMethod === 'COD' ? 'COD' : 'Prepaid UPI'}
+                      {order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Prepaid UPI'}
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-[#9ca3af] group-hover:text-[#8c7138] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
               </div>
 
-              {/* Order Card Footer with Courier Preview */}
+              {/* Order Card Footer */}
               <div className="pt-2.5 border-t border-[#f3efe8] flex items-center justify-between text-[11px]">
                 <span className="flex items-center gap-1 text-[#747878]">
                   <Truck className="w-3.5 h-3.5 text-[#8c7138]" />
-                  <span>{order.courier?.split(' ')[0] || 'BlueDart'}</span>
-                  {order.trackingNumber && (
-                    <span className="font-mono text-[10px] font-bold text-[#141414]">
-                      • {order.trackingNumber}
-                    </span>
-                  )}
+                  <span>{order.courier || 'BlueDart Air'}</span>
                 </span>
-                <span className="text-xs font-bold text-[#8c7138] group-hover:underline flex items-center gap-0.5">
-                  Track Journey &rarr;
+                <span className="text-[11px] font-bold text-[#141414] group-hover:text-[#8c7138] flex items-center gap-0.5">
+                  Track Live Status &rarr;
                 </span>
               </div>
             </div>
@@ -522,13 +488,13 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
           <h4 className="font-display text-base font-bold text-[#141414]">No Orders Found</h4>
           <p className="text-xs text-[#747878] mt-1 max-w-xs mx-auto">
             {searchQuery
-              ? `No shipments matched "${searchQuery}". Try searching with another ID or customer name.`
-              : 'You have no active orders in this filter category.'}
+              ? `No shipments matched "${searchQuery}". Try searching with another ID or name.`
+              : 'You have no active orders in your history.'}
           </p>
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="mt-3 px-4 py-1.5 rounded-full bg-[#141414] text-white text-xs font-bold hover:bg-[#8c7138] transition-colors"
+              className="mt-3 px-4 py-1.5 rounded-full bg-[#141414] text-white text-xs font-bold hover:bg-[#8c7138] transition-colors cursor-pointer"
             >
               Clear Search
             </button>
