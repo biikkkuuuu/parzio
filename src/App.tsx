@@ -55,33 +55,56 @@ export default function App() {
   // Helper to parse current location hash for persistent routing across page refreshes and back gestures
   const parseRoute = () => {
     if (typeof window === 'undefined') {
-      return { type: 'tab', tab: 'home' as TabType, screen: 'storefront' as ActiveScreen, id: null as string | null };
+      return { type: 'tab', tab: 'home' as TabType, screen: 'storefront' as ActiveScreen, id: null as string | null, modal: null as string | null };
     }
     const hash = window.location.hash || '';
+    let savedTab: TabType = 'home';
+    try {
+      const t = sessionStorage.getItem('parzio_last_tab');
+      if (t === 'home' || t === 'sale' || t === 'track' || t === 'exchange' || t === 'account') {
+        savedTab = t;
+      }
+    } catch {}
+
+    if (hash === '#/bag' || hash === '#/cart' || hash === '#bag' || hash === '#cart') {
+      return { type: 'tab', id: null, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: 'cart' };
+    }
+    if (hash === '#/checkout' || hash === '#checkout') {
+      return { type: 'tab', id: null, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: 'checkout' };
+    }
+    if (hash === '#/wishlist' || hash === '#wishlist') {
+      return { type: 'tab', id: null, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: 'wishlist' };
+    }
+    if (hash === '#/search' || hash === '#search') {
+      return { type: 'tab', id: null, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: 'search' };
+    }
+    if (hash === '#/menu' || hash === '#menu') {
+      return { type: 'tab', id: null, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: 'drawer' };
+    }
     if (hash.startsWith('#/product/')) {
       const prodId = hash.replace('#/product/', '').trim();
-      return { type: 'product', id: prodId, tab: 'home' as TabType, screen: 'storefront' as ActiveScreen };
+      return { type: 'product', id: prodId, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: null };
     }
     if (hash.startsWith('#/orders/') || hash.startsWith('#/track/')) {
       const orderId = hash.replace(/^#\/(orders|track)\//, '').trim();
-      return { type: 'order', id: orderId, tab: 'track' as TabType, screen: 'storefront' as ActiveScreen };
+      return { type: 'order', id: orderId, tab: 'track' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
     }
-    if (hash === '#/orders' || hash === '#/track') {
-      return { type: 'tab', id: null, tab: 'track' as TabType, screen: 'storefront' as ActiveScreen };
+    if (hash === '#/orders' || hash === '#/track' || hash === '#orders' || hash === '#track') {
+      return { type: 'tab', id: null, tab: 'track' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
     }
-    if (hash === '#/sale') {
-      return { type: 'tab', id: null, tab: 'sale' as TabType, screen: 'storefront' as ActiveScreen };
+    if (hash === '#/sale' || hash === '#sale') {
+      return { type: 'tab', id: null, tab: 'sale' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
     }
-    if (hash === '#/account') {
-      return { type: 'tab', id: null, tab: 'account' as TabType, screen: 'storefront' as ActiveScreen };
+    if (hash === '#/account' || hash === '#account') {
+      return { type: 'tab', id: null, tab: 'account' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
     }
-    if (hash === '#/exchange') {
-      return { type: 'tab', id: null, tab: 'exchange' as TabType, screen: 'storefront' as ActiveScreen };
+    if (hash === '#/exchange' || hash === '#exchange') {
+      return { type: 'tab', id: null, tab: 'exchange' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
     }
-    if (hash === '#/admin') {
-      return { type: 'screen', id: null, screen: 'atelier-ops' as ActiveScreen, tab: 'home' as TabType };
+    if (hash === '#/admin' || hash === '#admin') {
+      return { type: 'screen', id: null, screen: 'atelier-ops' as ActiveScreen, tab: savedTab, modal: null };
     }
-    return { type: 'tab', id: null, tab: 'home' as TabType, screen: 'storefront' as ActiveScreen };
+    return { type: 'tab', id: null, tab: 'home' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
   };
 
   // Determine whether to display Phone layout or PC layout
@@ -107,12 +130,12 @@ export default function App() {
     return null;
   });
 
-  // Drawers & Modals
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  // Drawers & Modals (Persistent on refresh)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(() => initialRoute.modal === 'drawer');
+  const [isSearchOpen, setIsSearchOpen] = useState(() => initialRoute.modal === 'search');
+  const [isCartOpen, setIsCartOpen] = useState(() => initialRoute.modal === 'cart');
+  const [isWishlistOpen, setIsWishlistOpen] = useState(() => initialRoute.modal === 'wishlist');
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(() => initialRoute.modal === 'checkout');
   const [selectedTrackOrderId, setSelectedTrackOrderId] = useState<string | null>(() => {
     if (initialRoute.type === 'order' && initialRoute.id) {
       return initialRoute.id;
@@ -120,11 +143,40 @@ export default function App() {
     return null;
   });
 
-  // Cart & Wishlist
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    { product: HERO_PRODUCT, quantity: 1 }
-  ]);
-  const [wishlistIds, setWishlistIds] = useState<string[]>(['prod-coin-bracelet']);
+  // Cart & Wishlist (Persisted across sessions & refresh)
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('parzio_cart_items');
+      return saved ? JSON.parse(saved) : [{ product: HERO_PRODUCT, quantity: 1 }];
+    } catch {
+      return [{ product: HERO_PRODUCT, quantity: 1 }];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('parzio_cart_items', JSON.stringify(cartItems));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [cartItems]);
+
+  const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('parzio_wishlist_ids');
+      return saved ? JSON.parse(saved) : ['prod-coin-bracelet'];
+    } catch {
+      return ['prod-coin-bracelet'];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('parzio_wishlist_ids', JSON.stringify(wishlistIds));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [wishlistIds]);
 
   // Orders State (Seeded with real demo orders for Ops & Tracking)
   const [orders, setOrders] = useState<OrderItem[]>(INITIAL_ORDERS);
@@ -336,37 +388,120 @@ export default function App() {
   };
 
   const handleTabChange = (newTab: TabType) => {
+    try {
+      sessionStorage.setItem('parzio_last_tab', newTab);
+    } catch {}
     const hash = newTab === 'home' ? '#/' : `#/${newTab === 'track' ? 'orders' : newTab}`;
     window.history.pushState({ type: 'tab', tab: newTab }, '', hash);
     setActiveTab(newTab);
     setSelectedProduct(null);
     setSelectedTrackOrderId(null);
+    setIsCartOpen(false);
+    setIsWishlistOpen(false);
+    setIsCheckoutOpen(false);
+    setIsSearchOpen(false);
+    setIsDrawerOpen(false);
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const handleOpenCart = () => {
-    window.history.pushState({ modal: 'cart' }, '');
+    if (window.location.hash !== '#/bag' && window.location.hash !== '#/cart') {
+      window.history.pushState({ modal: 'cart' }, '', '#/bag');
+    }
     setIsCartOpen(true);
   };
 
+  const handleCloseCart = () => {
+    setIsCartOpen(false);
+    if (
+      window.location.hash === '#/bag' ||
+      window.location.hash === '#/cart' ||
+      window.location.hash === '#bag' ||
+      window.location.hash === '#cart'
+    ) {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        const savedTab = (sessionStorage.getItem('parzio_last_tab') as TabType) || 'home';
+        window.location.hash = savedTab === 'home' ? '#/' : `#/${savedTab === 'track' ? 'orders' : savedTab}`;
+      }
+    }
+  };
+
   const handleOpenWishlist = () => {
-    window.history.pushState({ modal: 'wishlist' }, '');
+    if (window.location.hash !== '#/wishlist' && window.location.hash !== '#wishlist') {
+      window.history.pushState({ modal: 'wishlist' }, '', '#/wishlist');
+    }
     setIsWishlistOpen(true);
   };
 
+  const handleCloseWishlist = () => {
+    setIsWishlistOpen(false);
+    if (window.location.hash === '#/wishlist' || window.location.hash === '#wishlist') {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        const savedTab = (sessionStorage.getItem('parzio_last_tab') as TabType) || 'home';
+        window.location.hash = savedTab === 'home' ? '#/' : `#/${savedTab === 'track' ? 'orders' : savedTab}`;
+      }
+    }
+  };
+
   const handleOpenCheckout = () => {
-    window.history.pushState({ modal: 'checkout' }, '');
+    if (window.location.hash !== '#/checkout' && window.location.hash !== '#checkout') {
+      window.history.pushState({ modal: 'checkout' }, '', '#/checkout');
+    }
     setIsCheckoutOpen(true);
   };
 
+  const handleCloseCheckout = () => {
+    setIsCheckoutOpen(false);
+    if (window.location.hash === '#/checkout' || window.location.hash === '#checkout') {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        const savedTab = (sessionStorage.getItem('parzio_last_tab') as TabType) || 'home';
+        window.location.hash = savedTab === 'home' ? '#/' : `#/${savedTab === 'track' ? 'orders' : savedTab}`;
+      }
+    }
+  };
+
   const handleOpenSearch = () => {
-    window.history.pushState({ modal: 'search' }, '');
+    if (window.location.hash !== '#/search' && window.location.hash !== '#search') {
+      window.history.pushState({ modal: 'search' }, '', '#/search');
+    }
     setIsSearchOpen(true);
   };
 
+  const handleCloseSearch = () => {
+    setIsSearchOpen(false);
+    if (window.location.hash === '#/search' || window.location.hash === '#search') {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        const savedTab = (sessionStorage.getItem('parzio_last_tab') as TabType) || 'home';
+        window.location.hash = savedTab === 'home' ? '#/' : `#/${savedTab === 'track' ? 'orders' : savedTab}`;
+      }
+    }
+  };
+
   const handleOpenDrawer = () => {
-    window.history.pushState({ modal: 'drawer' }, '');
+    if (window.location.hash !== '#/menu' && window.location.hash !== '#menu') {
+      window.history.pushState({ modal: 'drawer' }, '', '#/menu');
+    }
     setIsDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    if (window.location.hash === '#/menu' || window.location.hash === '#menu') {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        const savedTab = (sessionStorage.getItem('parzio_last_tab') as TabType) || 'home';
+        window.location.hash = savedTab === 'home' ? '#/' : `#/${savedTab === 'track' ? 'orders' : savedTab}`;
+      }
+    }
   };
 
   const handleOpenAtelierOps = () => {
@@ -398,32 +533,15 @@ export default function App() {
     }
 
     const handlePopState = () => {
-      // 1. Close open modals first
-      if (isCheckoutOpen) {
-        setIsCheckoutOpen(false);
-        return;
-      }
-      if (isCartOpen) {
-        setIsCartOpen(false);
-        return;
-      }
-      if (isWishlistOpen) {
-        setIsWishlistOpen(false);
-        return;
-      }
-      if (isSearchOpen) {
-        setIsSearchOpen(false);
-        return;
-      }
-      if (isDrawerOpen) {
-        setIsDrawerOpen(false);
-        return;
-      }
-
-      // 2. Parse current route from updated window.location.hash
       const currentRoute = parseRoute();
       setActiveScreen(currentRoute.screen || 'storefront');
       setActiveTab(currentRoute.tab || 'home');
+
+      setIsCartOpen(currentRoute.modal === 'cart');
+      setIsCheckoutOpen(currentRoute.modal === 'checkout');
+      setIsWishlistOpen(currentRoute.modal === 'wishlist');
+      setIsSearchOpen(currentRoute.modal === 'search');
+      setIsDrawerOpen(currentRoute.modal === 'drawer');
 
       if (currentRoute.type === 'product' && currentRoute.id) {
         const prod = [HERO_PRODUCT, ...VAULT_PRODUCTS].find((p) => p.id === currentRoute.id) || null;
@@ -447,13 +565,7 @@ export default function App() {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('hashchange', handlePopState);
     };
-  }, [
-    isCheckoutOpen,
-    isCartOpen,
-    isWishlistOpen,
-    isSearchOpen,
-    isDrawerOpen
-  ]);
+  }, []);
 
   // Cart Totals
   const cartCount = useMemo(
@@ -634,7 +746,7 @@ export default function App() {
       <>
         <EmergencyStorefrontLockdown
           config={emergencyConfig}
-          onOpenAdmin={() => setActiveScreen('atelier-ops')}
+          onOpenAdmin={handleOpenAtelierOps}
         />
         {/* Toast Alert */}
         {toastMessage && (
@@ -670,7 +782,7 @@ export default function App() {
             </span>
           </div>
           <button
-            onClick={() => setActiveScreen('atelier-ops')}
+            onClick={handleOpenAtelierOps}
             className="px-2.5 py-1 rounded bg-white text-rose-950 text-[10px] font-bold uppercase tracking-wider hover:bg-rose-100 flex-shrink-0"
           >
             Admin Manage
@@ -833,7 +945,7 @@ export default function App() {
                 const el = document.getElementById('quality-section');
                 el?.scrollIntoView({ behavior: 'smooth' });
               }}
-              onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
+              onOpenAtelierOps={handleOpenAtelierOps}
             />
           </main>
         )}
@@ -842,23 +954,24 @@ export default function App() {
       {/* Global Modals & Drawers */}
       <MobileDrawer
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={handleCloseDrawer}
         onSelectCategory={(cat) => {
           setActiveCategory(cat);
           setActiveTab('home');
           scrollToVault();
         }}
         onNavigateTab={(tab) => {
-          setActiveTab(tab);
+          handleTabChange(tab);
         }}
-        onOpenAtelierOps={() => setActiveScreen('atelier-ops')}
+        onOpenAtelierOps={() => {
+          handleCloseDrawer();
+          handleOpenAtelierOps();
+        }}
       />
 
       <SearchModal
         isOpen={isSearchOpen}
-        onClose={() => {
-          if (isSearchOpen) window.history.back();
-        }}
+        onClose={handleCloseSearch}
         products={products}
         onSelectProduct={handleSelectProduct}
         onAddToCart={handleAddToCart}
@@ -866,9 +979,7 @@ export default function App() {
 
       <CartDrawer
         isOpen={isCartOpen}
-        onClose={() => {
-          if (isCartOpen) window.history.back();
-        }}
+        onClose={handleCloseCart}
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveFromCart}
@@ -884,9 +995,7 @@ export default function App() {
 
       <CheckoutModal
         isOpen={isCheckoutOpen}
-        onClose={() => {
-          if (isCheckoutOpen) window.history.back();
-        }}
+        onClose={handleCloseCheckout}
         cartItems={cartItems}
         totalAmount={cartTotal}
         onOrderPlaced={handleOrderPlaced}
@@ -894,9 +1003,7 @@ export default function App() {
 
       <WishlistModal
         isOpen={isWishlistOpen}
-        onClose={() => {
-          if (isWishlistOpen) window.history.back();
-        }}
+        onClose={handleCloseWishlist}
         wishlistProducts={wishlistProducts}
         onAddToCart={handleAddToCart}
         onRemoveFromWishlist={handleToggleWishlist}
