@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Product } from '../../types';
+import { DeviceImageUpload } from './DeviceImageUpload';
 import { X, Sparkles, Plus, Image as ImageIcon } from 'lucide-react';
 
 interface AdminNewProductModalProps {
@@ -172,22 +173,14 @@ export const AdminNewProductModal: React.FC<AdminNewProductModalProps> = ({
             </div>
           </div>
 
-          <div>
-            <label className="block font-bold text-[#141414] uppercase tracking-wider text-[10px] mb-1">
-              High-Res Image URL
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="url"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                className="flex-1 bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
-              />
-              <div className="w-9 h-9 rounded-xl border border-[#eae5dc] bg-[#faf8f5] overflow-hidden flex items-center justify-center flex-shrink-0">
-                <img src={image} alt="Preview" className="w-full h-full object-cover" />
-              </div>
-            </div>
-          </div>
+          <DeviceImageUpload
+            label="Product Photo"
+            required
+            value={image}
+            onChange={setImage}
+            recommendedSize="1:1 Square • 800 × 800px (Max 5MB)"
+            aspectRatio="square"
+          />
 
           <div>
             <label className="block font-bold text-[#141414] uppercase tracking-wider text-[10px] mb-1">

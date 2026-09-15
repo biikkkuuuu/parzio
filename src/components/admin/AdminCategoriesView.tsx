@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CategoryItem, Product } from '../../types';
 import { AdminProductModal } from './AdminProductModal';
+import { DeviceImageUpload } from './DeviceImageUpload';
 import {
   Plus,
   Edit2,
@@ -351,32 +352,16 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
                 />
               </div>
 
-              {/* Cover Image URL */}
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-[#747878] mb-1">
-                  Cover Image URL
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="url"
-                    placeholder="https://..."
-                    value={catImage}
-                    onChange={(e) => setCatImage(e.target.value)}
-                    className="flex-1 bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-xs font-medium text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                  />
-                  {catImage && (
-                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-[#eae5dc] shrink-0">
-                      <img
-                        src={catImage}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = PRESET_IMAGES[0].url;
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
+              {/* Cover Photo Upload from Device */}
+              <DeviceImageUpload
+                label="Category Cover Photo"
+                required
+                value={catImage}
+                onChange={setCatImage}
+                recommendedSize="1:1 Square (400 × 400px) • Max 3MB"
+                aspectRatio="circle"
+                maxSizeMB={3}
+              />
 
                 {/* Quick Presets */}
                 <div className="mt-2">
@@ -405,7 +390,6 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
                     ))}
                   </div>
                 </div>
-              </div>
 
               {/* Buttons */}
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#eae5dc]">

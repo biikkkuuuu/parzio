@@ -23,6 +23,7 @@ import {
   Save
 } from 'lucide-react';
 import { MarqueeBar } from '../MarqueeBar';
+import { DeviceImageUpload } from './DeviceImageUpload';
 
 interface AdminBannersViewProps {
   topMarqueeItems: MarqueeItem[];
@@ -1203,35 +1204,16 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
                 </div>
               </div>
 
-              {/* Image URL with live preview */}
-              <div>
-                <label className="block text-xs font-bold text-[#141414] mb-1 flex items-center justify-between">
-                  <span>Banner Image URL</span>
-                  <span className="text-[10px] text-[#8c7138] font-bold">Unsplash / Direct Photo Link</span>
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    required
-                    value={bannerForm.image}
-                    onChange={(e) => setBannerForm({ ...bannerForm, image: e.target.value })}
-                    placeholder="https://..."
-                    className="flex-1 px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs font-mono text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                  />
-                </div>
-                {bannerForm.image && (
-                  <div className="mt-2 w-full h-32 rounded-xl overflow-hidden border border-[#eae5dc] bg-[#faf8f5]">
-                    <img
-                      src={bannerForm.image}
-                      alt="Banner Preview"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80';
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
+              {/* Banner Image Upload from Device */}
+              <DeviceImageUpload
+                label="Hero Banner Image"
+                required
+                value={bannerForm.image}
+                onChange={(img) => setBannerForm({ ...bannerForm, image: img })}
+                recommendedSize="16:9 / 21:9 Widescreen (1920 × 800px) • Max 5MB"
+                aspectRatio="banner"
+                maxSizeMB={5}
+              />
 
               {/* 3 Metric Stats */}
               <div className="pt-2 border-t border-[#eae5dc]">
@@ -1422,17 +1404,15 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="block font-bold text-[#141414] mb-1">Poster Banner Image URL</label>
-                <input
-                  type="url"
-                  required
-                  placeholder="https://images.unsplash.com/..."
-                  value={posterForm.image || ''}
-                  onChange={(e) => setPosterForm({ ...posterForm, image: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-[#141414] font-mono text-[11px]"
-                />
-              </div>
+              <DeviceImageUpload
+                label="Poster Banner Image"
+                required
+                value={posterForm.image || ''}
+                onChange={(img) => setPosterForm({ ...posterForm, image: img })}
+                recommendedSize="4:5 Vertical (800 × 1000px) • Max 4MB"
+                aspectRatio="poster"
+                maxSizeMB={4}
+              />
 
               <div>
                 <label className="block font-bold text-[#141414] mb-1">Button CTA Text</label>

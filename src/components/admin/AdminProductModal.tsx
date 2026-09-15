@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Product } from '../../types';
+import { DeviceImageUpload } from './DeviceImageUpload';
 import { X, Sparkles, Image, Tag, Droplet, ShieldCheck, DollarSign, Package, Plus, Check } from 'lucide-react';
 
 interface AdminProductModalProps {
@@ -313,29 +314,15 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </div>
           </div>
 
-          {/* Row 3: Image URL with live preview */}
-          <div>
-            <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
-              Image URL *
-            </label>
-            <div className="flex gap-3 items-center">
-              <input
-                type="url"
-                required
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                placeholder="https://images.unsplash.com/..."
-                className="flex-1 bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
-              />
-              <div className="w-10 h-10 rounded-xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center overflow-hidden flex-shrink-0">
-                {image ? (
-                  <img src={image} alt="Preview" className="w-full h-full object-cover" />
-                ) : (
-                  <Image className="w-4 h-4 text-[#747878]" />
-                )}
-              </div>
-            </div>
-          </div>
+          {/* Row 3: Product Photo Upload from Device */}
+          <DeviceImageUpload
+            label="Product Photo"
+            required
+            value={image}
+            onChange={setImage}
+            recommendedSize="1:1 Square • 800 × 800px (Max 5MB)"
+            aspectRatio="square"
+          />
 
           {/* Row 4: Description */}
           <div>
