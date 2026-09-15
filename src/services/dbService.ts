@@ -13,9 +13,20 @@ import {
 import { INITIAL_ORDERS } from '../data/orders';
 import { INITIAL_BANNERS, INITIAL_TOP_MARQUEE, INITIAL_BANNER_MARQUEE } from '../data/bannerData';
 import { INITIAL_COUPONS } from '../data/adminData';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { db, isFirebaseConfigured } from '../lib/firebase';
+import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  updateDoc,
+  onSnapshot,
+  query,
+  orderBy
+} from 'firebase/firestore';
 
-// Local Storage Keys for fast client-side caching
+// Local Storage Keys for zero-latency client-side cache
 const KEYS = {
   PRODUCTS: 'parzio_products',
   CATEGORIES: 'parzio_categories',
@@ -26,99 +37,14 @@ const KEYS = {
   COUPONS: 'parzio_coupons',
 };
 
-// Converters between Frontend CamelCase and Supabase Snake_Case
-const toSupabaseProduct = (p: Product) => ({
-  id: p.id,
-  name: p.name,
-  category: p.category,
-  price: p.price,
-  original_price: p.originalPrice,
-  save_percent: p.savePercent,
-  rating: p.rating,
-  reviews_count: p.reviewsCount,
-  colorways: p.colorways,
-  sku: p.sku,
-  material: p.material,
-  is_waterproof: p.isWaterproof,
-  is_anti_tarnish: p.isAntiTarnish,
-  badge: p.badge || null,
-  quote: p.quote || null,
-  image: p.image,
-  description: p.description,
-});
-
-const fromSupabaseProduct = (row: any): Product => ({
-  id: row.id,
-  name: row.name,
-  category: row.category,
-  price: Number(row.price),
-  originalPrice: Number(row.original_price ?? row.price),
-  savePercent: Number(row.save_percent ?? 0),
-  rating: Number(row.rating ?? 4.9),
-  reviewsCount: Number(row.reviews_count ?? 500),
-  colorways: Number(row.colorways ?? 40),
-  sku: row.sku,
-  material: row.material ?? '316L Surgical Stainless Steel',
-  isWaterproof: Boolean(row.is_waterproof ?? true),
-  isAntiTarnish: Boolean(row.is_anti_tarnish ?? true),
-  badge: row.badge ?? undefined,
-  quote: row.quote ?? undefined,
-  image: row.image,
-  description: row.description ?? '',
-});
-
-const toSupabaseOrder = (o: OrderItem) => ({
-  id: o.id,
-  customer_name: o.customerName,
-  phone: o.phone,
-  address: o.address,
-  pincode: o.pincode,
-  amount: o.amount,
-  status: o.status,
-  payment_method: o.paymentMethod,
-  city: o.city,
-  state: o.state,
-  tracking_number: o.trackingNumber || null,
-  items: [
-    {
-      productName: o.productName,
-      productImage: o.productImage,
-      sku: o.sku,
-      amount: o.amount,
-    },
-  ],
-});
-
-const fromSupabaseOrder = (row: any): OrderItem => ({
-  id: row.id,
-  customerName: row.customer_name || 'Customer',
-  phone: row.phone,
-  address: row.address,
-  pincode: row.pincode,
-  productName: row.items?.[0]?.productName || 'PARZIO Jewellery',
-  productImage: row.items?.[0]?.productImage || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
-  sku: row.items?.[0]?.sku || 'SKU-PARZIO',
-  amount: Number(row.amount),
-  status: row.status as any,
-  paymentMethod: (row.payment_method || 'COD') as any,
-  date: row.created_at
-    ? new Date(row.created_at).toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      })
-    : 'Today',
-  city: row.city || 'India',
-  state: row.state || 'State',
-  trackingNumber: row.tracking_number || undefined,
-});
-
 /**
  * dbService: Unified Data Access Layer
- * Supports both immediate local-cache read and real-time Supabase cloud synchronization.
+ * Powered by Google Firebase Firestore (Pay-As-You-Go) + Local Storage Cache.
+ * When Firebase credentials are provided in .env.local, it seamlessly syncs live cloud data.
+ * Otherwise, it runs smoothly on local cache without throwing any errors.
  */
 export const dbService = {
-  isConfigured: isSupabaseConfigured(),
+  isConfigured: isFirebaseConfigured(),
 
   // ================= PRODUCTS =================
   getProducts(): Product[] {
@@ -141,27 +67,26 @@ export const dbService = {
   },
 
   async fetchProductsFromCloud(): Promise<Product[] | null> {
-    if (!supabase || !isSupabaseConfigured()) return null;
+    if (!db || !isFirebaseConfigured()) return null;
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      if (data && data.length > 0) {
-        const mapped = data.map(fromSupabaseProduct);
-        this.saveProducts(mapped);
-        return mapped;
+      const q = query(collection(db, 'products'));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const products: Product[] = [];
+        snapshot.forEach((docSnap) => {
+          products.push(docSnap.data() as Product);
+        });
+        this.saveProducts(products);
+        return products;
       }
     } catch (e) {
-      console.warn('Supabase product fetch fallback to local cache:', e);
+      console.warn('Firebase products fetch fallback to local cache:', e);
     }
     return null;
   },
 
   async upsertProduct(product: Product): Promise<Product> {
-    // 1. Update local cache immediately
+    // 1. Immediate local persistence
     const products = this.getProducts();
     const index = products.findIndex((p) => p.id === product.id);
     const updated = index >= 0
@@ -169,15 +94,12 @@ export const dbService = {
       : [product, ...products];
     this.saveProducts(updated);
 
-    // 2. Sync to Supabase if configured
-    if (supabase && isSupabaseConfigured()) {
+    // 2. Sync to Firebase Firestore
+    if (db && isFirebaseConfigured()) {
       try {
-        const { error } = await supabase
-          .from('products')
-          .upsert(toSupabaseProduct(product));
-        if (error) console.error('Supabase product upsert error:', error);
+        await setDoc(doc(db, 'products', product.id), product);
       } catch (e) {
-        console.error('Failed to sync product to cloud:', e);
+        console.error('Failed to sync product to Firebase:', e);
       }
     }
     return product;
@@ -187,11 +109,11 @@ export const dbService = {
     const products = this.getProducts().filter((p) => p.id !== productId);
     this.saveProducts(products);
 
-    if (supabase && isSupabaseConfigured()) {
+    if (db && isFirebaseConfigured()) {
       try {
-        await supabase.from('products').delete().eq('id', productId);
+        await deleteDoc(doc(db, 'products', productId));
       } catch (e) {
-        console.error('Failed to delete product from cloud:', e);
+        console.error('Failed to delete product from Firebase:', e);
       }
     }
   },
@@ -217,25 +139,19 @@ export const dbService = {
   },
 
   async fetchCategoriesFromCloud(): Promise<CategoryItem[] | null> {
-    if (!supabase || !isSupabaseConfigured()) return null;
+    if (!db || !isFirebaseConfigured()) return null;
     try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      if (data && data.length > 0) {
-        const mapped: CategoryItem[] = data.map((c) => ({
-          name: c.name,
-          image: c.image,
-          count: c.count ?? 0,
-        }));
-        this.saveCategories(mapped);
-        return mapped;
+      const snapshot = await getDocs(collection(db, 'categories'));
+      if (!snapshot.empty) {
+        const categories: CategoryItem[] = [];
+        snapshot.forEach((docSnap) => {
+          categories.push(docSnap.data() as CategoryItem);
+        });
+        this.saveCategories(categories);
+        return categories;
       }
     } catch (e) {
-      console.warn('Supabase category fetch fallback to local cache:', e);
+      console.warn('Firebase categories fetch fallback to local cache:', e);
     }
     return null;
   },
@@ -248,17 +164,12 @@ export const dbService = {
       : [...categories, cat];
     this.saveCategories(updated);
 
-    if (supabase && isSupabaseConfigured()) {
+    if (db && isFirebaseConfigured()) {
       try {
-        const id = 'cat-' + cat.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-        await supabase.from('categories').upsert({
-          id,
-          name: cat.name,
-          image: cat.image,
-          count: cat.count || 0,
-        });
+        const catId = 'cat-' + cat.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        await setDoc(doc(db, 'categories', catId), cat);
       } catch (e) {
-        console.error('Failed to sync category to cloud:', e);
+        console.error('Failed to sync category to Firebase:', e);
       }
     }
     return cat;
@@ -270,11 +181,12 @@ export const dbService = {
     );
     this.saveCategories(categories);
 
-    if (supabase && isSupabaseConfigured()) {
+    if (db && isFirebaseConfigured()) {
       try {
-        await supabase.from('categories').delete().ilike('name', catName);
+        const catId = 'cat-' + catName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        await deleteDoc(doc(db, 'categories', catId));
       } catch (e) {
-        console.error('Failed to delete category from cloud:', e);
+        console.error('Failed to delete category from Firebase:', e);
       }
     }
   },
@@ -300,40 +212,34 @@ export const dbService = {
   },
 
   async fetchOrdersFromCloud(): Promise<OrderItem[] | null> {
-    if (!supabase || !isSupabaseConfigured()) return null;
+    if (!db || !isFirebaseConfigured()) return null;
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      if (data && data.length > 0) {
-        const mapped = data.map(fromSupabaseOrder);
-        this.saveOrders(mapped);
-        return mapped;
+      const q = query(collection(db, 'orders'));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const orders: OrderItem[] = [];
+        snapshot.forEach((docSnap) => {
+          orders.push(docSnap.data() as OrderItem);
+        });
+        this.saveOrders(orders);
+        return orders;
       }
     } catch (e) {
-      console.warn('Supabase orders fetch fallback to local cache:', e);
+      console.warn('Firebase orders fetch fallback to local cache:', e);
     }
     return null;
   },
 
   async createOrder(order: OrderItem): Promise<OrderItem> {
-    // Immediate local persistence
     const orders = this.getOrders();
     const updated = [order, ...orders];
     this.saveOrders(updated);
 
-    // Sync to Supabase
-    if (supabase && isSupabaseConfigured()) {
+    if (db && isFirebaseConfigured()) {
       try {
-        const { error } = await supabase
-          .from('orders')
-          .insert(toSupabaseOrder(order));
-        if (error) console.error('Supabase order creation error:', error);
+        await setDoc(doc(db, 'orders', order.id), order);
       } catch (e) {
-        console.error('Failed to push order to cloud:', e);
+        console.error('Failed to create order in Firebase:', e);
       }
     }
     return order;
@@ -356,13 +262,13 @@ export const dbService = {
     );
     this.saveOrders(updated);
 
-    if (supabase && isSupabaseConfigured()) {
+    if (db && isFirebaseConfigured()) {
       try {
-        const updatePayload: any = { status, updated_at: new Date().toISOString() };
-        if (trackingNumber) updatePayload.tracking_number = trackingNumber;
-        await supabase.from('orders').update(updatePayload).eq('id', orderId);
+        const payload: any = { status };
+        if (trackingNumber) payload.trackingNumber = trackingNumber;
+        await updateDoc(doc(db, 'orders', orderId), payload);
       } catch (e) {
-        console.error('Failed to update order in cloud:', e);
+        console.error('Failed to update order in Firebase:', e);
       }
     }
     return updated;
@@ -372,38 +278,31 @@ export const dbService = {
     const orders = this.getOrders().filter((o) => o.id !== orderId);
     this.saveOrders(orders);
 
-    if (supabase && isSupabaseConfigured()) {
+    if (db && isFirebaseConfigured()) {
       try {
-        await supabase.from('orders').delete().eq('id', orderId);
+        await deleteDoc(doc(db, 'orders', orderId));
       } catch (e) {
-        console.error('Failed to delete order from cloud:', e);
+        console.error('Failed to delete order from Firebase:', e);
       }
     }
   },
 
   // ================= REALTIME SUBSCRIPTIONS =================
   subscribeToNewOrders(onNewOrder: (order: OrderItem) => void) {
-    if (!supabase || !isSupabaseConfigured()) return null;
+    if (!db || !isFirebaseConfigured()) return null;
     try {
-      const channel = supabase
-        .channel('public:orders')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'orders' },
-          (payload) => {
-            if (payload.new) {
-              const mapped = fromSupabaseOrder(payload.new);
-              onNewOrder(mapped);
-            }
+      const q = query(collection(db, 'orders'), orderBy('date', 'desc'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'added') {
+            const newOrder = change.doc.data() as OrderItem;
+            onNewOrder(newOrder);
           }
-        )
-        .subscribe();
-
-      return () => {
-        supabase?.removeChannel(channel);
-      };
+        });
+      });
+      return unsubscribe;
     } catch (e) {
-      console.error('Realtime subscription error:', e);
+      console.error('Firebase realtime order subscription error:', e);
       return null;
     }
   },
