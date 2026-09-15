@@ -79,7 +79,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span className="text-[9px] mt-0.5 font-bold tracking-tight text-[#141414]">Bag</span>
         </button>
 
-        {/* Track Order */}
+        {/* Orders / Track */}
         <button
           onClick={() => {
             onTabChange('track');
@@ -90,7 +90,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           }`}
         >
           <Truck className={`w-4 h-4 ${activeTab === 'track' ? 'text-[#8c7138] scale-110' : 'text-[#747878]'}`} />
-          <span className="text-[9px] mt-0.5 font-medium tracking-tight">Track</span>
+          <span className="text-[9px] mt-0.5 font-medium tracking-tight">Orders</span>
         </button>
 
         {/* Account */}
