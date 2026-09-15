@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '../types';
 
@@ -25,11 +25,36 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
   onOpenProductModal
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const isFirstMount = useRef(true);
 
   // Reset to page 1 whenever filter changes
   useEffect(() => {
     setCurrentPage(1);
   }, [activeFilter]);
+
+  // Reliable scroll to top of vault whenever page changes (after DOM update)
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    const scrollToVault = () => {
+      const vaultElement = document.getElementById('vault-section');
+      if (vaultElement) {
+        const headerHeight = 70;
+        const targetTop = vaultElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+        window.scrollTo({
+          top: Math.max(0, targetTop),
+          behavior: 'smooth'
+        });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    const timer = setTimeout(scrollToVault, 50);
+    return () => clearTimeout(timer);
+  }, [currentPage]);
 
   const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE) || 1;
   const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
@@ -38,10 +63,6 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
-    const vaultElement = document.getElementById('vault-section');
-    if (vaultElement) {
-      vaultElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
   };
 
   return (

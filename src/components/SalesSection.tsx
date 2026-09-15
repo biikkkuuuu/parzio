@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Product, SaleBannerConfig, SalePoster } from '../types';
 import { ArrowUp, Sparkles, Tag, ShieldCheck, Zap, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -30,6 +30,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('ALL SALE');
   const [currentPage, setCurrentPage] = useState(1);
+  const isFirstPageMount = useRef(true);
 
   const bConfig = bannerConfig || DEFAULT_SALE_CONFIG;
 
@@ -47,6 +48,30 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
     setCurrentPage(1);
   }, [selectedCategory]);
 
+  // Reliable scroll to top of sales product grid whenever page changes (after DOM update)
+  useEffect(() => {
+    if (isFirstPageMount.current) {
+      isFirstPageMount.current = false;
+      return;
+    }
+    const scrollToGrid = () => {
+      const targetEl = document.getElementById('sales-product-grid');
+      if (targetEl) {
+        const headerHeight = 70;
+        const targetTop = targetEl.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+        window.scrollTo({
+          top: Math.max(0, targetTop),
+          behavior: 'smooth'
+        });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    const timer = setTimeout(scrollToGrid, 50);
+    return () => clearTimeout(timer);
+  }, [currentPage]);
+
   const filteredSaleProducts = useMemo(() => {
     if (selectedCategory === 'ALL SALE') return products;
     return products.filter(
@@ -61,12 +86,6 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
-    const gridEl = document.getElementById('sales-product-grid');
-    if (gridEl) {
-      gridEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      window.scrollTo({ top: 200, behavior: 'smooth' });
-    }
   };
 
   const scrollToTop = () => {
