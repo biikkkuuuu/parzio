@@ -52,20 +52,60 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Helper to parse current location hash for persistent routing across page refreshes and back gestures
+  const parseRoute = () => {
+    if (typeof window === 'undefined') {
+      return { type: 'tab', tab: 'home' as TabType, screen: 'storefront' as ActiveScreen, id: null as string | null };
+    }
+    const hash = window.location.hash || '';
+    if (hash.startsWith('#/product/')) {
+      const prodId = hash.replace('#/product/', '').trim();
+      return { type: 'product', id: prodId, tab: 'home' as TabType, screen: 'storefront' as ActiveScreen };
+    }
+    if (hash.startsWith('#/orders/') || hash.startsWith('#/track/')) {
+      const orderId = hash.replace(/^#\/(orders|track)\//, '').trim();
+      return { type: 'order', id: orderId, tab: 'track' as TabType, screen: 'storefront' as ActiveScreen };
+    }
+    if (hash === '#/orders' || hash === '#/track') {
+      return { type: 'tab', id: null, tab: 'track' as TabType, screen: 'storefront' as ActiveScreen };
+    }
+    if (hash === '#/sale') {
+      return { type: 'tab', id: null, tab: 'sale' as TabType, screen: 'storefront' as ActiveScreen };
+    }
+    if (hash === '#/account') {
+      return { type: 'tab', id: null, tab: 'account' as TabType, screen: 'storefront' as ActiveScreen };
+    }
+    if (hash === '#/exchange') {
+      return { type: 'tab', id: null, tab: 'exchange' as TabType, screen: 'storefront' as ActiveScreen };
+    }
+    if (hash === '#/admin') {
+      return { type: 'screen', id: null, screen: 'atelier-ops' as ActiveScreen, tab: 'home' as TabType };
+    }
+    return { type: 'tab', id: null, tab: 'home' as TabType, screen: 'storefront' as ActiveScreen };
+  };
+
   // Determine whether to display Phone layout or PC layout
   const isPhone = viewMode === 'phone' || (viewMode === 'auto' && isMobileScreen);
 
-  // Screen Routing: Customer Storefront vs Atelier Operations Hub
-  const [activeScreen, setActiveScreen] = useState<ActiveScreen>('storefront');
+  // Parse initial route on page load/refresh
+  const initialRoute = parseRoute();
 
-  // Mobile Bottom Tab Navigation (Home, Sale, Track, Exchange, Account)
-  const [activeTab, setActiveTab] = useState<TabType>('home');
+  // Screen Routing: Customer Storefront vs Atelier Operations Hub (Persistent on refresh)
+  const [activeScreen, setActiveScreen] = useState<ActiveScreen>(initialRoute.screen || 'storefront');
+
+  // Mobile Bottom Tab Navigation (Persistent on refresh)
+  const [activeTab, setActiveTab] = useState<TabType>(initialRoute.tab || 'home');
 
   // Products and Filtering
   const [products, setProducts] = useState<Product[]>(VAULT_PRODUCTS);
   const [activeCategory, setActiveCategory] = useState('NEW ARRIVALS');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(() => {
+    if (initialRoute.type === 'product' && initialRoute.id) {
+      return [HERO_PRODUCT, ...VAULT_PRODUCTS].find((p) => p.id === initialRoute.id) || null;
+    }
+    return null;
+  });
 
   // Drawers & Modals
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -73,7 +113,12 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [selectedTrackOrderId, setSelectedTrackOrderId] = useState<string | null>(null);
+  const [selectedTrackOrderId, setSelectedTrackOrderId] = useState<string | null>(() => {
+    if (initialRoute.type === 'order' && initialRoute.id) {
+      return initialRoute.id;
+    }
+    return null;
+  });
 
   // Cart & Wishlist
   const [cartItems, setCartItems] = useState<CartItem[]>([
@@ -274,22 +319,25 @@ export default function App() {
     );
   };
 
-  // Browser History & Navigation Handlers (Back Button support)
+  // Browser History & Navigation Handlers (Back Button & Refresh Persistence support)
   const handleSelectProduct = (product: Product) => {
-    window.history.pushState({ type: 'product', id: product.id }, '');
+    window.history.pushState({ type: 'product', id: product.id }, '', `#/product/${product.id}`);
     setSelectedProduct(product);
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   };
 
   const handleCloseProduct = () => {
-    if (selectedProduct) {
+    if (window.location.hash.startsWith('#/product/')) {
       window.history.back();
+    } else {
+      setSelectedProduct(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleTabChange = (newTab: TabType) => {
-    if (newTab === activeTab && !selectedProduct && !selectedTrackOrderId) return;
-    window.history.pushState({ type: 'tab', tab: newTab }, '');
+    const hash = newTab === 'home' ? '#/' : `#/${newTab === 'track' ? 'orders' : newTab}`;
+    window.history.pushState({ type: 'tab', tab: newTab }, '', hash);
     setActiveTab(newTab);
     setSelectedProduct(null);
     setSelectedTrackOrderId(null);
@@ -322,91 +370,89 @@ export default function App() {
   };
 
   const handleOpenAtelierOps = () => {
-    window.history.pushState({ view: 'atelier-ops' }, '');
+    window.history.pushState({ view: 'atelier-ops' }, '', '#/admin');
     setActiveScreen('atelier-ops');
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const handleSelectTrackOrder = (order: OrderItem) => {
-    window.history.pushState({ type: 'order', id: order.id }, '');
+    window.history.pushState({ type: 'order', id: order.id }, '', `#/orders/${order.id}`);
     setSelectedTrackOrderId(order.id);
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const handleBackFromTrackOrder = () => {
-    window.history.back();
+    if (window.location.hash.includes('/orders/')) {
+      window.history.back();
+    } else {
+      setSelectedTrackOrderId(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
-  // Global popstate event listener for hardware / browser back button
+  // Global popstate & hashchange event listener for hardware / browser back button and URL sync
   useEffect(() => {
-    if (!window.history.state) {
-      window.history.replaceState({ type: 'root', tab: 'home' }, '');
+    // If no initial hash on root, set it cleanly
+    if (!window.location.hash) {
+      window.history.replaceState({ type: 'root', tab: 'home' }, '', '#/');
     }
 
     const handlePopState = () => {
-      // 1. Checkout modal open? Close it
+      // 1. Close open modals first
       if (isCheckoutOpen) {
         setIsCheckoutOpen(false);
         return;
       }
-      // 2. Cart drawer open? Close it
       if (isCartOpen) {
         setIsCartOpen(false);
         return;
       }
-      // 3. Wishlist open? Close it
       if (isWishlistOpen) {
         setIsWishlistOpen(false);
         return;
       }
-      // 4. Search open? Close it
       if (isSearchOpen) {
         setIsSearchOpen(false);
         return;
       }
-      // 5. Drawer open? Close it
       if (isDrawerOpen) {
         setIsDrawerOpen(false);
         return;
       }
-      // 6. Product Detail View open? Return to catalog
-      if (selectedProduct) {
+
+      // 2. Parse current route from updated window.location.hash
+      const currentRoute = parseRoute();
+      setActiveScreen(currentRoute.screen || 'storefront');
+      setActiveTab(currentRoute.tab || 'home');
+
+      if (currentRoute.type === 'product' && currentRoute.id) {
+        const prod = [HERO_PRODUCT, ...VAULT_PRODUCTS].find((p) => p.id === currentRoute.id) || null;
+        setSelectedProduct(prod);
+      } else {
         setSelectedProduct(null);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
       }
-      // 7. Atelier Ops open? Return to customer storefront
-      if (activeScreen === 'atelier-ops') {
-        setActiveScreen('storefront');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-      // 8. Order detail inside Track open? Return to orders list
-      if (selectedTrackOrderId) {
+
+      if (currentRoute.type === 'order' && currentRoute.id) {
+        setSelectedTrackOrderId(currentRoute.id);
+      } else {
         setSelectedTrackOrderId(null);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
       }
-      // 9. If on another tab, return to Home tab
-      if (activeTab !== 'home') {
-        setActiveTab('home');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handlePopState);
+    };
   }, [
     isCheckoutOpen,
     isCartOpen,
     isWishlistOpen,
     isSearchOpen,
-    isDrawerOpen,
-    selectedProduct,
-    activeScreen,
-    selectedTrackOrderId,
-    activeTab
+    isDrawerOpen
   ]);
 
   // Cart Totals
