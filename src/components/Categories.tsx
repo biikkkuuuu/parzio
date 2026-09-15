@@ -60,7 +60,9 @@ export const Categories: React.FC<CategoriesProps> = ({
           {/* Single Row Horizontal Scroll Strip */}
           <div
             ref={scrollContainerRef}
-            className="flex items-center overflow-x-auto no-scrollbar flex-nowrap gap-4 sm:gap-8 lg:gap-10 pb-3 px-2 sm:px-4 snap-x snap-mandatory scroll-smooth justify-start md:justify-center"
+            className={`flex items-center overflow-x-auto no-scrollbar flex-nowrap gap-4 sm:gap-8 lg:gap-10 pb-3 px-2 sm:px-4 snap-x snap-mandatory scroll-smooth ${
+              displayCategories.length > 5 ? 'justify-start' : 'justify-start md:justify-center'
+            }`}
           >
             {displayCategories.map((cat) => {
               const isSelected = selectedCategory.toLowerCase() === cat.name.toLowerCase();
@@ -85,6 +87,10 @@ export const Categories: React.FC<CategoriesProps> = ({
                         alt={cat.name}
                         className="w-full h-full rounded-full object-cover object-center group-hover:scale-110 transition-transform duration-500 ease-out"
                         loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80';
+                        }}
                       />
                     </div>
 

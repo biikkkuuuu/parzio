@@ -84,6 +84,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             src={product.image}
             alt={product.name}
             className="w-full max-h-72 object-contain mix-blend-multiply drop-shadow-xs"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80';
+            }}
           />
           <div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-[#8c7138] bg-[#faf8f5] px-3 py-1 rounded-full border border-[#eae5dc]">
             <ShieldCheck className="w-4 h-4 text-[#8c7138]" />

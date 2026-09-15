@@ -18,8 +18,12 @@ import { Footer } from './components/Footer';
 import { TrackOrderView } from './components/TrackOrderView';
 import { ExchangeView } from './components/ExchangeView';
 import { AccountView } from './components/AccountView';
-import { AtelierOpsHub } from './components/AtelierOpsHub';
 import { EmergencyStorefrontLockdown } from './components/EmergencyStorefrontLockdown';
+import { dbService } from './services/dbService';
+
+const AtelierOpsHub = React.lazy(() =>
+  import('./components/AtelierOpsHub').then((m) => ({ default: m.AtelierOpsHub }))
+);
 import { CartDrawer } from './components/CartDrawer';
 import { ProductModal } from './components/ProductModal';
 import { ProductDetailView } from './components/ProductDetailView';
@@ -119,40 +123,21 @@ export default function App() {
   // Mobile Bottom Tab Navigation (Persistent on refresh)
   const [activeTab, setActiveTab] = useState<TabType>(initialRoute.tab || 'home');
 
-  // Products and Filtering (Persisted in localStorage with fallback to default catalog)
-  const [products, setProducts] = useState<Product[]>(() => {
-    try {
-      const saved = localStorage.getItem('parzio_products');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {}
-    return VAULT_PRODUCTS;
-  });
+  // Products and Filtering (Unified Data Layer via dbService)
+  const [products, setProducts] = useState<Product[]>(() => dbService.getProducts());
 
   useEffect(() => {
-    try {
-      localStorage.setItem('parzio_products', JSON.stringify(products));
-    } catch {}
+    dbService.saveProducts(products);
   }, [products]);
 
   const [activeCategory, setActiveCategory] = useState('NEW ARRIVALS');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Categories State (Persisted in localStorage with fallback to default collections)
-  const [categories, setCategories] = useState<CategoryItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('parzio_categories');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return CATEGORIES_DATA;
-  });
+  // Categories State (Unified Data Layer via dbService)
+  const [categories, setCategories] = useState<CategoryItem[]>(() => dbService.getCategories());
 
   useEffect(() => {
-    try {
-      localStorage.setItem('parzio_categories', JSON.stringify(categories));
-    } catch {}
+    dbService.saveCategories(categories);
   }, [categories]);
 
   const handleAddCategory = (newCat: CategoryItem) => {
@@ -236,51 +221,31 @@ export default function App() {
     }
   }, [wishlistIds]);
 
-  // Orders State (Persisted in localStorage with fallback to initial seeded orders)
-  const [orders, setOrders] = useState<OrderItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('parzio_orders');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {}
-    return INITIAL_ORDERS;
-  });
+  // Orders State (Unified Data Layer via dbService)
+  const [orders, setOrders] = useState<OrderItem[]>(() => dbService.getOrders());
 
   useEffect(() => {
-    try {
-      localStorage.setItem('parzio_orders', JSON.stringify(orders));
-    } catch {}
+    dbService.saveOrders(orders);
   }, [orders]);
 
-  // Dynamic Banners and Moving Marquees (Editable via Admin Panel)
-  const [banners, setBanners] = useState<StoreBanner[]>(() => {
-    try {
-      const saved = localStorage.getItem('parzio_banners');
-      return saved ? JSON.parse(saved) : INITIAL_BANNERS;
-    } catch {
-      return INITIAL_BANNERS;
-    }
-  });
+  // Dynamic Banners and Moving Marquees (Unified Data Layer via dbService)
+  const [banners, setBanners] = useState<StoreBanner[]>(() => dbService.getBanners());
 
-  const [topMarqueeItems, setTopMarqueeItems] = useState<MarqueeItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('parzio_top_marquee');
-      return saved ? JSON.parse(saved) : INITIAL_TOP_MARQUEE;
-    } catch {
-      return INITIAL_TOP_MARQUEE;
-    }
-  });
+  useEffect(() => {
+    dbService.saveBanners(banners);
+  }, [banners]);
 
-  const [bannerMarqueeItems, setBannerMarqueeItems] = useState<MarqueeItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('parzio_banner_marquee');
-      return saved ? JSON.parse(saved) : INITIAL_BANNER_MARQUEE;
-    } catch {
-      return INITIAL_BANNER_MARQUEE;
-    }
-  });
+  const [topMarqueeItems, setTopMarqueeItems] = useState<MarqueeItem[]>(() => dbService.getTopMarquee());
+
+  useEffect(() => {
+    dbService.saveTopMarquee(topMarqueeItems);
+  }, [topMarqueeItems]);
+
+  const [bannerMarqueeItems, setBannerMarqueeItems] = useState<MarqueeItem[]>(() => dbService.getBannerMarquee());
+
+  useEffect(() => {
+    dbService.saveBannerMarquee(bannerMarqueeItems);
+  }, [bannerMarqueeItems]);
 
   const [skinSafeConfig, setSkinSafeConfig] = useState<SkinSafeConfig>(() => {
     try {
@@ -781,48 +746,56 @@ export default function App() {
   // If Atelier Operations Hub view is active
   if (activeScreen === 'atelier-ops') {
     return (
-      <AtelierOpsHub
-        orders={orders}
-        products={products}
-        onBackToStore={() => {
-          if (activeScreen === 'atelier-ops') {
-            window.history.back();
-          } else {
+      <React.Suspense
+        fallback={
+          <div className="min-h-screen bg-[#f4f2ee] flex items-center justify-center text-[#8c7138] font-bold text-sm">
+            Loading Operations Hub...
+          </div>
+        }
+      >
+        <AtelierOpsHub
+          orders={orders}
+          products={products}
+          onBackToStore={() => {
+            if (activeScreen === 'atelier-ops') {
+              window.history.back();
+            } else {
+              setActiveScreen('storefront');
+            }
+          }}
+          onLogout={() => {
             setActiveScreen('storefront');
-          }
-        }}
-        onLogout={() => {
-          setActiveScreen('storefront');
-          showToast('Admin session logged out successfully.');
-        }}
-        onUpdateOrderStatus={handleUpdateOrderStatus}
-        onAddOrder={handleAddOrder}
-        onEditOrder={handleEditOrder}
-        onDeleteOrder={handleDeleteOrder}
-        onAddProduct={handleAddProduct}
-        onEditProduct={handleEditProduct}
-        onDeleteProduct={handleDeleteProduct}
-        categories={categories}
-        onAddCategory={handleAddCategory}
-        onEditCategory={handleEditCategory}
-        onDeleteCategory={handleDeleteCategory}
-        onUpdateStock={handleUpdateStock}
-        onToggleLive={handleToggleLive}
-        emergencyConfig={emergencyConfig}
-        onUpdateEmergencyConfig={setEmergencyConfig}
-        topMarqueeItems={topMarqueeItems}
-        bannerMarqueeItems={bannerMarqueeItems}
-        banners={banners}
-        salePosters={salePosters}
-        skinSafeConfig={skinSafeConfig}
-        saleBannerConfig={saleBannerConfig}
-        onUpdateTopMarquee={setTopMarqueeItems}
-        onUpdateBannerMarquee={setBannerMarqueeItems}
-        onUpdateBanners={setBanners}
-        onUpdateSalePosters={setSalePosters}
-        onUpdateSkinSafeConfig={setSkinSafeConfig}
-        onUpdateSaleBannerConfig={setSaleBannerConfig}
-      />
+            showToast('Admin session logged out successfully.');
+          }}
+          onUpdateOrderStatus={handleUpdateOrderStatus}
+          onAddOrder={handleAddOrder}
+          onEditOrder={handleEditOrder}
+          onDeleteOrder={handleDeleteOrder}
+          onAddProduct={handleAddProduct}
+          onEditProduct={handleEditProduct}
+          onDeleteProduct={handleDeleteProduct}
+          categories={categories}
+          onAddCategory={handleAddCategory}
+          onEditCategory={handleEditCategory}
+          onDeleteCategory={handleDeleteCategory}
+          onUpdateStock={handleUpdateStock}
+          onToggleLive={handleToggleLive}
+          emergencyConfig={emergencyConfig}
+          onUpdateEmergencyConfig={setEmergencyConfig}
+          topMarqueeItems={topMarqueeItems}
+          bannerMarqueeItems={bannerMarqueeItems}
+          banners={banners}
+          salePosters={salePosters}
+          skinSafeConfig={skinSafeConfig}
+          saleBannerConfig={saleBannerConfig}
+          onUpdateTopMarquee={setTopMarqueeItems}
+          onUpdateBannerMarquee={setBannerMarqueeItems}
+          onUpdateBanners={setBanners}
+          onUpdateSalePosters={setSalePosters}
+          onUpdateSkinSafeConfig={setSkinSafeConfig}
+          onUpdateSaleBannerConfig={setSaleBannerConfig}
+        />
+      </React.Suspense>
     );
   }
 

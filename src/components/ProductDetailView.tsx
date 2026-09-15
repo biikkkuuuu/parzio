@@ -156,6 +156,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 alt={product.name}
                 className="w-full h-full object-cover object-center animate-fadeIn"
                 draggable={false}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80';
+                }}
               />
 
               {/* Minimal Clean Badge */}

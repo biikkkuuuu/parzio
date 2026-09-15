@@ -146,6 +146,10 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                     alt={product.name}
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80';
+                    }}
                   />
                   {/* Promo Badge */}
                   {product.badge && (
