@@ -44,10 +44,15 @@ export const Logo: React.FC<LogoProps> = ({ className = 'h-7 w-auto', isLight = 
         <path d="M33 48 L50 92 L67 48" strokeWidth="3" />
       </svg>
 
-      {/* Brand Wordmark: PARZIO */}
-      <span className="font-display text-xl sm:text-2xl font-bold tracking-[0.2em] uppercase leading-none mt-0.5">
-        PARZIO
-      </span>
+      {/* Brand Wordmark: PARZIO & BEAUTY IN EVERY DETAIL */}
+      <div className="flex flex-col">
+        <span className="font-display text-xl sm:text-2xl font-bold tracking-[0.22em] uppercase leading-none">
+          PARZIO
+        </span>
+        <span className="text-[7px] sm:text-[8px] font-semibold tracking-[0.32em] uppercase text-[#8c7138] mt-1 leading-none">
+          BEAUTY IN EVERY DETAIL
+        </span>
+      </div>
     </div>
   );
 };

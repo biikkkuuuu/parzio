@@ -21,6 +21,115 @@ export const HERO_PRODUCT: Product = {
 };
 
 export const VAULT_PRODUCTS: Product[] = [
+  // ==================== CLIENT FEATURED NEW ARRIVALS ====================
+  {
+    id: 'prod-red-bangles',
+    name: 'Traditional Red Bangles Set',
+    category: 'Bangles',
+    price: 299,
+    originalPrice: 499,
+    savePercent: 40,
+    rating: 5.0,
+    reviewsCount: 840,
+    colorways: 12,
+    sku: 'BG-RED-299',
+    material: 'Traditional Gold Foil & Acrylic Lacquer',
+    isWaterproof: true,
+    isAntiTarnish: true,
+    badge: '40% OFF',
+    image: 'https://images.unsplash.com/photo-1611591475883-9b884179379e?auto=format&fit=crop&w=600&q=80',
+    description: 'Exquisite bridal and everyday traditional red bangles with golden crystal stone embellishments.'
+  },
+  {
+    id: 'prod-gold-mangalsutra',
+    name: 'Gold Plated Mangalsutra',
+    category: 'Mangalsutra',
+    price: 399,
+    originalPrice: 699,
+    savePercent: 43,
+    rating: 4.9,
+    reviewsCount: 1240,
+    colorways: 6,
+    sku: 'MS-GLD-399',
+    material: '18K Micro Gold Plated + Black Spinel Beads',
+    isWaterproof: true,
+    isAntiTarnish: true,
+    badge: '43% OFF',
+    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
+    description: 'Timeless sacred mangalsutra with delicate black beads and handcrafted 18K gold pendant.'
+  },
+  {
+    id: 'prod-premium-jhumka',
+    name: 'Premium Jhumka Earrings',
+    category: 'Earrings',
+    price: 349,
+    originalPrice: 699,
+    savePercent: 43,
+    rating: 4.9,
+    reviewsCount: 960,
+    colorways: 8,
+    sku: 'ER-JHM-349',
+    material: 'Antique Matte Gold + AAAAA Zirconia Inlay',
+    isWaterproof: true,
+    isAntiTarnish: true,
+    badge: '43% OFF',
+    image: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=600&q=80',
+    description: 'Handcrafted royal Indian jhumkas with hanging pearl drops and intricate floral filigree.'
+  },
+  {
+    id: 'prod-elegant-set',
+    name: 'Elegant Jewellery Set',
+    category: 'Jewellery Sets',
+    price: 599,
+    originalPrice: 999,
+    savePercent: 40,
+    rating: 5.0,
+    reviewsCount: 1530,
+    colorways: 4,
+    sku: 'SET-ELG-599',
+    material: 'Ruby-Pink Emerald Crystals + 18K Gold Finish',
+    isWaterproof: true,
+    isAntiTarnish: true,
+    badge: '40% OFF',
+    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
+    description: 'Complete royal wedding festive set including choker necklace and matching dangle earrings.'
+  },
+  {
+    id: 'prod-womens-perfume',
+    name: "Women's Perfume 50ml",
+    category: 'Perfume',
+    price: 450,
+    originalPrice: 699,
+    savePercent: 36,
+    rating: 4.8,
+    reviewsCount: 420,
+    colorways: 2,
+    sku: 'PRF-WMN-450',
+    material: 'French Rose & Vanilla Blossom Eau De Parfum',
+    isWaterproof: true,
+    isAntiTarnish: true,
+    badge: '36% OFF',
+    image: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=600&q=80',
+    description: 'Sensual, long-lasting artisan floral fragrance crafted to linger elegantly all day.'
+  },
+  {
+    id: 'prod-facewash-glow',
+    name: 'Facewash - Glow & Fresh',
+    category: 'Beauty & Care',
+    price: 199,
+    originalPrice: 299,
+    savePercent: 33,
+    rating: 4.9,
+    reviewsCount: 680,
+    colorways: 1,
+    sku: 'BTC-GLW-199',
+    material: 'Saffron, Turmeric & Rose Hydrating Botanical Blend',
+    isWaterproof: true,
+    isAntiTarnish: true,
+    badge: '33% OFF',
+    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
+    description: 'Gentle Ayurvedic skin-brightening cleanser that washes away impurities while retaining deep moisture.'
+  },
   // ==================== NECKLACES (10 items) ====================
   {
     id: 'prod-pearl-double-necklace',
@@ -716,30 +825,42 @@ export const VAULT_PRODUCTS: Product[] = [
   }
 ];
 
-export const CATEGORIES_DATA = [
+export const CATEGORIES_DATA: CategoryItem[] = [
   {
-    name: 'Necklaces',
-    subtitle: 'Chokers, Pearls & Lariats',
-    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=400&q=80'
+    id: 'cat-bangles',
+    name: 'Bangles',
+    subtitle: 'Trendy & Traditional',
+    image: 'https://images.unsplash.com/photo-1611591475883-9b884179379e?auto=format&fit=crop&w=600&q=80'
   },
   {
+    id: 'cat-mangalsutra',
+    name: 'Mangalsutra',
+    subtitle: 'A Bond for Life',
+    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    id: 'cat-jewellery-sets',
+    name: 'Jewellery Sets',
+    subtitle: 'Complete Your Look',
+    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    id: 'cat-earrings',
     name: 'Earrings',
-    subtitle: 'Studs, Huggies & Drops',
-    image: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=400&q=80'
+    subtitle: 'Grace in Every Detail',
+    image: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=600&q=80'
   },
   {
-    name: 'Rings',
-    subtitle: 'Bypass, Domes & Bands',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-hBhbhYDHhEF9zdaJvfFXNsPtVbYUgsPXuJViAj1_rubnSabYia3NkQ1uci23z7e2YxCfrvBeAS7RSyDbPROwL4anw_1zgqEnZNkqhdhfuwV_dG6xB5yPX2sMcudgpp87cwjOV2ki8EkZ7WhS170TVIiwE00A5cDUJkPHLhX6DRrtyQ_uD9vLZHZ6Pgjboalve80yuM2HmJIwDcf5mAU0bspGWKatSI-9WnqWnc8dP3nI5_14xD7H'
+    id: 'cat-perfume',
+    name: 'Perfume',
+    subtitle: 'Fragrance for You',
+    image: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=600&q=80'
   },
   {
-    name: 'Bracelets',
-    subtitle: 'Cuffs, Tennis & Link Chains',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJ6KsGvMmDre3vW1DrMsKt5qGEuc3sAKPferGJypreLxK_7Y67atNQ4xomNX3mXsafI8KxVgwwIxAuSGRAMdU1nptUgdRG2egH30oAiQJPAMja-A9D7cmeTOcTjB4K4xMDXO1Jh0lOUQbTjY6ag3AcMy_FFMlynYLgIWldQSQ-kXA73U-4qhTyvLZlIuztQX18XRXyVMQVw4OkFAABmM7kQLZaJmDFCQgfCVkrUX-3u1FG5lCyJEWr'
-  },
-  {
-    name: 'Anklets',
-    subtitle: 'Waterproof Beach Chains',
-    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=400&q=80'
+    id: 'cat-beauty',
+    name: 'Beauty & Care',
+    subtitle: 'Look Good, Feel Good',
+    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80'
   }
 ];
+

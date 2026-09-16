@@ -40,6 +40,11 @@ export class ErrorBoundary extends React.Component<Props, State> {
           <p className="text-sm text-[#747878] mt-2 max-w-md">
             Something unexpected occurred while rendering. We have logged this for our engineers.
           </p>
+          {this.state.error && (
+            <pre className="mt-3 p-3 bg-red-50 text-red-700 text-xs rounded-lg max-w-xl text-left overflow-auto border border-red-200">
+              {this.state.error.message}
+            </pre>
+          )}
           <button
             onClick={() => {
               this.setState({ hasError: false, error: null });

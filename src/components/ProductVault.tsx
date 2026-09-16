@@ -1,297 +1,200 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Sparkles, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Product, CategoryItem } from '../types';
+import React from 'react';
+import { Heart, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Product } from '../types';
 
 interface ProductVaultProps {
   products: Product[];
-  categories?: CategoryItem[];
-  activeFilter: string;
-  onSelectFilter: (filter: string) => void;
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: string) => void;
   wishlistIds: string[];
   onOpenProductModal: (product: Product) => void;
 }
 
-const DEFAULT_FILTER_TABS = ['ALL', 'NEW LAUNCH', 'BEST SELLERS', 'NEW COLLECTION', 'NECKLACES', 'RINGS', 'BRACELETS', 'EARRINGS', 'ANKLETS'];
-const PRODUCTS_PER_PAGE = 12;
+const FEATURED_NEW_ARRIVALS = [
+  {
+    id: 'feat-bangles-1',
+    title: 'Traditional Red Bangles Set',
+    price: 299,
+    originalPrice: 499,
+    discount: '40% OFF',
+    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=500&q=80',
+    category: 'BANGLES'
+  },
+  {
+    id: 'feat-mangalsutra-1',
+    title: 'Gold Plated Mangalsutra',
+    price: 399,
+    originalPrice: 699,
+    discount: '43% OFF',
+    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=500&q=80',
+    category: 'MANGALSUTRA'
+  },
+  {
+    id: 'feat-jhumka-1',
+    title: 'Premium Jhumka Earrings',
+    price: 349,
+    originalPrice: 699,
+    discount: '43% OFF',
+    image: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=500&q=80',
+    category: 'EARRINGS'
+  },
+  {
+    id: 'feat-set-1',
+    title: 'Elegant Jewellery Set',
+    price: 599,
+    originalPrice: 999,
+    discount: '40% OFF',
+    image: 'https://images.unsplash.com/photo-1611591475816-43b664d4b121?auto=format&fit=crop&w=500&q=80',
+    category: 'JEWELLERY SETS'
+  },
+  {
+    id: 'feat-perfume-1',
+    title: "Women's Perfume 50ml",
+    price: 450,
+    originalPrice: 699,
+    discount: '36% OFF',
+    image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=500&q=80',
+    category: 'PERFUME'
+  },
+  {
+    id: 'feat-facewash-1',
+    title: 'Facewash - Glow & Fresh',
+    price: 199,
+    originalPrice: 299,
+    discount: '33% OFF',
+    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=500&q=80',
+    category: 'BEAUTY'
+  }
+];
 
 export const ProductVault: React.FC<ProductVaultProps> = ({
   products,
-  categories,
-  activeFilter,
-  onSelectFilter,
   onAddToCart,
   onToggleWishlist,
   wishlistIds,
   onOpenProductModal
 }) => {
-  const filterTabs = useMemo(() => {
-    const list = new Set<string>(DEFAULT_FILTER_TABS);
-    if (categories) {
-      categories.forEach((c) => list.add(c.name.toUpperCase()));
-    }
-    products.forEach((p) => {
-      if (p.category) list.add(p.category.toUpperCase());
+  // Use exact featured 6 products or fallback
+  const displayList = FEATURED_NEW_ARRIVALS.map((feat) => {
+    const matched = products.find((p) => {
+      if (!p) return false;
+      if (p.id === feat.id) return true;
+      const pName = (p.name || (p as unknown as { title?: string }).title || '').toLowerCase();
+      return pName === feat.title.toLowerCase();
     });
-    return Array.from(list);
-  }, [categories, products]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const isFirstMount = useRef(true);
-
-  // Reset to page 1 whenever filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeFilter]);
-
-  // Reliable scroll to top of vault whenever page changes (after DOM update)
-  useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-      return;
-    }
-    const scrollToVault = () => {
-      const vaultElement = document.getElementById('vault-section');
-      if (vaultElement) {
-        const headerHeight = 70;
-        const targetTop = vaultElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-        window.scrollTo({
-          top: Math.max(0, targetTop),
-          behavior: 'smooth'
-        });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
-    const timer = setTimeout(scrollToVault, 50);
-    return () => clearTimeout(timer);
-  }, [currentPage]);
-
-  const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE) || 1;
-  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-  const paginatedProducts = products.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
-
-  const handlePageChange = (page: number) => {
-    if (page < 1 || page > totalPages) return;
-    setCurrentPage(page);
-  };
+    return (matched || {
+      ...feat,
+      name: feat.title,
+      description: 'Exclusive DEMI-FINE design by PARZIO',
+      isNew: true,
+      inStock: true
+    }) as unknown as Product;
+  });
 
   return (
-    <section id="vault-section" className="py-8 sm:py-12 bg-[#fbf9f6] border-b border-[#eae5dc]">
-      <div className="w-full max-w-[1800px] mx-auto px-3 sm:px-8 lg:px-12">
+    <section id="vault-section" className="py-8 bg-white border-b border-[#eae5dc]">
+      <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-14">
         
-        {/* Header Title */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 px-1">
-          <div>
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#8c7138] mb-1">
-              <Sparkles className="w-3.5 h-3.5 text-[#8c7138]" />
-              DIRECT FACTORY PRICE
-            </span>
-            <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl text-[#141414] font-bold tracking-tight">
-              The ₹99 Anti-Tarnish Collection
-            </h2>
-            <p className="text-xs sm:text-sm text-[#747878] mt-1 max-w-xl">
-              Real 18K gold plated on pure surgical stainless steel. 100% waterproof for everyday wear.
-            </p>
-          </div>
-
+        {/* Header: "New Arrivals —" + "View All Products →" */}
+        <div className="flex items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-[#f2ece1] text-[#8c7138] text-xs font-bold uppercase tracking-wider border border-[#dfd7ca]">
-              {products.length} Designs Available
-            </span>
+            <h2 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight">
+              New Arrivals
+            </h2>
+            <span className="text-xl sm:text-2xl text-[#9e7144] font-light">—</span>
           </div>
+
+          <button
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#9e7144] hover:text-[#805c30] transition-colors cursor-pointer group"
+          >
+            <span>View All Products</span>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </button>
         </div>
 
-        {/* Filter Pills Tab Strip */}
-        <div className="flex items-center sm:justify-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-6 px-1">
-          {filterTabs.map((tab) => {
-            const isActive =
-              activeFilter.toUpperCase() === tab ||
-              (activeFilter === 'ALL' && tab === 'ALL') ||
-              (activeFilter === 'NEW ARRIVALS' && tab === 'ALL');
-
-            return (
-              <button
-                key={tab}
-                onClick={() => onSelectFilter(tab)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all uppercase tracking-wider cursor-pointer ${
-                  isActive
-                    ? 'bg-[#8c7138] text-white shadow-xs'
-                    : 'bg-white text-[#747878] border border-[#eae5dc] hover:border-[#8c7138] hover:text-[#141414]'
-                }`}
-              >
-                {tab}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Clean E-Commerce Grid (2-col mobile, 3-col tablet, 4-col laptop, 5/6-col desktop) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-          {paginatedProducts.map((product) => {
+        {/* 6 Product Cards matching screenshot */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          {displayList.map((product) => {
             const isWishlisted = wishlistIds.includes(product.id);
+            const discountTag = product.originalPrice
+              ? `${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF`
+              : '40% OFF';
+
             return (
               <div
                 key={product.id}
-                className="bg-white border border-[#eae5dc] rounded-2xl flex flex-col justify-between overflow-hidden shadow-xs hover:border-[#8c7138]/50 hover:shadow-md transition-all duration-200"
+                className="group flex flex-col justify-between bg-white rounded-lg border border-[#eee7dc] hover:border-[#9e7144]/50 shadow-xs hover:shadow-md transition-all duration-300 p-2 sm:p-2.5"
               >
-                {/* 1:1 Square Image */}
-                <div
-                  onClick={() => onOpenProductModal(product)}
-                  className="aspect-square w-full bg-[#f8f6f2] cursor-pointer relative overflow-hidden group"
-                >
+                {/* Product Image */}
+                <div className="relative aspect-square w-full rounded-md overflow-hidden bg-[#faf7f2] mb-2">
                   <img
                     src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                    alt={product.name || (product as unknown as { title?: string }).title || ''}
+                    onClick={() => onOpenProductModal(product)}
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 cursor-pointer"
                     loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80';
-                    }}
                   />
-                  {/* Promo Badge */}
-                  {product.badge && (
-                    <span
-                      className={`absolute top-2 left-2 text-[8.5px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm backdrop-blur-xs flex items-center gap-1 ${
-                        product.badge.toUpperCase().includes('BEST SELLER')
-                          ? 'bg-rose-950 text-rose-200 border border-rose-700/60'
-                          : product.badge.toUpperCase().includes('NEW LAUNCH')
-                          ? 'bg-[#141414] text-[#fed488] border border-[#fed488]/40'
-                          : product.badge.toUpperCase().includes('NEW COLLECTION')
-                          ? 'bg-[#0d211a] text-[#7de3bf] border border-[#2e6d57]'
-                          : 'bg-[#141414]/90 text-[#fed488]'
-                      }`}
-                    >
-                      {product.badge.toUpperCase().includes('NEW LAUNCH') && <Sparkles className="w-2.5 h-2.5 text-[#fed488]" />}
-                      {product.badge.toUpperCase().includes('BEST SELLER') && <span className="text-[9px]">🔥</span>}
-                      {product.badge.toUpperCase().includes('NEW COLLECTION') && <span className="text-[9px]">👑</span>}
-                      <span>{product.badge}</span>
-                    </span>
-                  )}
-                  {/* Wishlist toggle button */}
+
+                  {/* Wishlist Icon Top Right matching screenshot */}
                   <button
-                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleWishlist(product.id);
                     }}
-                    className="absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#141414] hover:text-rose-500 shadow-xs transition-colors z-10"
+                    className="absolute top-1.5 right-1.5 p-1 rounded-full bg-white/80 hover:bg-white text-gray-600 hover:text-[#9e7144] transition-all cursor-pointer"
                     title="Wishlist"
                   >
-                    <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
+                    <Heart
+                      className={`w-3.5 h-3.5 ${
+                        isWishlisted ? 'fill-[#e53e3e] text-[#e53e3e]' : 'text-gray-600'
+                      }`}
+                    />
                   </button>
                 </div>
 
-                {/* Product Meta & Pricing Area */}
-                <div className="p-3 sm:p-3.5 flex flex-col justify-between flex-1">
+                {/* Title & Pricing */}
+                <div className="flex-1 flex flex-col justify-between">
                   <div>
-                    {/* Category / Subtitle */}
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7138] block mb-0.5 truncate">
-                      {product.category} • 316L Steel
-                    </span>
-
-                    {/* Title with single line truncation */}
-                    <h4
+                    <h3
                       onClick={() => onOpenProductModal(product)}
-                      className="text-[12px] sm:text-[14px] font-semibold text-[#141414] truncate cursor-pointer hover:text-[#8c7138] transition-colors leading-tight min-h-[1.25rem]"
-                      title={product.name}
+                      className="font-sans text-xs sm:text-[13px] font-medium text-[#1a1714] line-clamp-1 hover:text-[#9e7144] cursor-pointer transition-colors leading-snug mb-1.5"
+                      title={product.name || (product as unknown as { title?: string }).title || ''}
                     >
-                      {product.name}
-                    </h4>
+                      {product.name || (product as unknown as { title?: string }).title || ''}
+                    </h3>
 
-                    {/* Uniform Price Row: Price, Strikethrough, and SAVE % Badge */}
-                    <div className="flex items-center justify-between gap-1.5 mt-2 pt-1.5 border-t border-[#f4efea]">
-                      <div className="flex items-baseline gap-1.5 min-w-0">
-                        <span className="font-bold text-sm sm:text-base text-[#141414]">
-                          ₹{product.price}
+                    {/* Price Row: ₹299  ~~₹499~~  40% OFF */}
+                    <div className="flex items-center gap-1.5 mb-2.5">
+                      <span className="text-xs sm:text-sm font-bold text-[#1a1714]">
+                        ₹{product.price}
+                      </span>
+                      {product.originalPrice && (
+                        <span className="text-[11px] text-gray-400 line-through">
+                          ₹{product.originalPrice}
                         </span>
-                        <span className="text-[11px] sm:text-xs text-[#a3a3a3] line-through font-normal">
-                          ₹{product.originalPrice.toLocaleString('en-IN')}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-extrabold text-rose-700 bg-rose-50 border border-rose-200/80 px-1.5 py-0.5 rounded-md tracking-wider uppercase shrink-0 whitespace-nowrap">
-                        SAVE {product.savePercent}%
+                      )}
+                      <span className="bg-[#1b1714] text-white text-[9px] font-bold px-1 py-0.5 rounded-xs">
+                        {discountTag}
                       </span>
                     </div>
                   </div>
 
-                  {/* Add to Cart Button */}
+                  {/* Camel Brown Add to Cart Button matching screenshot */}
                   <button
-                    type="button"
                     onClick={() => onAddToCart(product)}
-                    className="w-full mt-3 py-2 px-3 rounded-full bg-[#141414] hover:bg-[#8c7138] active:scale-[0.98] transition-all text-xs sm:text-sm font-bold text-white text-center shadow-xs cursor-pointer"
+                    className="w-full bg-[#9e7144] hover:bg-[#865d34] text-white py-1.5 px-2 rounded-xs text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-2xs cursor-pointer active:scale-95"
                   >
-                    Add to cart
+                    <ShoppingBag className="w-3 h-3" />
+                    <span>Add to Cart</span>
                   </button>
                 </div>
               </div>
             );
           })}
         </div>
-
-        {/* Luxury Pagination Bar: Page 1, 2, 3... */}
-        {totalPages > 1 && (
-          <div className="mt-10 pt-6 border-t border-[#eae5dc] flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="text-xs text-[#747878] font-medium order-2 sm:order-1">
-              Showing <span className="font-bold text-[#141414]">{startIndex + 1}</span>–
-              <span className="font-bold text-[#141414]">{Math.min(startIndex + PRODUCTS_PER_PAGE, products.length)}</span> of{' '}
-              <span className="font-bold text-[#141414]">{products.length}</span> designs
-            </span>
-
-            <div className="flex items-center gap-1.5 order-1 sm:order-2">
-              {/* Previous Page Button */}
-              <button
-                type="button"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`p-2 rounded-xl flex items-center justify-center border text-xs font-semibold transition-all ${
-                  currentPage === 1
-                    ? 'border-[#eae5dc] text-[#c4c4c4] cursor-not-allowed bg-[#faf8f5]'
-                    : 'border-[#eae5dc] bg-white text-[#141414] hover:bg-[#8c7138] hover:text-white hover:border-[#8c7138] shadow-xs active:scale-95 cursor-pointer'
-                }`}
-                title="Previous Page"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              {/* Numbered Page Buttons: 1, 2, 3... */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                const isActive = pageNum === currentPage;
-                return (
-                  <button
-                    key={pageNum}
-                    type="button"
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`min-w-9 h-9 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
-                      isActive
-                        ? 'bg-[#8c7138] border-[#8c7138] text-white shadow-xs scale-105'
-                        : 'bg-white border-[#eae5dc] text-[#141414] hover:bg-[#f2ece1] hover:border-[#8c7138]'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-
-              {/* Next Page Button */}
-              <button
-                type="button"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`p-2 rounded-xl flex items-center justify-center border text-xs font-semibold transition-all ${
-                  currentPage === totalPages
-                    ? 'border-[#eae5dc] text-[#c4c4c4] cursor-not-allowed bg-[#faf8f5]'
-                    : 'border-[#eae5dc] bg-white text-[#141414] hover:bg-[#8c7138] hover:text-white hover:border-[#8c7138] shadow-xs active:scale-95 cursor-pointer'
-                }`}
-                title="Next Page"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
 
       </div>
     </section>

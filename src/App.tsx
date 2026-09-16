@@ -13,6 +13,8 @@ import { Categories } from './components/Categories';
 import { ProductVault } from './components/ProductVault';
 import { QualityCheckSection } from './components/QualityCheckSection';
 import { ReviewsSection } from './components/ReviewsSection';
+import { WhyChooseParzio } from './components/WhyChooseParzio';
+import { InstagramGrid } from './components/InstagramGrid';
 import { BrandPromise } from './components/BrandPromise';
 import { Footer } from './components/Footer';
 import { TrackOrderView } from './components/TrackOrderView';
@@ -1049,61 +1051,41 @@ export default function App() {
           <main className="pb-16 md:pb-0">
             {/* Hero Section */}
             <HeroBanner
-              heroProduct={HERO_PRODUCT}
               onExploreVault={scrollToVault}
               onScrollToVault={scrollToVault}
               onAddToCart={handleAddToCart}
-              onOpenProductModal={handleSelectProduct}
-              banners={banners}
-              bannerMarqueeItems={bannerMarqueeItems}
             />
 
-            {/* New Collections Round Categories */}
+            {/* Shop by Category */}
             <Categories
               categories={categories}
               onSelectCategory={handleSelectCategory}
               selectedCategory={activeCategory}
             />
 
-            {/* The ₹99 Anti-Tarnish Vault */}
+            {/* New Arrivals */}
             <ProductVault
               products={filteredProducts}
-              categories={categories}
-              activeFilter={activeCategory}
-              onSelectFilter={handleSelectCategory}
               onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}
               wishlistIds={wishlistIds}
               onOpenProductModal={handleSelectProduct}
             />
 
-            {/* Skin Safe Quality Guarantee Banner */}
-            <SkinSafeBanner
-              config={skinSafeConfig}
-              onExploreNewArrivals={() => {
-                setActiveCategory('NEW ARRIVALS');
-                scrollToVault();
-              }}
-            />
+            {/* Why Choose PARZIO */}
+            <WhyChooseParzio />
 
-            {/* 5-Step Quality Check Standards */}
-            <QualityCheckSection />
-
-            {/* Google Verified Reviews */}
+            {/* What Our Customers Say */}
             <ReviewsSection />
 
-            {/* The PRAO Promise */}
-            <BrandPromise />
+            {/* Follow Us on Instagram */}
+            <InstagramGrid />
 
             {/* Footer */}
             <Footer
               onSelectCategory={(cat) => {
                 setActiveCategory(cat.toUpperCase());
                 scrollToVault();
-              }}
-              onOpenQualityModal={() => {
-                const el = document.getElementById('quality-section');
-                el?.scrollIntoView({ behavior: 'smooth' });
               }}
               onOpenAtelierOps={handleOpenAtelierOps}
             />
