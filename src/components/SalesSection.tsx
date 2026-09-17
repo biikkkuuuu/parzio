@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Product, SaleBannerConfig, SalePoster } from '../types';
-import { ArrowUp, Sparkles, Tag, ShieldCheck, Zap, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowUp, Sparkles, Tag, ShieldCheck, Zap, ArrowRight, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 
 interface SalesSectionProps {
   products: Product[];

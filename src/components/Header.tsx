@@ -18,6 +18,8 @@ interface HeaderProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   topMarqueeItems?: any[];
+  deviceMode?: string;
+  onToggleDeviceMode?: () => void;
 }
 
 const NAV_ITEMS = [

@@ -1,7 +1,9 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
+import { CategoryItem } from '../types';
 
 interface CategoriesProps {
+  categories?: CategoryItem[];
   onSelectCategory: (categoryName: string) => void;
   selectedCategory?: string;
 }

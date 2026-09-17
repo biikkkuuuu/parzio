@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { OrderItem, OrderStatus, Product, CategoryItem, AdminTab, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster } from '../types';
+import { OrderItem, OrderStatus, Product, CategoryItem, AdminTab, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon } from '../types';
 import { Logo } from './Logo';
 import { AdminAnalyticsView } from './admin/AdminAnalyticsView';
 import { AdminOrdersView } from './admin/AdminOrdersView';

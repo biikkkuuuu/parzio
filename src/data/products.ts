@@ -1,4 +1,4 @@
-import { Product } from '../types';
+import { Product, CategoryItem } from '../types';
 
 export const HERO_PRODUCT: Product = {
   id: 'hero-coin-bracelet',

@@ -5,6 +5,7 @@ import { Logo } from './Logo';
 interface FooterProps {
   onSelectCategory?: (cat: string) => void;
   onOpenAtelierOps?: () => void;
+  onOpenQualityModal?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierOps }) => {
