@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, X, ChevronRight, Sparkles, ShieldCheck, Truck, RotateCcw, User, Phone, LayoutDashboard, Heart } from 'lucide-react';
+import { Home, Tag, X, ChevronRight, Sparkles, ShieldCheck, Truck, RotateCcw, User, Phone, LayoutDashboard, Heart } from 'lucide-react';
 import { Logo } from './Logo';
 import { TabType } from './BottomNav';
 
@@ -61,7 +61,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
         </div>
 
         {/* Navigation Categories */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {/* Home Link */}
           <button
             onClick={() => {
@@ -75,6 +75,25 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             <Home className="w-4 h-4 text-[#8c7138]" />
             <span className="font-display font-bold text-sm text-[#141414]">
               Home
+            </span>
+          </button>
+
+          {/* Exclusive Offers Link */}
+          <button
+            onClick={() => {
+              onNavigateTab('offers');
+              onClose();
+            }}
+            className="w-full p-3 rounded-2xl bg-[#faf8f5] hover:bg-[#f3efe9] border border-[#eae5dc] flex items-center justify-between text-left transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <Tag className="w-4 h-4 text-[#8c7138]" />
+              <span className="font-display font-bold text-sm text-[#141414]">
+                Exclusive Offers
+              </span>
+            </div>
+            <span className="text-[10px] font-bold text-[#8c7138] bg-[#fed488]/40 px-2 py-0.5 rounded-full border border-[#fed488]">
+              DEALS
             </span>
           </button>
 

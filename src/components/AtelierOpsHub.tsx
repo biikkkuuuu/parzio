@@ -69,6 +69,8 @@ interface AtelierOpsHubProps {
   onUpdateSalePosters: (posters: SalePoster[]) => void;
   onUpdateSkinSafeConfig: (config: SkinSafeConfig) => void;
   onUpdateSaleBannerConfig: (config: SaleBannerConfig) => void;
+  coupons?: Coupon[];
+  onUpdateCoupons?: (coupons: Coupon[]) => void;
 }
 
 export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
@@ -102,7 +104,9 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
   onUpdateBanners,
   onUpdateSalePosters,
   onUpdateSkinSafeConfig,
-  onUpdateSaleBannerConfig
+  onUpdateSaleBannerConfig,
+  coupons,
+  onUpdateCoupons
 }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
@@ -421,7 +425,11 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
         )}
 
         {activeTab === 'coupons' && (
-          <AdminCouponsView onTriggerToast={triggerToast} />
+          <AdminCouponsView
+            coupons={coupons}
+            onUpdateCoupons={onUpdateCoupons}
+            onTriggerToast={triggerToast}
+          />
         )}
 
         {activeTab === 'settings' && (

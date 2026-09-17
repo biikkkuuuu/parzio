@@ -4,6 +4,9 @@ export const INITIAL_COUPONS: Coupon[] = [
   {
     id: 'coup-1',
     code: 'PARZIO99',
+    title: 'Flat ₹99 Instant Privilege Off',
+    description: 'Special introductory welcome privilege on 18K demi-fine anti-tarnish waterproof jewellery.',
+    badge: 'MOST POPULAR',
     discountType: 'fixed',
     discountValue: 99,
     minOrderValue: 499,
@@ -15,35 +18,44 @@ export const INITIAL_COUPONS: Coupon[] = [
   {
     id: 'coup-2',
     code: 'GOLD10',
+    title: '10% Extra Off Demi-Fine Gold Collection',
+    description: 'Enjoy 10% instant discount across all waterproof necklaces, bangles & rings.',
+    badge: 'FESTIVE PRIVILEGE',
     discountType: 'percentage',
     discountValue: 10,
     minOrderValue: 399,
     usageCount: 885,
     usageLimit: 2000,
     active: true,
-    expiresAt: '2026-10-15'
+    expiresAt: '2026-12-31'
   },
   {
     id: 'coup-3',
     code: 'FREESHIP',
+    title: 'Free Express Insured Priority Shipping',
+    description: 'Complimentary doorstep express delivery with tamper-proof luxury packaging on all prepaid & COD orders.',
+    badge: 'ZERO DELIVERY FEE',
     discountType: 'fixed',
     discountValue: 49,
     minOrderValue: 299,
     usageCount: 312,
     usageLimit: 1000,
     active: true,
-    expiresAt: '2026-11-01'
+    expiresAt: '2026-12-31'
   },
   {
     id: 'coup-4',
     code: 'FESTIVE15',
+    title: '15% Off Festive Jewellery Sets & Combos',
+    description: 'Flat 15% discount on curated bridal, mangalsutra and daily-wear necklace sets.',
+    badge: 'LIMITED TIME',
     discountType: 'percentage',
     discountValue: 15,
     minOrderValue: 699,
     usageCount: 42,
     usageLimit: 500,
-    active: false,
-    expiresAt: '2026-08-30'
+    active: true,
+    expiresAt: '2026-12-31'
   }
 ];
 

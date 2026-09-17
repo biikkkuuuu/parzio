@@ -31,6 +31,9 @@ export interface Product {
 export interface Coupon {
   id: string;
   code: string;
+  title?: string;
+  description?: string;
+  badge?: string;
   discountType: 'percentage' | 'fixed';
   discountValue: number;
   minOrderValue: number;
@@ -38,6 +41,7 @@ export interface Coupon {
   usageLimit: number;
   active: boolean;
   expiresAt: string;
+  bannerImage?: string;
 }
 
 export interface ExchangeRequest {

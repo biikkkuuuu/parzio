@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Product, CategoryItem, CartItem, OrderItem, ActiveScreen, OrderStatus, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster } from './types';
+import { Product, CategoryItem, CartItem, OrderItem, ActiveScreen, OrderStatus, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon } from './types';
 import { HERO_PRODUCT, VAULT_PRODUCTS, CATEGORIES_DATA } from './data/products';
 import { INITIAL_ORDERS } from './data/orders';
 import { INITIAL_BANNERS, INITIAL_TOP_MARQUEE, INITIAL_BANNER_MARQUEE, INITIAL_SALE_POSTERS } from './data/bannerData';
@@ -20,6 +20,7 @@ import { Footer } from './components/Footer';
 import { TrackOrderView } from './components/TrackOrderView';
 import { ExchangeView } from './components/ExchangeView';
 import { AccountView } from './components/AccountView';
+import { OffersView } from './components/OffersView';
 import { EmergencyStorefrontLockdown } from './components/EmergencyStorefrontLockdown';
 import { dbService } from './services/dbService';
 
@@ -67,7 +68,7 @@ export default function App() {
     let savedTab: TabType = 'home';
     try {
       const t = sessionStorage.getItem('parzio_last_tab');
-      if (t === 'home' || t === 'sale' || t === 'track' || t === 'exchange' || t === 'account' || t === 'wishlist') {
+      if (t === 'home' || t === 'sale' || t === 'offers' || t === 'track' || t === 'exchange' || t === 'account' || t === 'wishlist') {
         savedTab = t;
       }
     } catch {}
@@ -100,6 +101,9 @@ export default function App() {
     }
     if (hash === '#/sale' || hash === '#sale') {
       return { type: 'tab', id: null, tab: 'sale' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
+    }
+    if (hash === '#/offers' || hash === '#offers') {
+      return { type: 'tab', id: null, tab: 'offers' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
     }
     if (hash === '#/account' || hash === '#account') {
       return { type: 'tab', id: null, tab: 'account' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
@@ -392,6 +396,18 @@ export default function App() {
       console.error(e);
     }
   }, [saleBannerConfig]);
+
+  // Coupons State (Unified Data Layer via dbService)
+  const [coupons, setCoupons] = useState<Coupon[]>(() => dbService.getCoupons());
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('parzio_coupons', JSON.stringify(coupons));
+      dbService.saveCoupons(coupons);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [coupons]);
 
   // Emergency Storefront Shutdown Configuration
   const [emergencyConfig, setEmergencyConfig] = useState<EmergencyShutdownConfig>({
@@ -814,6 +830,22 @@ export default function App() {
 
   const handleSelectCategory = (cat: string) => {
     const upper = cat.toUpperCase();
+    if (upper === 'OFFERS') {
+      handleTabChange('offers');
+      return;
+    }
+    if (upper === 'SHOP') {
+      setActiveCategory('SHOP');
+      setSelectedProduct(null);
+      if (activeTab !== 'home') {
+        handleTabChange('home');
+      }
+      setTimeout(() => {
+        const el = document.getElementById('categories-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 80);
+      return;
+    }
     setActiveCategory(upper === 'HOME' ? 'ALL' : upper);
     setSelectedProduct(null);
     if (window.location.hash.startsWith('#/product/')) {
@@ -830,7 +862,7 @@ export default function App() {
     if (upper === 'HOME') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      // Specific category or 'ALL' / 'SHOP' selected -> scroll to product vault
+      // Specific category or 'ALL' selected -> scroll to product vault
       setTimeout(() => {
         scrollToVault();
       }, 80);
@@ -888,6 +920,11 @@ export default function App() {
           onUpdateSalePosters={setSalePosters}
           onUpdateSkinSafeConfig={setSkinSafeConfig}
           onUpdateSaleBannerConfig={setSaleBannerConfig}
+          coupons={coupons}
+          onUpdateCoupons={(updated) => {
+            setCoupons(updated);
+            dbService.saveCoupons(updated);
+          }}
         />
       </React.Suspense>
     );
@@ -954,6 +991,8 @@ export default function App() {
           onOpenWishlist={handleOpenWishlist}
           activeCategory={activeCategory}
           onSelectCategory={handleSelectCategory}
+          activeTab={activeTab}
+          onNavigateTab={handleTabChange}
           activeScreen={activeScreen}
           onToggleScreen={(screen) => {
             if (screen === 'atelier-ops') {
@@ -1049,6 +1088,15 @@ export default function App() {
                   el?.scrollIntoView({ behavior: 'smooth' });
                 }, 100);
               }}
+              onOpenAtelierOps={handleOpenAtelierOps}
+            />
+          </main>
+        ) : activeTab === 'offers' ? (
+          <main className="pb-16 md:pb-0">
+            <OffersView
+              coupons={coupons}
+              onSelectCategory={handleSelectCategory}
+              onBackToStore={() => handleTabChange('home')}
               onOpenAtelierOps={handleOpenAtelierOps}
             />
           </main>

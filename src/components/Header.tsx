@@ -11,10 +11,13 @@ interface HeaderProps {
   onOpenWishlist?: () => void;
   activeCategory: string;
   onSelectCategory: (cat: string) => void;
+  activeTab?: string;
+  onNavigateTab?: (tab: any) => void;
   activeScreen?: ActiveScreen;
   onToggleScreen?: (screen: ActiveScreen) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  topMarqueeItems?: any[];
 }
 
 const NAV_ITEMS = [
@@ -33,6 +36,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCart,
   activeCategory,
   onSelectCategory,
+  activeTab = 'home',
+  onNavigateTab,
   onToggleScreen,
   searchQuery,
   onSearchChange,
@@ -87,22 +92,33 @@ export const Header: React.FC<HeaderProps> = ({
         <nav className="hidden lg:flex items-center gap-7 text-[13px] font-medium tracking-wide">
           {NAV_ITEMS.map((item) => {
             const isActive =
-              (item.id === 'home' && (activeCategory === 'ALL' || activeCategory === 'HOME' || activeCategory === 'NEW ARRIVALS')) ||
-              activeCategory.toLowerCase() === item.label.toLowerCase() ||
-              activeCategory.toLowerCase() === item.id;
+              (item.id === 'home' && activeTab === 'home' && (activeCategory === 'ALL' || activeCategory === 'HOME' || activeCategory === 'NEW ARRIVALS')) ||
+              (item.id === 'shop' && activeTab === 'home' && activeCategory === 'SHOP') ||
+              (item.id === 'offers' && activeTab === 'offers') ||
+              (activeTab === 'home' && (activeCategory.toLowerCase() === item.label.toLowerCase() || activeCategory.toLowerCase() === item.id));
             return (
               <button
                 key={item.id}
                 onClick={() => {
                   if (item.id === 'home') {
+                    if (onNavigateTab) onNavigateTab('home');
                     onSelectCategory('HOME');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   } else if (item.id === 'shop') {
-                    onSelectCategory('ALL');
-                    document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
+                    if (onNavigateTab) onNavigateTab('home');
+                    onSelectCategory('SHOP');
+                    setTimeout(() => {
+                      document.getElementById('categories-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 80);
+                  } else if (item.id === 'offers') {
+                    if (onNavigateTab) onNavigateTab('offers');
+                    else onSelectCategory('OFFERS');
                   } else {
+                    if (onNavigateTab) onNavigateTab('home');
                     onSelectCategory(item.label);
-                    document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
+                    setTimeout(() => {
+                      document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 80);
                   }
                 }}
                 className={`py-1 relative transition-colors cursor-pointer ${
@@ -131,18 +147,18 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={() => onToggleScreen && onToggleScreen('atelier-ops')}
             className="text-[#2a2a2a] hover:text-[#9e7144] transition-colors cursor-pointer"
-            title="Account"
+            title="Account / Operations"
           >
             <User className="w-5 h-5" />
           </button>
 
           <button
             onClick={onOpenCart}
-            className="relative text-[#2a2a2a] hover:text-[#9e7144] transition-colors cursor-pointer"
-            title="Cart"
+            className="text-[#2a2a2a] hover:text-[#9e7144] transition-colors relative cursor-pointer"
+            title="Bag"
           >
             <ShoppingBag className="w-5 h-5" />
-            <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-[#1b1714] text-white text-[10px] font-bold flex items-center justify-center">
+            <span className="absolute -top-1 -right-2 bg-[#9e7144] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
               {cartCount}
             </span>
           </button>
@@ -168,32 +184,47 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Mobile Nav Strip */}
       <nav className="lg:hidden border-t border-[#eae5dc] bg-[#faf8f5] overflow-x-auto no-scrollbar py-2 px-4 flex gap-4 text-xs font-medium whitespace-nowrap">
-        {NAV_ITEMS.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => {
-              if (item.id === 'home') {
-                onSelectCategory('HOME');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              } else if (item.id === 'shop') {
-                onSelectCategory('ALL');
-                document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
-              } else {
-                onSelectCategory(item.label);
-                document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
-              }
-            }}
-            className={`px-2.5 py-1 rounded-full transition-colors ${
-              (item.id === 'home' && (activeCategory === 'ALL' || activeCategory === 'HOME' || activeCategory === 'NEW ARRIVALS')) ||
-              activeCategory.toLowerCase() === item.label.toLowerCase() ||
-              activeCategory.toLowerCase() === item.id
-                ? 'bg-[#9e7144] text-white'
-                : 'text-[#555] hover:text-[#141414]'
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          const isActive =
+            (item.id === 'home' && activeTab === 'home' && (activeCategory === 'ALL' || activeCategory === 'HOME' || activeCategory === 'NEW ARRIVALS')) ||
+            (item.id === 'shop' && activeTab === 'home' && activeCategory === 'SHOP') ||
+            (item.id === 'offers' && activeTab === 'offers') ||
+            (activeTab === 'home' && (activeCategory.toLowerCase() === item.label.toLowerCase() || activeCategory.toLowerCase() === item.id));
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                if (item.id === 'home') {
+                  if (onNavigateTab) onNavigateTab('home');
+                  onSelectCategory('HOME');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else if (item.id === 'shop') {
+                  if (onNavigateTab) onNavigateTab('home');
+                  onSelectCategory('SHOP');
+                  setTimeout(() => {
+                    document.getElementById('categories-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 80);
+                } else if (item.id === 'offers') {
+                  if (onNavigateTab) onNavigateTab('offers');
+                  else onSelectCategory('OFFERS');
+                } else {
+                  if (onNavigateTab) onNavigateTab('home');
+                  onSelectCategory(item.label);
+                  setTimeout(() => {
+                    document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 80);
+                }
+              }}
+              className={`px-2.5 py-1 rounded-full transition-colors ${
+                isActive
+                  ? 'bg-[#9e7144] text-white'
+                  : 'text-[#555] hover:text-[#141414]'
+              }`}
+            >
+              {item.label}
+            </button>
+          );
+        })}
       </nav>
     </header>
   );

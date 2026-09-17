@@ -16,17 +16,41 @@ import {
 } from 'lucide-react';
 
 interface AdminCouponsViewProps {
+  coupons?: Coupon[];
+  onUpdateCoupons?: (coupons: Coupon[]) => void;
   onTriggerToast: (msg: string) => void;
 }
 
-export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({ onTriggerToast }) => {
-  const [coupons, setCoupons] = useState<Coupon[]>(INITIAL_COUPONS);
+export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
+  coupons: propCoupons,
+  onUpdateCoupons,
+  onTriggerToast
+}) => {
+  const [coupons, setCoupons] = useState<Coupon[]>(() => propCoupons || INITIAL_COUPONS);
+
+  // Sync if parent updates
+  React.useEffect(() => {
+    if (propCoupons) {
+      setCoupons(propCoupons);
+    }
+  }, [propCoupons]);
+
+  const updateAndNotify = (updated: Coupon[]) => {
+    setCoupons(updated);
+    if (onUpdateCoupons) {
+      onUpdateCoupons(updated);
+    }
+  };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [couponToDelete, setCouponToDelete] = useState<Coupon | null>(null);
 
   // Form State
   const [code, setCode] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [badge, setBadge] = useState('EXCLUSIVE OFFER');
   const [discountType, setDiscountType] = useState<'fixed' | 'percentage'>('fixed');
   const [discountValue, setDiscountValue] = useState('99');
   const [minOrder, setMinOrder] = useState('499');
@@ -36,6 +60,9 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({ onTriggerToa
   const openCreateModal = () => {
     setEditingCoupon(null);
     setCode('');
+    setTitle('');
+    setDescription('');
+    setBadge('EXCLUSIVE OFFER');
     setDiscountType('fixed');
     setDiscountValue('99');
     setMinOrder('499');
@@ -47,6 +74,9 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({ onTriggerToa
   const openEditModal = (coupon: Coupon) => {
     setEditingCoupon(coupon);
     setCode(coupon.code);
+    setTitle(coupon.title || '');
+    setDescription(coupon.description || '');
+    setBadge(coupon.badge || 'EXCLUSIVE OFFER');
     setDiscountType(coupon.discountType);
     setDiscountValue(String(coupon.discountValue));
     setMinOrder(String(coupon.minOrderValue));
@@ -56,9 +86,10 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({ onTriggerToa
   };
 
   const handleToggle = (id: string) => {
-    setCoupons((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, active: !c.active } : c))
+    const updated = coupons.map((c) =>
+      c.id === id ? { ...c, active: !c.active } : c
     );
+    updateAndNotify(updated);
     onTriggerToast('Coupon activation status toggled.');
   };
 
@@ -67,26 +98,31 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({ onTriggerToa
     if (!code.trim()) return;
 
     if (editingCoupon) {
-      setCoupons((prev) =>
-        prev.map((c) =>
-          c.id === editingCoupon.id
-            ? {
-                ...c,
-                code: code.trim().toUpperCase(),
-                discountType,
-                discountValue: Number(discountValue) || 99,
-                minOrderValue: Number(minOrder) || 499,
-                usageLimit: Number(usageLimit) || 1000,
-                expiresAt
-              }
-            : c
-        )
+      const updated = coupons.map((c) =>
+        c.id === editingCoupon.id
+          ? {
+              ...c,
+              code: code.trim().toUpperCase(),
+              title: title.trim() || `Special Offer on Orders Above ₹${minOrder}`,
+              description: description.trim() || `Use code ${code.toUpperCase()} for instant savings on checkout.`,
+              badge: badge.trim() || 'EXCLUSIVE OFFER',
+              discountType,
+              discountValue: Number(discountValue) || 99,
+              minOrderValue: Number(minOrder) || 499,
+              usageLimit: Number(usageLimit) || 1000,
+              expiresAt
+            }
+          : c
       );
-      onTriggerToast(`Promo code ${code.toUpperCase()} updated successfully!`);
+      updateAndNotify(updated);
+      onTriggerToast(`Promo offer ${code.toUpperCase()} updated successfully!`);
     } else {
       const newCoupon: Coupon = {
         id: `coup-${Date.now()}`,
         code: code.trim().toUpperCase(),
+        title: title.trim() || `Special Offer on Orders Above ₹${minOrder}`,
+        description: description.trim() || `Use code ${code.toUpperCase()} for instant savings on checkout.`,
+        badge: badge.trim() || 'EXCLUSIVE OFFER',
         discountType,
         discountValue: Number(discountValue) || 99,
         minOrderValue: Number(minOrder) || 499,
@@ -95,15 +131,17 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({ onTriggerToa
         active: true,
         expiresAt
       };
-      setCoupons([newCoupon, ...coupons]);
-      onTriggerToast(`Promo code ${newCoupon.code} created & activated!`);
+      const updated = [newCoupon, ...coupons];
+      updateAndNotify(updated);
+      onTriggerToast(`Promo offer ${newCoupon.code} created & activated!`);
     }
 
     setIsModalOpen(false);
   };
 
   const handleDeleteCoupon = (id: string) => {
-    setCoupons((prev) => prev.filter((c) => c.id !== id));
+    const updated = coupons.filter((c) => c.id !== id);
+    updateAndNotify(updated);
     onTriggerToast('Coupon code deleted permanently.');
     setCouponToDelete(null);
   };
@@ -240,7 +278,33 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({ onTriggerToa
                 />
               </div>
 
+              <div>
+                <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
+                  Offer Title / Headline (Visible on Offers Page)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Flat ₹99 Instant Privilege Off"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
+                    Highlight Badge
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. MOST POPULAR"
+                    value={badge}
+                    onChange={(e) => setBadge(e.target.value)}
+                    className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
                     Discount Type
@@ -295,6 +359,19 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({ onTriggerToa
                     className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 font-bold text-[#141414] focus:outline-none focus:border-[#8c7138]"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
+                  Offer Terms / Description (Visible on Offers Page)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Valid on all waterproof necklaces, bangles & rings above ₹499."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-[#141414] focus:outline-none focus:border-[#8c7138] resize-none"
+                />
               </div>
 
               <div>
