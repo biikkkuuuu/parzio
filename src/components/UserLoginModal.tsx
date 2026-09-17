@@ -38,18 +38,32 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
 
   const setupRecaptcha = () => {
     if (!auth) return null;
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha', {
-        size: 'invisible'
+    try {
+      if ((window as any).recaptchaVerifier) {
+        try {
+          (window as any).recaptchaVerifier.clear();
+        } catch (e) {
+          // ignore clear error
+        }
+        (window as any).recaptchaVerifier = null;
+      }
+      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha', {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved
+        }
       });
+      return (window as any).recaptchaVerifier;
+    } catch (e) {
+      console.error("Error initializing RecaptchaVerifier:", e);
+      return null;
     }
-    return window.recaptchaVerifier;
   };
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (phone.length !== 10) {
-      setError('Please enter a valid 10-digit number');
+      setError('Please enter a valid 10-digit mobile number');
       return;
     }
     
@@ -58,18 +72,36 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
     
     try {
       const verifier = setupRecaptcha();
-      if (!verifier) throw new Error("Recaptcha failed");
+      if (!verifier) throw new Error("Recaptcha initialization failed. Please refresh the page.");
       
       const formattedPhone = `+91${phone}`;
-      const result = await signInWithPhoneNumber(auth, formattedPhone, verifier);
+      const result = await signInWithPhoneNumber(auth!, formattedPhone, verifier);
       setConfirmationResult(result);
       setStep('otp');
       setResendTimer(30);
     } catch (err: any) {
-      console.error(err);
-      setError('Failed to send OTP. Try again.');
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.render().then((widgetId: any) => (window as any).grecaptcha?.reset(widgetId));
+      console.error("Firebase send OTP error:", err);
+      let msg = err?.message || 'Failed to send OTP. Try again.';
+      if (err?.code === 'auth/billing-not-enabled') {
+        msg = 'Firebase SMS ke liye Blaze (Pay-as-you-go) plan ya Firebase Console me Test Phone Number add karein.';
+      } else if (err?.code === 'auth/quota-exceeded') {
+        msg = 'SMS Quota exceeded. Firebase Console me Test Phone Number add karke test karein.';
+      } else if (err?.code === 'auth/operation-not-allowed') {
+        msg = 'Firebase Console me Phone Authentication enable nahi hai.';
+      } else if (err?.code === 'auth/app-not-authorized') {
+        msg = 'Domain not authorized. Firebase Console me localhost authorized domains me hona chahiye.';
+      } else if (err?.code) {
+        msg = `[${err.code}]: ${err.message || 'Failed to send OTP'}`;
+      }
+      setError(msg);
+      if ((window as any).recaptchaVerifier) {
+        try {
+          (window as any).recaptchaVerifier.render().then((widgetId: any) => {
+            (window as any).grecaptcha?.reset(widgetId);
+          });
+        } catch (rErr) {
+          console.warn("Could not reset grecaptcha", rErr);
+        }
       }
     } finally {
       setIsLoading(false);
