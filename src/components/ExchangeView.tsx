@@ -19,15 +19,15 @@ export const ExchangeView: React.FC<ExchangeViewProps> = ({ orders }) => {
 
   return (
     <div className="min-h-[80vh] bg-[#fbf9f6] pb-24 px-4 pt-4 max-w-md mx-auto">
-      {/* Title */}
+      {/* Title matching Home page */}
       <div className="text-center mb-6">
-        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#8c7138] block mb-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-[#9e7144] block mb-1 font-sans">
           Hassle-Free Guarantee
         </span>
-        <h2 className="font-display text-2xl font-bold text-[#141414]">
+        <h2 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight">
           7-Day Easy Exchange
         </h2>
-        <p className="text-xs text-[#444748] mt-1">
+        <p className="text-xs text-[#747878] mt-1 font-sans">
           Swap sizes or styles with complimentary doorstep reverse pickup.
         </p>
       </div>

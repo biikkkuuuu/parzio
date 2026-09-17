@@ -236,10 +236,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             
             {/* Title & Ratings */}
             <div>
-              <span className="text-[10px] font-bold tracking-wider uppercase text-[#8c7138] block leading-none mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#9e7144] block mb-1">
                 PARZIO DEMI-FINE • {product.category.toUpperCase()}
               </span>
-              <h1 className="font-sans text-xl sm:text-2xl lg:text-[26px] font-bold text-[#141414] tracking-tight leading-snug">
+              <h1 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight leading-snug">
                 {product.name}
               </h1>
 
@@ -259,14 +259,14 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             <div className="p-3 rounded-xl bg-white border border-[#eae5dc] flex items-center justify-between gap-3 shadow-xs">
               <div>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-sans text-2xl sm:text-[28px] font-extrabold text-[#141414] tracking-tight leading-none">
+                  <span className="font-sans text-2xl sm:text-[28px] font-bold text-[#1a1714] tracking-tight leading-none">
                     ₹{product.price.toLocaleString('en-IN')}
                   </span>
-                  <span className="text-sm text-[#a3a3a3] line-through font-normal leading-none">
+                  <span className="text-sm text-gray-400 line-through font-normal leading-none">
                     ₹{product.originalPrice.toLocaleString('en-IN')}
                   </span>
-                  <span className="px-1.5 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-700 text-[10px] font-extrabold tracking-wider uppercase leading-none">
-                    SAVE {product.savePercent}%
+                  <span className="px-1.5 py-0.5 rounded-xs bg-[#9e7144] text-white text-[10px] font-bold tracking-wider uppercase leading-none">
+                    {product.savePercent}% OFF
                   </span>
                 </div>
                 <p className="text-[10px] sm:text-[11px] text-emerald-700 font-bold flex items-center gap-1 mt-1 leading-none">

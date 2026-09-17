@@ -102,15 +102,16 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Wishlist Title Bar */}
+        {/* Wishlist Title Bar matching Home page */}
         <div className="flex items-center justify-between pb-4 border-b border-[#eae5dc]">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#141414] uppercase">
+          <div className="flex items-center gap-2">
+            <h1 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight">
               Wishlist
             </h1>
-            <p className="text-xs text-[#747878] mt-0.5">
-              {wishlistProducts.length} {wishlistProducts.length === 1 ? 'item' : 'items'}
-            </p>
+            <span className="text-xl sm:text-2xl text-[#9e7144] font-light">—</span>
+            <span className="text-xs sm:text-sm text-[#747878] font-medium">
+              {wishlistProducts.length} Saved Pieces
+            </span>
           </div>
 
           {wishlistProducts.length > 0 && (
@@ -218,23 +219,29 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
                     </button>
                   </div>
 
-                  {/* Card Content */}
-                  <div className="p-3 flex flex-col justify-between flex-1">
+                  {/* Card Content matching Home page */}
+                  <div className="p-2.5 sm:p-3 flex flex-col justify-between flex-1">
                     <div>
                       <h3
                         onClick={() => onSelectProduct(product)}
-                        className="text-xs font-medium text-[#141414] truncate cursor-pointer hover:text-[#8c7138] transition-colors"
+                        className="font-sans text-xs sm:text-[13px] font-medium text-[#1a1714] line-clamp-1 hover:text-[#9e7144] cursor-pointer transition-colors leading-snug mb-1"
                         title={product.name}
                       >
                         {product.name}
                       </h3>
 
-                      <div className="flex items-baseline gap-1.5 mt-1">
-                        <span className="text-sm font-bold text-[#141414]">
+                      {/* Price Row matching Home page */}
+                      <div className="flex items-center gap-1.5 mb-2.5">
+                        <span className="text-xs sm:text-sm font-bold text-[#1a1714]">
                           ₹{product.price}
                         </span>
-                        <span className="text-[11px] text-[#999] line-through">
-                          ₹{product.originalPrice}
+                        {product.originalPrice && (
+                          <span className="text-[11px] text-gray-400 line-through">
+                            ₹{product.originalPrice}
+                          </span>
+                        )}
+                        <span className="bg-[#9e7144] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-xs">
+                          {product.savePercent || 40}% OFF
                         </span>
                       </div>
                     </div>
@@ -245,7 +252,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
                         onAddToCart(product);
                         onRemoveFromWishlist(product.id);
                       }}
-                      className="w-full mt-3 py-2 rounded-lg bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-semibold tracking-wide transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+                      className="w-full bg-[#9e7144] hover:bg-[#865d34] text-white py-1.5 sm:py-2 px-2 rounded-xs text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer active:scale-95"
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
                       <span>Move to Bag</span>

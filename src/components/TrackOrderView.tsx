@@ -382,11 +382,15 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
   /* ========================================================================= */
   return (
     <div className="min-h-[85vh] bg-[#fbf9f6] pb-28 px-4 pt-4 max-w-lg mx-auto animate-fadeIn">
-      {/* Clean E-Commerce Header */}
-      <div className="mb-4 px-1">
-        <h2 className="font-display text-2xl font-bold text-[#141414] tracking-tight">
+      {/* Clean E-Commerce Header matching Home page */}
+      <div className="mb-4 px-1 flex items-center gap-2">
+        <h2 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight">
           My Orders
         </h2>
+        <span className="text-xl sm:text-2xl text-[#9e7144] font-light">—</span>
+        <span className="text-xs sm:text-sm text-[#747878] font-medium">
+          {orders.length} Shipments
+        </span>
       </div>
 
       {/* Clean Orders List Cards */}

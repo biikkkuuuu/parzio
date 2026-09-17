@@ -97,16 +97,16 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
       {/* Sales Header Banner (Clean, Light & Luxury) */}
       <div className="bg-white text-[#141414] py-6 px-4 sm:px-8 border-b border-[#eae5dc] relative overflow-hidden">
         <div className="max-w-4xl mx-auto flex flex-col items-center text-center gap-2 relative z-10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#faf7f2] border border-[#e5decb] text-[#9e7144] text-[10px] sm:text-xs font-extrabold uppercase tracking-widest">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#faf7f2] border border-[#e5decb] text-[#9e7144] text-[10px] sm:text-xs font-bold uppercase tracking-wider">
             <Zap className="w-3 h-3 text-[#9e7144]" />
             {bConfig.badge}
           </span>
           
-          <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-[#141414]">
-            {bConfig.title} <span className="text-[#9e7144]">{bConfig.highlightText}</span>
+          <h1 className="font-display text-2xl sm:text-3xl font-normal tracking-tight text-[#1a1714]">
+            {bConfig.title} <span className="text-[#9e7144] italic">{bConfig.highlightText}</span>
           </h1>
 
-          <p className="text-xs sm:text-sm text-[#747878] max-w-lg font-medium">
+          <p className="text-xs sm:text-sm text-[#747878] max-w-lg font-normal leading-relaxed">
             {bConfig.subtitle}
           </p>
 
@@ -222,43 +222,43 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
               {/* Product Meta & Pricing Area */}
               <div className="p-2.5 sm:p-3 flex flex-col justify-between flex-1">
                 <div>
-                  {/* Title with subtle truncation */}
+                  {/* Title with subtle truncation matching Home page */}
                   <h4
                     onClick={() => onOpenProductModal(product)}
-                    className="text-[12px] sm:text-[14px] font-semibold text-[#141414] truncate cursor-pointer hover:text-[#8c7138] transition-colors leading-tight"
+                    className="font-sans text-xs sm:text-[13px] font-medium text-[#1a1714] line-clamp-1 hover:text-[#9e7144] cursor-pointer transition-colors leading-snug mb-1"
                     title={product.name}
                   >
                     {product.name}
                   </h4>
 
-                  <p className="text-[10px] text-neutral-500 mt-0.5 truncate">
+                  <p className="text-[10px] text-[#747878] mt-0.5 truncate font-sans">
                     {product.category} • 316L Stainless Steel
                   </p>
 
-                  {/* Uniform Price Row: Price, Strikethrough, and SAVE % Badge aligned on one row */}
-                  <div className="flex items-center justify-between gap-1 mt-2 pt-1.5 border-t border-[#f4efea]">
-                    <div className="flex items-baseline gap-1.5 min-w-0">
-                      <span className="font-bold text-sm sm:text-[15px] text-[#141414]">
-                        ₹{product.price}
+                  {/* Uniform Price Row matching Home page */}
+                  <div className="flex items-center gap-1.5 mt-2 pt-1.5 border-t border-[#f4efea]">
+                    <span className="text-xs sm:text-sm font-bold text-[#1a1714]">
+                      ₹{product.price}
+                    </span>
+                    {product.originalPrice && (
+                      <span className="text-[11px] text-gray-400 line-through">
+                        ₹{product.originalPrice}
                       </span>
-                      <span className="text-[11px] text-[#747878] line-through font-normal">
-                        ₹{product.originalPrice.toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-extrabold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200/80 uppercase shrink-0 whitespace-nowrap">
-                      SAVE {product.savePercent}%
+                    )}
+                    <span className="bg-[#9e7144] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-xs uppercase shrink-0">
+                      {product.savePercent}% OFF
                     </span>
                   </div>
                 </div>
 
-                {/* Add to Cart Pill Button */}
+                {/* Add to Cart Pill Button matching Home page */}
                 <button
                   type="button"
                   onClick={() => onAddToCart(product)}
-                  className="w-full mt-3 py-2 px-3 rounded-xl bg-[#9e7144] hover:bg-[#865d34] active:scale-[0.98] transition-all text-xs font-semibold text-white text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
+                  className="w-full mt-3 py-1.5 sm:py-2 rounded-md bg-[#9e7144] hover:bg-[#865d34] active:scale-[0.98] transition-all text-xs font-semibold text-white text-center shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <Sparkles className="w-3 h-3 text-white" />
-                  Add to cart
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>Add to Bag</span>
                 </button>
               </div>
             </div>
