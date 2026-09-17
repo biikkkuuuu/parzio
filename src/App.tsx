@@ -686,9 +686,24 @@ export default function App() {
       );
       return mini.length > 0 ? mini : prods;
     }
-    return prods.filter(
-      (prod) => prod.category.toUpperCase() === activeCategory.toUpperCase()
-    );
+    const targetCat = activeCategory.toUpperCase();
+    if (targetCat === 'OFFERS' || targetCat === 'SALE') {
+      const discounted = prods.filter((p) => p.savePercent >= 35 || (p.originalPrice && p.originalPrice > p.price));
+      return discounted.length > 0 ? discounted : prods;
+    }
+    const matched = prods.filter((prod) => {
+      const prodCat = (prod.category || '').toUpperCase();
+      const prodName = (prod.name || '').toUpperCase();
+      if (prodCat === targetCat) return true;
+      if (prodCat.includes(targetCat) || targetCat.includes(prodCat)) return true;
+      if (targetCat === 'BANGLES' && (prodCat.includes('BRACELET') || prodName.includes('BANGLE'))) return true;
+      if (targetCat === 'MANGALSUTRA' && (prodCat.includes('NECKLACE') || prodName.includes('MANGALSUTRA'))) return true;
+      if (targetCat === 'JEWELLERY SETS' && (prodCat.includes('SET') || prodName.includes('SET'))) return true;
+      if (targetCat === 'PERFUME' && (prodCat.includes('PERFUME') || prodCat.includes('FRAGRANCE') || prodName.includes('PERFUME'))) return true;
+      if (targetCat === 'BEAUTY' && (prodCat.includes('BEAUTY') || prodCat.includes('CARE') || prodName.includes('FACEWASH') || prodName.includes('GLOW'))) return true;
+      return false;
+    });
+    return matched.length > 0 ? matched : prods;
   }, [products, activeCategory, searchQuery]);
 
   // Cart Handlers
@@ -1063,9 +1078,11 @@ export default function App() {
               selectedCategory={activeCategory}
             />
 
-            {/* New Arrivals */}
+            {/* New Arrivals / Category Products */}
             <ProductVault
               products={filteredProducts}
+              activeFilter={activeCategory}
+              onSelectFilter={handleSelectCategory}
               onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}
               wishlistIds={wishlistIds}
