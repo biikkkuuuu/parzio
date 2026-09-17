@@ -6,6 +6,7 @@ interface CategoriesProps {
   categories?: CategoryItem[];
   onSelectCategory: (categoryName: string) => void;
   selectedCategory?: string;
+  onViewAllCategories?: () => void;
 }
 
 const CATEGORIES_ITEMS = [
@@ -42,7 +43,8 @@ const CATEGORIES_ITEMS = [
 ];
 
 export const Categories: React.FC<CategoriesProps> = ({
-  onSelectCategory
+  onSelectCategory,
+  onViewAllCategories
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -89,8 +91,11 @@ export const Categories: React.FC<CategoriesProps> = ({
 
             <button
               onClick={() => {
-                onSelectCategory('ALL');
-                document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
+                if (onViewAllCategories) {
+                  onViewAllCategories();
+                } else {
+                  onSelectCategory('ALL_CATEGORIES');
+                }
               }}
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#9e7144] hover:text-[#805c30] transition-colors cursor-pointer group ml-1"
             >

@@ -22,6 +22,7 @@ import { ExchangeView } from './components/ExchangeView';
 import { AccountView } from './components/AccountView';
 import { OffersView } from './components/OffersView';
 import { CategoryPageView } from './components/CategoryPageView';
+import { AllCategoriesView } from './components/AllCategoriesView';
 import { EmergencyStorefrontLockdown } from './components/EmergencyStorefrontLockdown';
 import { dbService } from './services/dbService';
 
@@ -92,6 +93,9 @@ export default function App() {
     if (hash.startsWith('#/product/')) {
       const prodId = hash.replace('#/product/', '').trim();
       return { type: 'product', id: prodId, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: null };
+    }
+    if (hash === '#/categories' || hash === '#/all-categories' || hash === '#categories' || hash === '#all-categories') {
+      return { type: 'tab', id: null, tab: 'all-categories' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
     }
     if (hash.startsWith('#/category/') || hash.startsWith('#/collection/')) {
       const catName = decodeURIComponent(hash.replace(/^#\/(category|collection)\//, '')).trim();
@@ -493,7 +497,12 @@ export default function App() {
     try {
       sessionStorage.setItem('parzio_last_tab', newTab);
     } catch {}
-    const hash = newTab === 'home' ? '#/' : `#/${newTab === 'track' ? 'orders' : newTab}`;
+    const hash =
+      newTab === 'home'
+        ? '#/'
+        : newTab === 'all-categories'
+        ? '#/categories'
+        : `#/${newTab === 'track' ? 'orders' : newTab}`;
     window.history.pushState({ type: 'tab', tab: newTab }, '', hash);
     setActiveTab(newTab);
     setSelectedProduct(null);
@@ -845,6 +854,10 @@ export default function App() {
 
   const handleSelectCategory = (cat: string) => {
     const upper = cat.toUpperCase();
+    if (upper === 'ALL_CATEGORIES' || upper === 'ALL CATEGORIES' || upper === 'CATEGORIES') {
+      handleTabChange('all-categories');
+      return;
+    }
     if (upper === 'OFFERS') {
       handleTabChange('offers');
       return;
@@ -1139,6 +1152,18 @@ export default function App() {
               onOpenAtelierOps={handleOpenAtelierOps}
             />
           </main>
+        ) : activeTab === 'all-categories' ? (
+          <main className="pb-16 md:pb-0">
+            <AllCategoriesView
+              categories={categories}
+              products={products}
+              onSelectCategory={(cat) => {
+                handleSelectCategory(cat);
+              }}
+              onBackToHome={() => handleTabChange('home')}
+              onOpenAtelierOps={handleOpenAtelierOps}
+            />
+          </main>
         ) : activeTab === 'track' ? (
           <main className="pb-16 md:pb-0">
             <TrackOrderView
@@ -1178,6 +1203,7 @@ export default function App() {
             <Categories
               categories={categories}
               onSelectCategory={handleSelectCategory}
+              onViewAllCategories={() => handleTabChange('all-categories')}
               selectedCategory={activeCategory}
             />
 
