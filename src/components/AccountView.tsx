@@ -21,6 +21,7 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import { OrderItem } from '../types';
+import { lookupPincode } from '../services/postalService';
 
 interface AccountViewProps {
   orders: OrderItem[];
@@ -35,6 +36,7 @@ interface AddressItem {
   type: 'HOME' | 'WORK' | 'OTHER';
   phone: string;
   address: string;
+  postOffice?: string;
   city: string;
   state: string;
   pincode: string;
@@ -101,11 +103,39 @@ export const AccountView: React.FC<AccountViewProps> = ({
   const [newAddrName, setNewAddrName] = useState('');
   const [newAddrPhone, setNewAddrPhone] = useState('');
   const [newAddrPincode, setNewAddrPincode] = useState('');
+  const [newAddrPostOffice, setNewAddrPostOffice] = useState('');
+  const [postOfficeList, setPostOfficeList] = useState<string[]>([]);
+  const [isLoadingPostal, setIsLoadingPostal] = useState(false);
   const [newAddrCity, setNewAddrCity] = useState('');
   const [newAddrState, setNewAddrState] = useState('');
   const [newAddrStreet, setNewAddrStreet] = useState('');
   const [newAddrType, setNewAddrType] = useState<'HOME' | 'WORK' | 'OTHER'>('HOME');
   const [newAddrIsDefault, setNewAddrIsDefault] = useState(false);
+
+  const handlePincodeChange = async (val: string) => {
+    const cleaned = val.replace(/\D/g, '').slice(0, 6);
+    setNewAddrPincode(cleaned);
+
+    if (cleaned.length === 6) {
+      setIsLoadingPostal(true);
+      const info = await lookupPincode(cleaned);
+      setIsLoadingPostal(false);
+      if (info) {
+        if (info.district) setNewAddrCity(info.district);
+        if (info.state) setNewAddrState(info.state);
+        if (info.postOffices && info.postOffices.length > 0) {
+          setPostOfficeList(info.postOffices);
+          setNewAddrPostOffice(info.postOffices[0]);
+        } else {
+          setPostOfficeList([]);
+          setNewAddrPostOffice('');
+        }
+      }
+    } else {
+      setPostOfficeList([]);
+      setNewAddrPostOffice('');
+    }
+  };
 
   const handleSaveNewAddress = (e?: React.FormEvent) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -116,6 +146,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
       name: newAddrName.trim(),
       phone: newAddrPhone.trim(),
       pincode: newAddrPincode.trim() || '400001',
+      postOffice: newAddrPostOffice.trim() || undefined,
       city: newAddrCity.trim() || 'Mumbai',
       state: newAddrState.trim() || 'Maharashtra',
       address: newAddrStreet.trim(),
@@ -134,6 +165,8 @@ export const AccountView: React.FC<AccountViewProps> = ({
     setNewAddrName('');
     setNewAddrPhone('');
     setNewAddrPincode('');
+    setNewAddrPostOffice('');
+    setPostOfficeList([]);
     setNewAddrCity('');
     setNewAddrState('');
     setNewAddrStreet('');
@@ -475,8 +508,58 @@ export const AccountView: React.FC<AccountViewProps> = ({
                         className="w-full px-3 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
                       />
                     </div>
+                    {/* Pincode with Postal Auto-Detection */}
                     <div>
-                      <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">City</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[10px] font-bold text-[#717478] uppercase block">
+                          Pincode *
+                        </label>
+                        {isLoadingPostal && (
+                          <span className="text-[9px] text-[#8c7138] font-bold animate-pulse">
+                            Detecting Post...
+                          </span>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="6-digit Pincode"
+                        maxLength={6}
+                        value={newAddrPincode}
+                        onChange={(e) => handlePincodeChange(e.target.value)}
+                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs font-semibold focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+
+                    {/* Post Office Dropdown / Input */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">
+                        Post Office / Area
+                      </label>
+                      {postOfficeList.length > 0 ? (
+                        <select
+                          value={newAddrPostOffice}
+                          onChange={(e) => setNewAddrPostOffice(e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg bg-white border border-[#8c7138] text-xs font-semibold text-[#141414] focus:outline-none cursor-pointer"
+                        >
+                          {postOfficeList.map((po) => (
+                            <option key={po} value={po}>
+                              {po}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder={isLoadingPostal ? "Fetching Post Office..." : "Post Office / Area"}
+                          value={newAddrPostOffice}
+                          onChange={(e) => setNewAddrPostOffice(e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                        />
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">City / District</label>
                       <input
                         type="text"
                         placeholder="City"
@@ -485,24 +568,16 @@ export const AccountView: React.FC<AccountViewProps> = ({
                         className="w-full px-3 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
                       />
                     </div>
+
                     <div>
-                      <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">State &amp; Pincode</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          placeholder="State"
-                          value={newAddrState}
-                          onChange={(e) => setNewAddrState(e.target.value)}
-                          className="w-full px-2 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Pincode"
-                          value={newAddrPincode}
-                          onChange={(e) => setNewAddrPincode(e.target.value)}
-                          className="w-full px-2 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
-                        />
-                      </div>
+                      <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">State</label>
+                      <input
+                        type="text"
+                        placeholder="State"
+                        value={newAddrState}
+                        onChange={(e) => setNewAddrState(e.target.value)}
+                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                      />
                     </div>
                   </div>
 
@@ -567,7 +642,8 @@ export const AccountView: React.FC<AccountViewProps> = ({
                       )}
                     </div>
                     <p className="text-xs text-[#141414] leading-relaxed">
-                      {addr.address || ''}, {addr.city}, {addr.state} - {addr.pincode}
+                      {addr.address}
+                      {addr.postOffice ? `, Post: ${addr.postOffice}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
                     </p>
                     <p className="text-xs text-[#717478] mt-1">Phone: {addr.phone}</p>
 
@@ -816,9 +892,55 @@ export const AccountView: React.FC<AccountViewProps> = ({
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {/* Mobile Pincode input */}
                     <div>
-                      <label className="text-[9px] font-bold uppercase text-[#717478] block mb-0.5">City</label>
+                      <div className="flex items-center justify-between mb-0.5">
+                        <label className="text-[9px] font-bold uppercase text-[#717478] block">Pincode *</label>
+                        {isLoadingPostal && (
+                          <span className="text-[8px] text-[#8c7138] font-bold animate-pulse">Detecting...</span>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="6 digits"
+                        maxLength={6}
+                        value={newAddrPincode}
+                        onChange={(e) => handlePincodeChange(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-md bg-white border border-[#eae5dc] text-xs font-semibold focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+
+                    {/* Mobile Post Office Selector */}
+                    <div>
+                      <label className="text-[9px] font-bold uppercase text-[#717478] block mb-0.5">Post Office</label>
+                      {postOfficeList.length > 0 ? (
+                        <select
+                          value={newAddrPostOffice}
+                          onChange={(e) => setNewAddrPostOffice(e.target.value)}
+                          className="w-full px-2 py-1.5 rounded-md bg-white border border-[#8c7138] text-xs font-semibold text-[#141414] focus:outline-none cursor-pointer"
+                        >
+                          {postOfficeList.map((po) => (
+                            <option key={po} value={po}>
+                              {po}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder={isLoadingPostal ? "Fetching..." : "Post Office"}
+                          value={newAddrPostOffice}
+                          onChange={(e) => setNewAddrPostOffice(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-md bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <label className="text-[9px] font-bold uppercase text-[#717478] block mb-0.5">City / District</label>
                       <input
                         type="text"
                         placeholder="City"
@@ -835,18 +957,6 @@ export const AccountView: React.FC<AccountViewProps> = ({
                         placeholder="State"
                         value={newAddrState}
                         onChange={(e) => setNewAddrState(e.target.value)}
-                        className="w-full px-2.5 py-1.5 rounded-md bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[9px] font-bold uppercase text-[#717478] block mb-0.5">Pincode</label>
-                      <input
-                        type="text"
-                        placeholder="6 digits"
-                        value={newAddrPincode}
-                        onChange={(e) => setNewAddrPincode(e.target.value)}
-                        maxLength={6}
                         className="w-full px-2.5 py-1.5 rounded-md bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
                       />
                     </div>
@@ -932,10 +1042,10 @@ export const AccountView: React.FC<AccountViewProps> = ({
                       </div>
                     </div>
 
-                    <p className="text-[#444748] leading-relaxed">{addr.address}</p>
-                    <p className="text-[#717478]">
-                      {addr.city}, {addr.state} — {addr.pincode}
-                    </p>
+                      <p className="text-xs text-[#141414] leading-relaxed">
+                        {addr.address}
+                        {addr.postOffice ? `, Post: ${addr.postOffice}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
+                      </p>
                     <p className="text-[#717478] font-medium">Phone: {addr.phone}</p>
                   </div>
                 ))}

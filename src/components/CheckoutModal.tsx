@@ -17,6 +17,7 @@ import {
   Check
 } from 'lucide-react';
 import { HIGH_RISK_PINCODES } from '../data/adminData';
+import { lookupPincode } from '../services/postalService';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -39,6 +40,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [address, setAddress] = useState('Flat 402, Lotus Towers, Andheri West');
   const [city, setCity] = useState('Mumbai');
   const [pincode, setPincode] = useState('400053');
+  const [postOffice, setPostOffice] = useState('');
+  const [postOfficeList, setPostOfficeList] = useState<string[]>([]);
+  const [isLoadingPostal, setIsLoadingPostal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'Prepaid UPI'>('COD');
 
   // Checkout Steps: 'details' | 'otp' | 'success'
@@ -76,23 +80,40 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   // Pincode lookup & Risk Assessment
   const matchedHighRisk = HIGH_RISK_PINCODES.find((item) => item.pincode === pincode.trim());
 
-  // Handle Pincode Auto-Detection
-  const handlePincodeChange = (value: string) => {
+  // Handle Pincode Auto-Detection & Post Office Fetch
+  const handlePincodeChange = async (value: string) => {
     const cleaned = value.replace(/\D/g, '').slice(0, 6);
     setPincode(cleaned);
 
     if (cleaned.length === 6) {
       setDeliveryDate(getEstimatedDelivery(cleaned));
-      if (cleaned.startsWith('11')) setCity('Delhi');
-      else if (cleaned.startsWith('40')) setCity('Mumbai');
-      else if (cleaned.startsWith('56')) setCity('Bengaluru');
-      else if (cleaned.startsWith('70')) setCity('Kolkata');
-      else if (cleaned.startsWith('50')) setCity('Hyderabad');
-      else if (cleaned.startsWith('60')) setCity('Chennai');
-      else if (cleaned.startsWith('30')) setCity('Jaipur');
-      else if (cleaned.startsWith('38')) setCity('Ahmedabad');
-      else if (cleaned.startsWith('22')) setCity('Lucknow');
-      else if (cleaned.startsWith('41')) setCity('Pune');
+      setIsLoadingPostal(true);
+      const info = await lookupPincode(cleaned);
+      setIsLoadingPostal(false);
+      if (info) {
+        if (info.district) setCity(info.district);
+        if (info.postOffices && info.postOffices.length > 0) {
+          setPostOfficeList(info.postOffices);
+          setPostOffice(info.postOffices[0]);
+        } else {
+          setPostOfficeList([]);
+          setPostOffice('');
+        }
+      } else {
+        if (cleaned.startsWith('11')) setCity('Delhi');
+        else if (cleaned.startsWith('40')) setCity('Mumbai');
+        else if (cleaned.startsWith('56')) setCity('Bengaluru');
+        else if (cleaned.startsWith('70')) setCity('Kolkata');
+        else if (cleaned.startsWith('50')) setCity('Hyderabad');
+        else if (cleaned.startsWith('60')) setCity('Chennai');
+        else if (cleaned.startsWith('30')) setCity('Jaipur');
+        else if (cleaned.startsWith('38')) setCity('Ahmedabad');
+        else if (cleaned.startsWith('22')) setCity('Lucknow');
+        else if (cleaned.startsWith('41')) setCity('Pune');
+      }
+    } else {
+      setPostOfficeList([]);
+      setPostOffice('');
     }
   };
 
@@ -202,11 +223,24 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       id: generatedId,
       customerName: name,
       phone: `+91 ${phone}`,
-      location: `${city} (${pincode})`,
+      location: `${city}${postOffice ? ` (${postOffice})` : ''} (${pincode})`,
       pincode: pincode,
       rtoRisk: paymentMethod === 'Prepaid UPI' ? 'Low' : isHighRiskPincode ? 'Medium' : 'Low',
       amount: totalAmount,
       paymentMethod: paymentMethod,
+      isPrepaid: paymentMethod === 'Prepaid UPI',
+      deliveryDate: deliveryDate,
+      items: cartItems.map((item) => ({
+        id: item.product.id,
+        name: item.product.name,
+        price: item.product.price,
+        quantity: item.quantity,
+        image: item.product.image,
+        sku: item.product.sku,
+        material: item.product.material
+      })),
+      totalAmount: totalAmount,
+      placedAt: new Date().toISOString(),
       status: paymentMethod === 'COD' ? 'COD Confirmed' : 'Prepaid UPI',
       productName: `${cartItems.reduce((acc, c) => acc + c.quantity, 0)}x Jewellery Pieces (${firstProduct?.name || 'Jewellery'})`,
       sku: firstProduct?.sku || 'SKU: MIX-99',
@@ -336,6 +370,32 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white border border-[#eae5dc] text-xs font-mono text-[#141414] focus:outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138]"
                     />
                   </div>
+
+                  {/* Post Office Selector if available */}
+                  {(postOfficeList.length > 0 || isLoadingPostal) && (
+                    <div className="mt-2 text-xs">
+                      <label className="block text-[10px] font-bold text-[#747878] uppercase mb-1">
+                        Post Office / Area
+                      </label>
+                      {postOfficeList.length > 0 ? (
+                        <select
+                          value={postOffice}
+                          onChange={(e) => setPostOffice(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-white border border-[#8c7138] text-xs font-semibold text-[#141414] focus:outline-none cursor-pointer"
+                        >
+                          {postOfficeList.map((po) => (
+                            <option key={po} value={po}>
+                              {po}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div className="text-[10px] text-[#8c7138] font-bold animate-pulse py-1">
+                          Detecting Post Office...
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
