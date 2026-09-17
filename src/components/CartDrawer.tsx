@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CartItem } from '../types';
 import { X, Trash2, Plus, Minus, ShoppingBag, ShieldCheck, Truck, ArrowRight, CheckCircle2 } from 'lucide-react';
 
@@ -24,6 +24,30 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
 
+  // Prevent background body scroll when CartDrawer is open
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      const originalOverflow = document.body.style.overflow;
+      const originalPosition = document.body.style.position;
+      const originalTop = document.body.style.top;
+      const originalWidth = document.body.style.width;
+
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.position = originalPosition;
+        document.body.style.top = originalTop;
+        document.body.style.width = originalWidth;
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const totalAmount = cartItems.reduce(
@@ -47,10 +71,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className="absolute inset-0 bottom-12 sm:bottom-0 bg-black/60 backdrop-blur-xs transition-opacity animate-fadeIn"
+        className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-fadeIn"
       />
 
-      <div className="fixed inset-y-0 bottom-12 sm:bottom-0 right-0 max-w-full flex pl-0 sm:pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
         <div className="w-screen max-w-md bg-[#fbf9f6] shadow-2xl flex flex-col justify-between border-l border-[#eae5dc]">
           
           {/* Header */}
@@ -102,7 +126,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           </div>
 
           {/* Cart Items List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3">
             {cartItems.length === 0 ? (
               <div className="py-16 text-center text-[#747878] space-y-3">
                 <ShoppingBag className="w-12 h-12 mx-auto text-[#c5a059]/40" />
@@ -178,7 +202,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
           {/* Footer / Summary */}
           {cartItems.length > 0 && (
-            <div className="p-4 sm:p-5 border-t border-[#eae5dc] bg-white space-y-3">
+            <div className="p-4 sm:p-5 pb-16 sm:pb-5 border-t border-[#eae5dc] bg-white space-y-3">
               {/* Promo Code Box */}
               <form onSubmit={handleApplyPromo} className="flex gap-2">
                 <input

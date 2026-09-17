@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShoppingBag, User } from 'lucide-react';
+import { Search, ShoppingBag, Heart } from 'lucide-react';
 import { Logo } from './Logo';
 import { ActiveScreen } from '../types';
 
@@ -36,6 +36,8 @@ const NAV_ITEMS = [
 export const Header: React.FC<HeaderProps> = ({
   cartCount,
   onOpenCart,
+  wishlistCount = 0,
+  onOpenWishlist,
   activeCategory,
   onSelectCategory,
   activeTab = 'home',
@@ -112,11 +114,16 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <button
-            onClick={() => onToggleScreen && onToggleScreen('atelier-ops')}
-            className="text-[#2a2a2a] hover:text-[#9e7144] transition-colors cursor-pointer"
-            title="Account / Operations"
+            onClick={onOpenWishlist}
+            className="text-[#2a2a2a] hover:text-[#9e7144] transition-colors relative cursor-pointer"
+            title="Wishlist"
           >
-            <User className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            <Heart className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-1.5 bg-[#9e7144] text-white text-[9px] sm:text-[10px] font-bold w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full flex items-center justify-center">
+                {wishlistCount}
+              </span>
+            )}
           </button>
 
           <button
