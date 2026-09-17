@@ -231,38 +231,24 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
         </div>
       </div>
 
-      {/* 2. Luxury Category Header Banner */}
-      <section className="relative bg-[#1b1714] text-white py-10 sm:py-14 px-4 sm:px-8 lg:px-14 overflow-hidden border-b border-[#2d241e]">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-[#c5a059]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#9e7144]/15 rounded-full blur-2xl pointer-events-none" />
+      {/* 2. Category Title & Summary Bar (Clean, Light & Elegant) */}
+      <section className="bg-white border-b border-[#eae5dc] py-4 sm:py-6 px-4 sm:px-8 lg:px-14">
+        <div className="max-w-[1800px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight capitalize">
+              {categoryName}
+            </h1>
+            <span className="text-xl text-[#9e7144] font-light">—</span>
+            <span className="text-xs sm:text-sm text-[#747878] font-medium">
+              {filteredAndSortedProducts.length} Designs
+            </span>
+          </div>
 
-        <div className="max-w-[1800px] mx-auto relative z-10">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-[#c5a059]/30 text-[#fed488] text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-3">
-                <Sparkles className="w-3 h-3 text-[#c5a059]" />
-                <span>18K Demi-Fine Luxury</span>
-              </div>
-
-              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-normal text-white tracking-tight capitalize">
-                {categoryName} Collection
-              </h1>
-
-              <p className="mt-2 text-xs sm:text-sm text-gray-300 font-light max-w-xl">
-                {currentCategoryMeta?.subtitle ||
-                  '100% Waterproof, anti-tarnish everyday luxury jewellery handcrafted to retain its brilliant lustre.'}
-              </p>
-            </div>
-
-            {/* Live Count Pill */}
-            <div className="flex items-center gap-3">
-              <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/15 text-left">
-                <span className="text-[10px] uppercase text-gray-400 font-bold block">Available Pieces</span>
-                <span className="font-display text-lg font-bold text-white">
-                  {filteredAndSortedProducts.length} Designs
-                </span>
-              </div>
-            </div>
+          <div className="flex items-center gap-2 text-[11px] sm:text-xs text-[#747878]">
+            <span className="inline-flex items-center gap-1 font-semibold text-[#9e7144]">
+              <Sparkles className="w-3.5 h-3.5" />
+              100% Waterproof &amp; Anti-Tarnish
+            </span>
           </div>
         </div>
       </section>
