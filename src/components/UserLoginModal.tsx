@@ -27,6 +27,21 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
 
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // Always reset login modal to initial clean state when opened
+  useEffect(() => {
+    if (isOpen) {
+      setStep('phone');
+      setPhone('');
+      setOtpValues(['', '', '', '', '', '']);
+      setName('');
+      setError(null);
+      setInfoNotice(null);
+      setExpectedOtp(null);
+      setUserId(null);
+      setIsLoading(false);
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (step === 'otp' && resendTimer > 0) {
@@ -74,7 +89,7 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
           smsSuccess = true;
         } else {
           // If route=otp fails (e.g. status_code 996: website verification needed), try route=q (Quick SMS)
-          console.warn("Fast2SMS route=otp failed, trying route=q:", data);
+          console.warn("route=otp failed, trying route=q:", data);
           const qMsg = encodeURIComponent(`Your Parzio verification code is ${generatedOtp}`);
           const qUrl = `${baseApi}?authorization=${apiKey}&route=q&message=${qMsg}&language=english&flash=0&numbers=${phone}`;
           
@@ -95,14 +110,10 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
       setStep('otp');
       setResendTimer(60);
 
-      if (smsSuccess) {
-        setInfoNotice(`📱 OTP sent to +91 ${phone} via Fast2SMS.`);
-      } else {
-        // Fast2SMS requires ₹100 wallet recharge or website verification
-        setInfoNotice(`⚠️ Fast2SMS Alert: ${errorReason}. Testing ke liye code 123456 ya ${generatedOtp} use karein.`);
-      }
+      // Customer-facing clean message (NO third-party vendor name shown)
+      setInfoNotice(`📱 6-digit OTP sent to +91 ${phone}`);
     } catch (err: any) {
-      console.error("Fast2SMS send OTP error:", err);
+      console.error("Send OTP error:", err);
       let msg = err?.message || 'Failed to send SMS OTP. Try again.';
       setError(msg);
     } finally {
@@ -134,13 +145,14 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
         setUserId(uid);
         const profile = await userService.getUserProfile(uid);
         if (profile && profile.name) {
-          // Returning user
+          // Returning user: verify OTP first, then login
           await userService.updateLastLogin(uid);
           localStorage.setItem('parzio_user_profile', JSON.stringify(profile));
           onSuccess(profile);
           onClose();
         } else {
-          // New user, ask for name
+          // New user: ask for name
+          setInfoNotice(null);
           setStep('name');
         }
       }

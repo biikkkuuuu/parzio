@@ -76,7 +76,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
     if (smsSuccess) {
       setInfoNotice(`📱 2FA Code sent to admin phone +91 ******${ADMIN_PHONE.slice(-4)}`);
     } else {
-      setInfoNotice(`⚠️ Fast2SMS Alert: ${errorReason}. Backup code: 123456 ya ${generatedOtp}`);
+      setInfoNotice(`⚠️ SMS Gateway: ${errorReason}. Backup code: 123456 ya ${generatedOtp}`);
     }
   };
 
@@ -281,7 +281,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
         )}
         
         <div className="mt-8 text-center text-[10px] text-gray-400">
-          <p>Protected by 2-Factor Authentication (Fast2SMS)</p>
+          <p>Protected by 2-Factor Authentication (SMS Security)</p>
           <p className="mt-1">All access attempts are logged.</p>
         </div>
       </div>

@@ -64,6 +64,10 @@ export default function App() {
   useEffect(() => {
     if (userProfile) {
       localStorage.setItem('parzio_user_profile', JSON.stringify(userProfile));
+    } else {
+      try {
+        localStorage.removeItem('parzio_user_profile');
+      } catch {}
     }
   }, [userProfile]);
 
@@ -72,9 +76,13 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
-        const profile = await userService.getUserProfile(user.uid);
-        if (profile) {
-          setUserProfile(profile);
+        // Only load profile if parzio_user_profile is present in storage
+        const saved = localStorage.getItem('parzio_user_profile');
+        if (!saved) {
+          const profile = await userService.getUserProfile(user.uid);
+          if (profile) {
+            setUserProfile(profile);
+          }
         }
       }
     });
