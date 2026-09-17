@@ -133,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
 
-          {/* Dedicated Account Button */}
+          {/* Dedicated Account Button (Icon only) */}
           <button
             onClick={() => {
               if (onOpenAccount) {
@@ -142,13 +142,12 @@ export const Header: React.FC<HeaderProps> = ({
                 onNavigateTab('account');
               }
             }}
-            className={`text-[#2a2a2a] hover:text-[#9e7144] transition-colors relative cursor-pointer flex items-center gap-1 sm:gap-1.5 ${
-              activeTab === 'account' ? 'text-[#9e7144] font-semibold' : ''
+            className={`text-[#2a2a2a] hover:text-[#9e7144] transition-colors relative cursor-pointer ${
+              activeTab === 'account' ? 'text-[#9e7144]' : ''
             }`}
             title="Account"
           >
             <User className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
-            <span className="hidden sm:inline text-xs font-semibold">Account</span>
           </button>
 
           {/* Bag */}
