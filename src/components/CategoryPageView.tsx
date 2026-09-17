@@ -6,7 +6,8 @@ import {
   Sparkles,
   ShieldCheck,
   Droplets,
-  RotateCcw
+  RotateCcw,
+  Search
 } from 'lucide-react';
 import { Product, CategoryItem } from '../types';
 import { Footer } from './Footer';
@@ -73,10 +74,10 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
         return true;
       }
 
-      // Mangalsutra matching
+      // Mangalsutra & Necklace matching
       if (
-        target === 'MANGALSUTRA' &&
-        (prodCat.includes('MANGALSUTRA') || prodName.includes('MANGALSUTRA') || prodDesc.includes('MANGALSUTRA'))
+        (target === 'MANGALSUTRA' || target === 'MANGALSUTRAS') &&
+        (prodCat.includes('MANGALSUTRA') || prodName.includes('MANGALSUTRA') || prodDesc.includes('MANGALSUTRA') || prodCat.includes('NECKLACE') || prodName.includes('NECKLACE'))
       ) {
         return true;
       }
@@ -252,7 +253,7 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
             <div className="w-14 h-14 rounded-2xl bg-[#faf8f5] text-[#9e7144] flex items-center justify-center mx-auto mb-4 border border-[#eae5dc]">
               <Search className="w-6 h-6" />
             </div>
-            <h3 className="font-display text-lg font-bold text-[#141414]">No Designs Found</h3>
+            <h3 className="text-lg font-bold text-[#141414]">No Designs Found</h3>
             <p className="text-xs text-[#747878] mt-2 leading-relaxed">
               We couldn't find any products in {categoryName} matching your current filters. Try changing or clearing the filters!
             </p>
