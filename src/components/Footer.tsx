@@ -46,6 +46,16 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                 </li>
                 <li>
                   <button
+                    onClick={() => {
+                      window.location.hash = '#/account';
+                    }}
+                    className="hover:text-[#c5a059] transition-colors cursor-pointer text-left"
+                  >
+                    My Account
+                  </button>
+                </li>
+                <li>
+                  <button
                     onClick={() => setActiveModal('about')}
                     className="hover:text-[#c5a059] transition-colors cursor-pointer text-left"
                   >

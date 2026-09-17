@@ -1023,6 +1023,7 @@ export default function App() {
           wishlistCount={wishlistIds.length}
           onOpenCart={handleOpenCart}
           onOpenWishlist={handleOpenWishlist}
+          onOpenAccount={() => handleTabChange('account')}
           activeCategory={activeCategory}
           onSelectCategory={handleSelectCategory}
           activeTab={activeTab}

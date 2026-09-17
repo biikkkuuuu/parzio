@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShoppingBag, Heart } from 'lucide-react';
+import { Search, ShoppingBag, Heart, User } from 'lucide-react';
 import { Logo } from './Logo';
 import { ActiveScreen } from '../types';
 
@@ -9,6 +9,7 @@ interface HeaderProps {
   wishlistCount?: number;
   onOpenCart: () => void;
   onOpenWishlist?: () => void;
+  onOpenAccount?: () => void;
   activeCategory: string;
   onSelectCategory: (cat: string) => void;
   activeTab?: string;
@@ -24,6 +25,7 @@ interface HeaderProps {
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home' },
+  { id: 'categories', label: 'Categories' },
   { id: 'shop', label: 'Shop' },
   { id: 'bangles', label: 'Bangles' },
   { id: 'mangalsutra', label: 'Mangalsutra' },
@@ -38,6 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCart,
   wishlistCount = 0,
   onOpenWishlist,
+  onOpenAccount,
   activeCategory,
   onSelectCategory,
   activeTab = 'home',
@@ -65,11 +68,12 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* Center: Navigation Links matching screenshot */}
+        {/* Center: Navigation Links */}
         <nav className="hidden lg:flex items-center gap-7 text-[13px] font-medium tracking-wide">
           {NAV_ITEMS.map((item) => {
             const isActive =
               (item.id === 'home' && activeTab === 'home' && (activeCategory === 'ALL' || activeCategory === 'HOME' || activeCategory === 'NEW ARRIVALS')) ||
+              (item.id === 'categories' && activeTab === 'all-categories') ||
               (item.id === 'shop' && activeTab === 'home' && activeCategory === 'SHOP') ||
               (item.id === 'offers' && activeTab === 'offers') ||
               (activeTab === 'home' && (activeCategory.toLowerCase() === item.label.toLowerCase() || activeCategory.toLowerCase() === item.id));
@@ -81,6 +85,9 @@ export const Header: React.FC<HeaderProps> = ({
                     if (onNavigateTab) onNavigateTab('home');
                     onSelectCategory('HOME');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                  } else if (item.id === 'categories') {
+                    if (onNavigateTab) onNavigateTab('all-categories');
+                    else onSelectCategory('ALL_CATEGORIES');
                   } else if (item.id === 'shop') {
                     onSelectCategory('SHOP');
                   } else if (item.id === 'offers') {
@@ -103,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
           })}
         </nav>
 
-        {/* Right: Actions (Search, User, Cart with badge) */}
+        {/* Right: Actions (Search, Wishlist, Account, Cart with badge) */}
         <div className="flex items-center gap-3 sm:gap-4">
           <button
             onClick={() => setIsSearchExpanded(!isSearchExpanded)}
@@ -126,6 +133,25 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
 
+          {/* Dedicated Account Button */}
+          <button
+            onClick={() => {
+              if (onOpenAccount) {
+                onOpenAccount();
+              } else if (onNavigateTab) {
+                onNavigateTab('account');
+              }
+            }}
+            className={`text-[#2a2a2a] hover:text-[#9e7144] transition-colors relative cursor-pointer flex items-center gap-1 sm:gap-1.5 ${
+              activeTab === 'account' ? 'text-[#9e7144] font-semibold' : ''
+            }`}
+            title="Account"
+          >
+            <User className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline text-xs font-semibold">Account</span>
+          </button>
+
+          {/* Bag */}
           <button
             onClick={onOpenCart}
             className="text-[#2a2a2a] hover:text-[#9e7144] transition-colors relative cursor-pointer"

@@ -162,7 +162,24 @@ export const AccountView: React.FC<AccountViewProps> = ({
 
   return (
     <div className="min-h-screen bg-[#f1f2f4] pb-28 font-sans">
-      <div className="max-w-xl mx-auto px-3 sm:px-4 pt-3 sm:pt-4 space-y-3">
+      <div className="max-w-2xl lg:max-w-3xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 space-y-3.5">
+
+        {/* PC Desktop Top Navigation Bar */}
+        <div className="hidden sm:flex items-center justify-between pb-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-[#141414]">My Account</h1>
+            <span className="text-[#8c7138] font-light">—</span>
+            <span className="text-xs text-[#717478]">Manage your profile, orders &amp; addresses</span>
+          </div>
+          <button
+            onClick={() => {
+              window.location.hash = '#/';
+            }}
+            className="text-xs font-semibold text-[#8c7138] hover:text-[#705220] transition-colors cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#e4e6eb] shadow-2xs hover:border-[#8c7138]"
+          >
+            ← Back to Store
+          </button>
+        </div>
 
         {/* 1. Flipkart-Grade Profile Header Card */}
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#e4e6eb] shadow-2xs">
@@ -196,8 +213,8 @@ export const AccountView: React.FC<AccountViewProps> = ({
           </div>
         </div>
 
-        {/* 2. Top 4 Core Quick Action Tiles (2x2 Grid) */}
-        <div className="grid grid-cols-2 gap-2.5">
+        {/* 2. Top 4 Core Quick Action Tiles (2x2 on Mobile, 4x1 on PC Desktop) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {/* Orders */}
           <button
             onClick={onTrackOrder}
