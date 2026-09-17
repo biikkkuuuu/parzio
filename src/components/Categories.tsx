@@ -74,7 +74,6 @@ export const Categories: React.FC<CategoriesProps> = ({
               key={cat.name}
               onClick={() => {
                 onSelectCategory(cat.name);
-                document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
               }}
               className="group flex flex-col cursor-pointer"
             >

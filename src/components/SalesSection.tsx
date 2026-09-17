@@ -94,23 +94,23 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
 
   return (
     <div className="relative bg-[#f4eee6] min-h-screen pb-16">
-      {/* Sales Header Banner */}
-      <div className="bg-[#141414] text-white py-6 px-4 sm:px-8 border-b border-[#eae5dc] relative overflow-hidden">
+      {/* Sales Header Banner (Clean, Light & Luxury) */}
+      <div className="bg-white text-[#141414] py-6 px-4 sm:px-8 border-b border-[#eae5dc] relative overflow-hidden">
         <div className="max-w-4xl mx-auto flex flex-col items-center text-center gap-2 relative z-10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#8c7138] text-white text-[10px] sm:text-xs font-extrabold uppercase tracking-widest">
-            <Zap className="w-3 h-3 fill-white" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#faf7f2] border border-[#e5decb] text-[#9e7144] text-[10px] sm:text-xs font-extrabold uppercase tracking-widest">
+            <Zap className="w-3 h-3 text-[#9e7144]" />
             {bConfig.badge}
           </span>
           
-          <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-white">
-            {bConfig.title} <span className="text-[#fed488]">{bConfig.highlightText}</span>
+          <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-[#141414]">
+            {bConfig.title} <span className="text-[#9e7144]">{bConfig.highlightText}</span>
           </h1>
 
-          <p className="text-xs sm:text-sm text-neutral-300 max-w-lg font-medium">
+          <p className="text-xs sm:text-sm text-[#747878] max-w-lg font-medium">
             {bConfig.subtitle}
           </p>
 
-          <div className="flex items-center gap-4 text-[11px] text-[#fed488] font-semibold pt-1">
+          <div className="flex items-center gap-4 text-[11px] text-[#9e7144] font-semibold pt-1">
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5" />
               100% Waterproof
@@ -133,7 +133,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
               onClick={() => setSelectedCategory(cat)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
                 selectedCategory === cat
-                  ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                  ? 'bg-[#9e7144] text-white shadow-xs'
                   : 'bg-[#faf8f5] text-[#747878] hover:bg-[#eae5dc] border border-[#eae5dc]'
               }`}
             >
@@ -255,9 +255,9 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => onAddToCart(product)}
-                  className="w-full mt-3 py-2 px-3 rounded-xl bg-[#141414] hover:bg-[#8c7138] active:scale-[0.98] transition-all text-xs font-semibold text-white text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
+                  className="w-full mt-3 py-2 px-3 rounded-xl bg-[#9e7144] hover:bg-[#865d34] active:scale-[0.98] transition-all text-xs font-semibold text-white text-center shadow-xs cursor-pointer flex items-center justify-center gap-1"
                 >
-                  <Sparkles className="w-3 h-3 text-[#fed488]" />
+                  <Sparkles className="w-3 h-3 text-white" />
                   Add to cart
                 </button>
               </div>
@@ -283,7 +283,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
                 className={`p-2 rounded-xl flex items-center justify-center border text-xs font-semibold transition-all ${
                   currentPage === 1
                     ? 'border-[#eae5dc] text-[#c4c4c4] cursor-not-allowed bg-[#faf8f5]'
-                    : 'border-[#eae5dc] bg-white text-[#141414] hover:bg-[#8c7138] hover:text-white hover:border-[#8c7138] shadow-xs active:scale-95 cursor-pointer'
+                    : 'border-[#eae5dc] bg-white text-[#141414] hover:bg-[#9e7144] hover:text-white hover:border-[#9e7144] shadow-xs active:scale-95 cursor-pointer'
                 }`}
                 title="Previous Page"
               >
@@ -300,8 +300,8 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
                     onClick={() => handlePageChange(pageNum)}
                     className={`min-w-9 h-9 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       isActive
-                        ? 'bg-[#141414] border-[#141414] text-[#fed488] shadow-xs scale-105'
-                        : 'bg-white border-[#eae5dc] text-[#141414] hover:bg-[#f2ece1] hover:border-[#8c7138]'
+                        ? 'bg-[#9e7144] border-[#9e7144] text-white shadow-xs scale-105'
+                        : 'bg-white border-[#eae5dc] text-[#555] hover:bg-[#faf7f2] hover:border-[#9e7144] hover:text-[#9e7144]'
                     }`}
                   >
                     {pageNum}
@@ -317,7 +317,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
                 className={`p-2 rounded-xl flex items-center justify-center border text-xs font-semibold transition-all ${
                   currentPage === totalPages
                     ? 'border-[#eae5dc] text-[#c4c4c4] cursor-not-allowed bg-[#faf8f5]'
-                    : 'border-[#eae5dc] bg-white text-[#141414] hover:bg-[#8c7138] hover:text-white hover:border-[#8c7138] shadow-xs active:scale-95 cursor-pointer'
+                    : 'border-[#eae5dc] bg-white text-[#141414] hover:bg-[#9e7144] hover:text-white hover:border-[#9e7144] shadow-xs active:scale-95 cursor-pointer'
                 }`}
                 title="Next Page"
               >
@@ -333,7 +333,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
         <button
           onClick={scrollToTop}
           aria-label="Scroll to top"
-          className="fixed bottom-18 right-3.5 z-40 w-10 h-10 rounded-full bg-[#141414] text-[#fed488] border border-[#8c7138] flex items-center justify-center shadow-lg transition-transform active:scale-90 cursor-pointer"
+          className="fixed bottom-18 right-3.5 z-40 w-10 h-10 rounded-full bg-[#9e7144] text-white border border-[#865d34] flex items-center justify-center shadow-lg transition-transform active:scale-90 cursor-pointer"
         >
           <ArrowUp className="w-5 h-5 stroke-[2.5]" />
         </button>

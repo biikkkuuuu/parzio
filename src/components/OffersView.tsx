@@ -78,23 +78,19 @@ export const OffersView: React.FC<OffersViewProps> = ({
         </div>
       </div>
 
-      {/* Hero Header matching brand fonts and color aesthetics */}
-      <section className="relative bg-[#1b1714] text-white py-12 sm:py-16 px-4 sm:px-8 lg:px-14 overflow-hidden border-b border-[#2d241e]">
-        {/* Subtle background glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#c5a059]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#9e7144]/15 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="max-w-[1800px] mx-auto relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-[#c5a059]/40 text-[#fed488] text-[11px] sm:text-xs font-bold tracking-wider uppercase mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-[#c5a059]" />
-            <span>Official PARZIO Privilege Vault</span>
+      {/* Clean, Light & Luxury Header */}
+      <section className="bg-white border-b border-[#eae5dc] py-6 sm:py-8 px-4 sm:px-8 lg:px-14">
+        <div className="max-w-[1800px] mx-auto text-center">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#faf7f2] border border-[#e5decb] text-[#9e7144] text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2.5">
+            <Sparkles className="w-3.5 h-3.5 text-[#9e7144]" />
+            <span>Official PARZIO Privileges</span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal text-white tracking-tight max-w-3xl mx-auto leading-tight">
-            Curated Offers &amp; <span className="text-[#c5a059] italic">Luxury Privileges</span>
+          <h1 className="font-display text-2xl sm:text-4xl text-[#1a1714] font-normal tracking-tight">
+            Curated Offers &amp; <span className="text-[#9e7144] italic">Luxury Privileges</span>
           </h1>
 
-          <p className="mt-4 text-xs sm:text-sm text-gray-300 max-w-xl mx-auto font-light leading-relaxed">
+          <p className="mt-2 text-xs sm:text-sm text-[#747878] max-w-xl mx-auto font-light leading-relaxed">
             Directly from our atelier. Enjoy complimentary express delivery, flat discounts, and seasonal privileges on 18K anti-tarnish waterproof jewellery.
           </p>
         </div>
@@ -138,7 +134,7 @@ export const OffersView: React.FC<OffersViewProps> = ({
             </p>
             <button
               onClick={onBackToStore}
-              className="mt-6 px-6 py-2.5 rounded-full bg-[#141414] hover:bg-[#9e7144] text-white text-xs font-bold uppercase tracking-wider transition-colors"
+              className="mt-6 px-6 py-2.5 rounded-full bg-[#9e7144] hover:bg-[#865d34] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs"
             >
               Explore Collection
             </button>
@@ -203,7 +199,7 @@ export const OffersView: React.FC<OffersViewProps> = ({
                       className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                         isCopied
                           ? 'bg-emerald-700 text-white'
-                          : 'bg-[#141414] hover:bg-[#9e7144] text-white'
+                          : 'bg-[#9e7144] hover:bg-[#865d34] text-white shadow-xs'
                       }`}
                     >
                       {isCopied ? (
@@ -223,7 +219,7 @@ export const OffersView: React.FC<OffersViewProps> = ({
                   {/* Shop Button */}
                   <button
                     onClick={() => handleShopWithCode(coupon.code)}
-                    className="w-full mt-3 py-2.5 rounded-full bg-[#1b1714] hover:bg-[#9e7144] text-white text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                    className="w-full mt-3 py-2.5 rounded-full bg-[#9e7144] hover:bg-[#865d34] text-white text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                   >
                     <ShoppingBag className="w-3.5 h-3.5" />
                     <span>Shop With This Code</span>

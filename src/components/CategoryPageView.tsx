@@ -264,7 +264,7 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
             onClick={() => onSelectCategory('ALL')}
             className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               categoryName.toUpperCase() === 'ALL'
-                ? 'bg-[#1b1714] text-white shadow-xs'
+                ? 'bg-[#9e7144] text-white shadow-xs font-bold'
                 : 'bg-[#faf8f5] text-[#555] hover:text-[#141414] hover:bg-[#f0ebe3] border border-[#eae5dc]'
             }`}
           >
@@ -521,7 +521,7 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
                             ₹{product.originalPrice}
                           </span>
                         )}
-                        <span className="bg-[#1b1714] text-white text-[9px] font-bold px-1 py-0.5 rounded-xs">
+                        <span className="bg-[#9e7144] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-xs">
                           {discountTag}
                         </span>
                       </div>

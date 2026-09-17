@@ -220,7 +220,7 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                             ₹{product.originalPrice}
                           </span>
                         )}
-                        <span className="bg-[#1b1714] text-white text-[9px] font-bold px-1 py-0.5 rounded-xs">
+                        <span className="bg-[#9e7144] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-xs">
                           {discountTag}
                         </span>
                       </div>

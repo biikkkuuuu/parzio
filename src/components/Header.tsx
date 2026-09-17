@@ -47,26 +47,26 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-xs">
       {/* 1. Top Announcement Bar */}
-      <div className="bg-[#1b1714] text-[#fff] text-[11px] sm:text-xs py-1.5 px-4 sm:px-8 lg:px-14 flex items-center justify-between font-sans">
+      <div className="bg-[#fcfaf7] border-b border-[#ebdcca] text-[#805c30] text-[11px] sm:text-xs py-1.5 px-4 sm:px-8 lg:px-14 flex items-center justify-between font-sans">
         <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
-          <span className="text-[#c5a059]">★</span>
-          <span className="text-gray-200 tracking-wide font-normal">
-            Free Delivery on Orders Above ₹499 <span className="text-gray-500 mx-1">|</span> COD Available <span className="text-gray-500 mx-1">|</span> Easy Returns
+          <span className="text-[#9e7144]">★</span>
+          <span className="text-[#594634] tracking-wide font-medium">
+            Free Delivery on Orders Above ₹499 <span className="text-[#c4b5a2] mx-1">|</span> COD Available <span className="text-[#c4b5a2] mx-1">|</span> Easy Returns
           </span>
         </div>
-        <div className="hidden md:flex items-center gap-3 text-gray-300 text-xs">
-          <span className="text-gray-300 text-[11px] font-medium">Follow Us</span>
-          <div className="flex items-center gap-2 text-gray-300">
-            <a href="https://instagram.com/parzio.in" target="_blank" rel="noreferrer" className="w-5 h-5 rounded-full bg-white/10 hover:bg-[#c5a059] flex items-center justify-center transition-colors text-white" title="Instagram">
+        <div className="hidden md:flex items-center gap-3 text-[#805c30] text-xs">
+          <span className="text-[#805c30] text-[11px] font-medium">Follow Us</span>
+          <div className="flex items-center gap-2 text-[#805c30]">
+            <a href="https://instagram.com/parzio.in" target="_blank" rel="noreferrer" className="w-5 h-5 rounded-full bg-[#f3ecdf] hover:bg-[#9e7144] hover:text-white flex items-center justify-center transition-colors text-[#805c30]" title="Instagram">
               <Instagram className="w-3 h-3" />
             </a>
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="w-5 h-5 rounded-full bg-white/10 hover:bg-[#c5a059] flex items-center justify-center transition-colors text-white" title="Facebook">
+            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="w-5 h-5 rounded-full bg-[#f3ecdf] hover:bg-[#9e7144] hover:text-white flex items-center justify-center transition-colors text-[#805c30]" title="Facebook">
               <Facebook className="w-3 h-3" />
             </a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="w-5 h-5 rounded-full bg-white/10 hover:bg-[#c5a059] flex items-center justify-center transition-colors text-white" title="Twitter">
+            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="w-5 h-5 rounded-full bg-[#f3ecdf] hover:bg-[#9e7144] hover:text-white flex items-center justify-center transition-colors text-[#805c30]" title="Twitter">
               <Twitter className="w-3 h-3" />
             </a>
-            <a href="https://youtube.com" target="_blank" rel="noreferrer" className="w-5 h-5 rounded-full bg-white/10 hover:bg-[#c5a059] flex items-center justify-center transition-colors text-white" title="YouTube">
+            <a href="https://youtube.com" target="_blank" rel="noreferrer" className="w-5 h-5 rounded-full bg-[#f3ecdf] hover:bg-[#9e7144] hover:text-white flex items-center justify-center transition-colors text-[#805c30]" title="YouTube">
               <Youtube className="w-3 h-3" />
             </a>
           </div>
