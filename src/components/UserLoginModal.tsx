@@ -143,9 +143,10 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
       
       if (uid) {
         setUserId(uid);
-        const profile = await userService.getUserProfile(uid);
+        // Look up by clean phone number across Firestore and local registry
+        const profile = await userService.getUserProfile(phone);
         if (profile && profile.name) {
-          // Returning user: verify OTP first, then login
+          // Returning user: verify OTP first, then login directly without asking name
           await userService.updateLastLogin(uid);
           localStorage.setItem('parzio_user_profile', JSON.stringify(profile));
           onSuccess(profile);
@@ -200,7 +201,7 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
         <div className="p-6">
           <div id="login-recaptcha"></div>
           
-          {infoNotice && (
+          {infoNotice && step === 'phone' && (
             <div className="mb-4 p-3 bg-amber-50 text-[#8c7138] text-xs font-bold rounded-xl border border-amber-200 text-center animate-fadeIn">
               {infoNotice}
             </div>
