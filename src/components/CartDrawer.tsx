@@ -23,6 +23,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 }) => {
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null);
 
   // Prevent background body scroll when CartDrawer is open
   useEffect(() => {
@@ -160,8 +161,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         </span>
                       </div>
                       <button
-                        onClick={() => onRemoveItem(product.id)}
-                        className="text-[#a3a3a3] hover:text-rose-600 transition-colors p-1"
+                        onClick={() => setItemToRemove({ id: product.id, name: product.name })}
+                        className="text-[#a3a3a3] hover:text-rose-600 transition-colors p-1 cursor-pointer"
                         title="Remove"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -171,8 +172,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center border border-[#eae5dc] rounded-full bg-[#faf8f5] px-2 py-0.5">
                         <button
-                          onClick={() => onUpdateQuantity(product.id, -1)}
-                          className="p-1 text-[#747878] hover:text-[#141414]"
+                          onClick={() => {
+                            if (quantity === 1) {
+                              setItemToRemove({ id: product.id, name: product.name });
+                            } else {
+                              onUpdateQuantity(product.id, -1);
+                            }
+                          }}
+                          className="p-1 text-[#747878] hover:text-[#141414] cursor-pointer"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
@@ -270,6 +277,46 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
         </div>
       </div>
+
+      {/* Confirmation Modal: Remove Item from Cart */}
+      {itemToRemove && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="w-full max-w-sm bg-white rounded-2xl p-5 border border-[#eae5dc] shadow-2xl space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-[#141414]">Remove from Bag?</h3>
+                <p className="text-xs text-[#717478] mt-1 leading-relaxed">
+                  Are you sure you want to remove <span className="font-semibold text-[#141414]">"{itemToRemove.name}"</span> from your shopping bag?
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2 border-t border-[#f0f1f3]">
+              <button
+                type="button"
+                onClick={() => setItemToRemove(null)}
+                className="flex-1 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-[#141414] font-semibold text-xs transition-colors cursor-pointer"
+              >
+                Keep in Bag
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onRemoveItem(itemToRemove.id);
+                  setItemToRemove(null);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Yes, Remove</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

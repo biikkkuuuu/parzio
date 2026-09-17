@@ -188,11 +188,18 @@ export const AccountView: React.FC<AccountViewProps> = ({
     );
   };
 
-  const handleDeleteAddress = (id: string) => {
-    setAddresses((prev) => prev.filter((a) => a.id !== id));
+  const [confirmDeleteAddressId, setConfirmDeleteAddressId] = useState<string | null>(null);
+  const [isConfirmLogoutOpen, setIsConfirmLogoutOpen] = useState(false);
+
+  const handleConfirmDeleteAddress = () => {
+    if (confirmDeleteAddressId) {
+      setAddresses((prev) => prev.filter((a) => a.id !== confirmDeleteAddressId));
+      setConfirmDeleteAddressId(null);
+    }
   };
 
-  const handleLogout = () => {
+  const handleConfirmLogout = () => {
+    setIsConfirmLogoutOpen(false);
     setShowLogoutToast(true);
     setTimeout(() => setShowLogoutToast(false), 2500);
   };
@@ -437,7 +444,8 @@ export const AccountView: React.FC<AccountViewProps> = ({
             {/* 6. Flipkart-Style Log Out Button */}
             <div className="pt-1">
               <button
-                onClick={handleLogout}
+                type="button"
+                onClick={() => setIsConfirmLogoutOpen(true)}
                 className="w-full py-2.5 rounded-xl bg-white border border-[#e4e6eb] text-rose-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-rose-50 transition-colors shadow-2xs cursor-pointer active:scale-98"
               >
                 <LogOut className="w-4 h-4" />
@@ -660,8 +668,9 @@ export const AccountView: React.FC<AccountViewProps> = ({
                       )}
 
                       <button
-                        onClick={() => handleDeleteAddress(addr.id)}
-                        className="text-[11px] text-rose-600 hover:underline flex items-center gap-1"
+                        type="button"
+                        onClick={() => setConfirmDeleteAddressId(addr.id)}
+                        className="text-[11px] text-rose-600 hover:underline flex items-center gap-1 cursor-pointer font-medium"
                       >
                         <Trash2 className="w-3 h-3" /> Delete
                       </button>
@@ -1029,16 +1038,14 @@ export const AccountView: React.FC<AccountViewProps> = ({
                             Set Default
                           </button>
                         )}
-                        {addresses.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteAddress(addr.id)}
-                            className="text-neutral-400 hover:text-rose-600 cursor-pointer"
-                            title="Delete address"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteAddressId(addr.id)}
+                          className="text-neutral-400 hover:text-rose-600 cursor-pointer p-1 transition-colors"
+                          title="Delete address"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
 
@@ -1121,6 +1128,103 @@ export const AccountView: React.FC<AccountViewProps> = ({
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-[#141414] text-white text-xs font-bold shadow-lg animate-bounce flex items-center gap-2">
           <Check className="w-4 h-4 text-emerald-400" />
           <span>Logged out successfully. Browsing as Guest.</span>
+        </div>
+      )}
+
+      {/* Confirmation Modal: Delete Delivery Address */}
+      {confirmDeleteAddressId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="w-full max-w-sm bg-white rounded-2xl p-5 border border-[#eae5dc] shadow-2xl space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-[#141414]">Delete Delivery Address?</h3>
+                <p className="text-xs text-[#717478] mt-1 leading-relaxed">
+                  Are you sure you want to delete this address? You will need to add it again for future deliveries.
+                </p>
+                {(() => {
+                  const targetAddr = addresses.find((a) => a.id === confirmDeleteAddressId);
+                  if (!targetAddr) return null;
+                  return (
+                    <div className="mt-3 p-2.5 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-[11px] text-[#141414] space-y-0.5">
+                      <div className="font-bold flex items-center gap-1.5">
+                        <span>{targetAddr.name}</span>
+                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-white border border-[#eae5dc] text-[#8c7138]">
+                          {targetAddr.type}
+                        </span>
+                        {targetAddr.isDefault && (
+                          <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">
+                            Primary
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[#717478] line-clamp-2">
+                        {targetAddr.address}
+                        {targetAddr.postOffice ? `, Post: ${targetAddr.postOffice}` : ''}, {targetAddr.city}, {targetAddr.state} - {targetAddr.pincode}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2 border-t border-[#f0f1f3]">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteAddressId(null)}
+                className="flex-1 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-[#141414] font-semibold text-xs transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteAddress}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Yes, Delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal: Log Out */}
+      {isConfirmLogoutOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="w-full max-w-sm bg-white rounded-2xl p-5 border border-[#eae5dc] shadow-2xl space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-50 text-[#8c7138] flex items-center justify-center shrink-0">
+                <LogOut className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-[#141414]">Log Out of PARZIO?</h3>
+                <p className="text-xs text-[#717478] mt-1 leading-relaxed">
+                  Are you sure you want to log out from this device? You can easily log back in anytime with your phone number.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2 border-t border-[#f0f1f3]">
+              <button
+                type="button"
+                onClick={() => setIsConfirmLogoutOpen(false)}
+                className="flex-1 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-[#141414] font-semibold text-xs transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmLogout}
+                className="flex-1 py-2.5 rounded-xl bg-[#141414] hover:bg-black text-white font-bold text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Yes, Log Out</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
