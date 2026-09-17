@@ -304,18 +304,18 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               <button
                 type="button"
                 onClick={() => onAddToCart(product, quantity)}
-                className="py-2.5 px-4 rounded-xl border border-[#141414] bg-[#141414] text-white hover:bg-[#8c7138] hover:border-[#8c7138] transition-all font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-98"
+                className="py-2.5 px-4 rounded-md bg-[#9e7144] hover:bg-[#865d34] text-white transition-all font-semibold text-xs flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-98"
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
-                <span>ADD TO BAG</span>
+                <span>Add to Cart</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => onBuyNow(product, quantity)}
-                className="py-2.5 px-4 rounded-xl bg-[#8c7138] hover:bg-[#6e582a] text-white transition-all font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-98"
+                className="py-2.5 px-4 rounded-md bg-[#141414] hover:bg-neutral-800 text-white transition-all font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-98"
               >
-                <Sparkles className="w-3.5 h-3.5 fill-white text-white" />
+                <Sparkles className="w-3.5 h-3.5 fill-[#fed488] text-[#fed488]" />
                 <span>BUY NOW</span>
               </button>
             </div>
@@ -466,9 +466,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                   <button
                     type="button"
                     onClick={() => onAddToCart(rel)}
-                    className="w-full mt-2 py-1.5 px-2 rounded-full bg-[#141414] hover:bg-[#8c7138] active:scale-[0.98] transition-all text-[11px] font-bold text-white text-center shadow-xs cursor-pointer"
+                    className="w-full mt-2 bg-[#9e7144] hover:bg-[#865d34] text-white py-1.5 px-2 rounded-xs text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-2xs cursor-pointer active:scale-95"
                   >
-                    Add to cart
+                    <ShoppingBag className="w-3 h-3" />
+                    <span>Add to Cart</span>
                   </button>
                 </div>
               </div>
@@ -478,7 +479,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
       </div>
 
       {/* Clean Mobile Sticky Action Bar at Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#eae5dc] px-3.5 py-2 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-2.5 pb-safe">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#eae5dc] px-3.5 py-2 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-2.5">
         <div>
           <span className="text-[8px] text-[#747878] font-bold uppercase block leading-none">TOTAL</span>
           <span className="font-sans text-sm font-extrabold text-[#141414] leading-none">
@@ -490,19 +491,19 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           <button
             type="button"
             onClick={() => onAddToCart(product, quantity)}
-            className="flex-1 py-2 rounded-lg bg-[#141414] text-white font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-1 shadow-xs active:scale-95 cursor-pointer"
+            className="flex-1 py-2 rounded-md bg-[#9e7144] hover:bg-[#865d34] text-white font-semibold text-xs flex items-center justify-center gap-1 shadow-xs active:scale-95 cursor-pointer"
           >
-            <ShoppingBag className="w-3 h-3" />
-            <span>ADD</span>
+            <ShoppingBag className="w-3.5 h-3.5" />
+            <span>Add to Cart</span>
           </button>
 
           <button
             type="button"
             onClick={() => onBuyNow(product, quantity)}
-            className="flex-1 py-2 rounded-lg bg-[#8c7138] text-white font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-1 shadow-xs active:scale-95 cursor-pointer"
+            className="flex-1 py-2 rounded-md bg-[#141414] text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1 shadow-xs active:scale-95 cursor-pointer"
           >
-            <Sparkles className="w-3 h-3 fill-white text-white" />
-            <span>BUY</span>
+            <Sparkles className="w-3.5 h-3.5 fill-[#fed488] text-[#fed488]" />
+            <span>BUY NOW</span>
           </button>
         </div>
       </div>
