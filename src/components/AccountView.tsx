@@ -107,8 +107,8 @@ export const AccountView: React.FC<AccountViewProps> = ({
   const [newAddrType, setNewAddrType] = useState<'HOME' | 'WORK' | 'OTHER'>('HOME');
   const [newAddrIsDefault, setNewAddrIsDefault] = useState(false);
 
-  const handleSaveNewAddress = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveNewAddress = (e?: React.FormEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!newAddrName.trim() || !newAddrStreet.trim() || !newAddrPhone.trim()) return;
 
     const newAddress: AddressItem = {
@@ -140,6 +140,10 @@ export const AccountView: React.FC<AccountViewProps> = ({
     setNewAddrType('HOME');
     setNewAddrIsDefault(false);
     setIsAddingAddress(false);
+  };
+
+  const handleSaveAddress = (e?: any) => {
+    handleSaveNewAddress(e);
   };
 
   const handleSetDefaultAddress = (id: string) => {
@@ -563,7 +567,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                       )}
                     </div>
                     <p className="text-xs text-[#141414] leading-relaxed">
-                      {addr.street}, {addr.city}, {addr.state} - {addr.pincode}
+                      {addr.address || ''}, {addr.city}, {addr.state} - {addr.pincode}
                     </p>
                     <p className="text-xs text-[#717478] mt-1">Phone: {addr.phone}</p>
 
