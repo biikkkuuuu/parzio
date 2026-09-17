@@ -297,7 +297,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   };
 
   // Finalize Order
-  const finalizeOrder = (isPhoneVerified: boolean, utr?: string) => {
+  const finalizeOrder = async (isPhoneVerified: boolean, utr?: string) => {
     // Basic Rate Limiting: Prevent more than 1 order per minute to stop spam/bots
     const lastOrderTime = localStorage.getItem('parzio_last_order_time');
     const now = Date.now();
@@ -308,58 +308,47 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     localStorage.setItem('parzio_last_order_time', now.toString());
 
     setIsSubmitting(true);
-    const generatedId = `PARZIO-${Math.floor(10000 + Math.random() * 90000)}`;
-    setPlacedOrderId(generatedId);
 
-    const firstProduct = cartItems[0]?.product;
-    const isHighRiskPincode = Boolean(matchedHighRisk);
-    const catalog = dbService.getProducts();
+    try {
+      let token = '';
+      if (auth.currentUser) {
+        token = await auth.currentUser.getIdToken(true);
+      }
 
-    const newOrder: OrderItem = {
-      id: generatedId,
-      customerName: name,
-      phone: `+91 ${phone}`,
-      location: `${city}${postOffice ? ` (${postOffice})` : ''} (${pincode})`,
-      pincode: pincode,
-      rtoRisk: paymentMethod === 'Prepaid UPI' ? 'Low' : isHighRiskPincode ? 'Medium' : 'Low',
-      amount: verifiedAmount,
-      paymentMethod: paymentMethod,
-      isPrepaid: paymentMethod === 'Prepaid UPI',
-      deliveryDate: deliveryDate,
-      items: cartItems.map((item) => {
-        const live = catalog.find((p) => p.id === item.product.id);
-        return {
-          id: item.product.id,
-          name: item.product.name,
-          price: live ? live.price : item.product.price,
-          quantity: item.quantity,
-          image: item.product.image,
-          sku: item.product.sku,
-          material: item.product.material
-        };
-      }),
-      totalAmount: verifiedAmount,
-      placedAt: new Date().toISOString(),
-      status: paymentMethod === 'COD' ? 'COD Confirmed' : 'Pending Verification',
-      productName: `${cartItems.reduce((acc, c) => acc + c.quantity, 0)}x Jewellery Pieces (${firstProduct?.name || 'Jewellery'})`,
-      sku: firstProduct?.sku || 'SKU: MIX-99',
-      quantity: cartItems.reduce((acc, c) => acc + c.quantity, 0),
-      image: firstProduct?.image || 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80',
-      tag: paymentMethod === 'COD' ? 'OTP Verified' : 'UPI Verification Pending',
-      courier: 'BlueDart Air Express',
-      phoneVerified: isPhoneVerified,
-      notes: paymentMethod === 'Prepaid UPI'
-        ? `Prepaid UPI • UTR: ${utr || 'N/A'} • Address: ${address}, Pin: ${pincode}`
-        : `Doorstep delivery at ${address}, Pin: ${pincode} • Delivery by ${deliveryDate}`
-    };
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          items: cartItems.map(c => ({ id: c.product.id, quantity: c.quantity })),
+          paymentMethod,
+          utr,
+          address: `${address}${postOffice ? ` (${postOffice})` : ''}`,
+          city,
+          pincode,
+          phone: phone.replace(/\D/g, ''),
+          name,
+          deliveryDate
+        })
+      });
 
-    setPlacedOrderData(newOrder);
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to place order');
+      }
 
-    setTimeout(() => {
+      setPlacedOrderId(data.order.id);
+      setPlacedOrderData(data.order);
       setIsSubmitting(false);
       setStep('success');
-      onOrderPlaced(newOrder);
-    }, 650);
+      onOrderPlaced(data.order);
+    } catch (err: any) {
+      setIsSubmitting(false);
+      alert(err.message || 'Error placing order. Please try again.');
+    }
   };
 
   return (

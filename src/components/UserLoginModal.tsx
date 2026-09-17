@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ShieldCheck, ArrowRight, RefreshCw, Clock } from 'lucide-react';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, signInAnonymously, ConfirmationResult } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { userService, UserProfile } from '../services/userService';
 
@@ -69,44 +69,18 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
     setIsLoading(true);
     
     try {
-      // Generate a random 6-digit OTP
-      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
       
-      // Fast2SMS API Call (Uses Vercel / Vite proxy to bypass browser CORS)
-      const apiKey = import.meta.env.VITE_FAST2SMS_API_KEY || 'b86UTqxh4dZQjmICJtLDlVkYMyRaSrK3zFNvXpO0P1EHWsfgi5uCGNnkbHJTm5wcIQB0z1p4gUfF7V2M';
-      const baseApi = '/api/fast2sms/dev/bulkV2';
+      const data = await response.json();
       
-      let smsSuccess = false;
-      let errorReason = '';
-
-      try {
-        // First try: route=otp (best for DND & Non-DND)
-        const otpUrl = `${baseApi}?authorization=${apiKey}&variables_values=${generatedOtp}&route=otp&numbers=${phone}`;
-        let response = await fetch(otpUrl);
-        let data = await response.json();
-
-        if (data.return === true) {
-          smsSuccess = true;
-        } else {
-          // If route=otp fails (e.g. status_code 996: website verification needed), try route=q (Quick SMS)
-          console.warn("route=otp failed, trying route=q:", data);
-          const qMsg = encodeURIComponent(`Your Parzio verification code is ${generatedOtp}`);
-          const qUrl = `${baseApi}?authorization=${apiKey}&route=q&message=${qMsg}&language=english&flash=0&numbers=${phone}`;
-          
-          response = await fetch(qUrl);
-          data = await response.json();
-          
-          if (data.return === true) {
-            smsSuccess = true;
-          } else {
-            errorReason = data.message || 'SMS send failed';
-          }
-        }
-      } catch (fetchErr: any) {
-        errorReason = fetchErr?.message || 'Network error';
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to send OTP');
       }
 
-      setExpectedOtp(generatedOtp);
       setStep('otp');
       setResendTimer(60);
 
@@ -130,23 +104,37 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
     setIsLoading(true);
 
     try {
-      if (!expectedOtp) {
-        throw new Error("Session expired. Please request a new OTP.");
-      }
+      const response = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp: entered })
+      });
+
+      const data = await response.json();
       
-      if (entered !== expectedOtp && entered !== '123456') {
-        throw new Error("Invalid OTP");
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Invalid OTP');
       }
 
-      // Use phone number as the unique user ID since we bypassed Firebase Auth
-      const uid = `phone_${phone}`;
+      // OTP verified successfully. Authenticate anonymously to secure Firestore rules.
+      let authResult;
+      try {
+        authResult = await signInAnonymously(auth);
+      } catch (e) {
+        console.error("Firebase auth error", e);
+        throw new Error("Authentication failed");
+      }
+      
+      const uid = authResult.user.uid;
       
       if (uid) {
         setUserId(uid);
         // Look up by clean phone number across Firestore and local registry
-        const profile = await userService.getUserProfile(phone);
+        let profile = await userService.getUserProfile(phone);
         if (profile && profile.name) {
           // Returning user: verify OTP first, then login directly without asking name
+          profile.uid = uid; // Update with secure anonymous UID
+          await userService.saveUserProfile(uid, `+91${phone}`, profile.name);
           await userService.updateLastLogin(uid);
           localStorage.setItem('parzio_user_profile', JSON.stringify(profile));
           onSuccess(profile);

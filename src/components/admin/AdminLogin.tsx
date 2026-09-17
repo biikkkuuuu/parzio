@@ -9,8 +9,6 @@ interface AdminLoginProps {
 }
 
 const ADMIN_PHONE = '7033656752';
-const FAST2SMS_API_KEY = import.meta.env.VITE_FAST2SMS_API_KEY || 'b86UTqxh4dZQjmICJtLDlVkYMyRaSrK3zFNvXpO0P1EHWsfgi5uCGNnkbHJTm5wcIQB0z1p4gUfF7V2M';
-
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
   const [step, setStep] = useState<'credentials' | '2fa'>('credentials');
   const [email, setEmail] = useState('');
@@ -38,45 +36,25 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
     setErrorMsg('');
     setInfoNotice('');
 
-    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    const baseApi = '/api/fast2sms/dev/bulkV2';
-
-    let smsSuccess = false;
-    let errorReason = '';
-
     try {
-      // 1. Try route=otp
-      const otpUrl = `${baseApi}?authorization=${FAST2SMS_API_KEY}&variables_values=${generatedOtp}&route=otp&numbers=${ADMIN_PHONE}`;
-      let response = await fetch(otpUrl);
-      let data = await response.json();
-
-      if (data.return === true) {
-        smsSuccess = true;
-      } else {
-        // 2. Fallback to route=q (Quick SMS)
-        const qMsg = encodeURIComponent(`Your Parzio Admin 2FA security code is ${generatedOtp}. Do not share this with anyone.`);
-        const qUrl = `${baseApi}?authorization=${FAST2SMS_API_KEY}&route=q&message=${qMsg}&language=english&flash=0&numbers=${ADMIN_PHONE}`;
-        response = await fetch(qUrl);
-        data = await response.json();
-
-        if (data.return === true) {
-          smsSuccess = true;
-        } else {
-          errorReason = data.message || 'SMS send failed';
-        }
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: ADMIN_PHONE })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to send OTP');
       }
-    } catch (err: any) {
-      errorReason = err?.message || 'Network error';
-    }
 
-    setExpectedOtp(generatedOtp);
-    setResendTimer(60);
-    setLoading(false);
-
-    if (smsSuccess) {
+      setResendTimer(60);
+      setLoading(false);
       setInfoNotice(`📱 2FA Code sent to admin phone +91 ******${ADMIN_PHONE.slice(-4)}`);
-    } else {
-      setInfoNotice(`⚠️ SMS Gateway: ${errorReason}. Backup code: 123456 ya ${generatedOtp}`);
+    } catch (err: any) {
+      setLoading(false);
+      setInfoNotice(`⚠️ SMS Gateway: ${err.message}`);
     }
   };
 
@@ -107,18 +85,33 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
     }
   };
 
-  const handleVerify2fa = (e: React.FormEvent) => {
+  const handleVerify2fa = async (e: React.FormEvent) => {
     e.preventDefault();
     const entered = otpValues.join('');
     if (entered.length < 6) return;
 
     setErrorMsg('');
+    setLoading(true);
 
-    if (entered === expectedOtp || entered === '123456') {
+    try {
+      const response = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: ADMIN_PHONE, otp: entered })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Invalid OTP');
+      }
+
       sessionStorage.setItem('parzio_admin_auth', 'true');
       onSuccess();
-    } else {
-      setErrorMsg('Galat 2FA Security Code hai. Kripya phone par aaya sahi 6-digit OTP enter karein.');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Galat 2FA Security Code hai. Kripya phone par aaya sahi 6-digit OTP enter karein.');
+    } finally {
+      setLoading(false);
     }
   };
 

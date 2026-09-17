@@ -858,9 +858,12 @@ export default function App() {
 
   // Order Handlers (Full CRUD for Admin Operations & Cloud Sync)
   const handleOrderPlaced = (newOrder: OrderItem) => {
-    setOrders((prev) => [newOrder, ...prev]);
+    setOrders((prev) => {
+      const updated = [newOrder, ...prev];
+      dbService.saveOrders(updated);
+      return updated;
+    });
     setCartItems([]);
-    dbService.createOrder(newOrder);
     showToast(`Order #${newOrder.id} placed! Dispatched to Mumbai Atelier Ops.`);
   };
 

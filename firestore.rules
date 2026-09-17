@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Check if the current user is an admin
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    // Check if the user is authenticated (including anonymous auth)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Public Collections (Read-Only for public, Read/Write for Admins)
+    match /products/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /categories/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /store_banners/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /top_marquee/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /banner_marquee/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /sale_posters/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /coupons/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /skin_safe_config/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /emergency_config/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Admins Collection
+    match /admins/{uid} {
+      // Only existing admins can read/write the admins list
+      allow read, write: if isAdmin();
+    }
+
+    // Users Collection (Customers)
+    match /users/{uid} {
+      // Users can only access their own profile. Admins can access all.
+      allow read, write: if isAdmin() || (isAuthenticated() && request.auth.uid == uid);
+    }
+    
+    // OTPs Collection
+    match /otps/{document=**} {
+      // Completely locked down. Only the secure Vercel API (Admin SDK) can access this.
+      allow read, write: if false;
+    }
+
+    // Rate Limits Collection
+    match /rate_limits/{document=**} {
+      // Locked down. Only server-side functions can read/write this.
+      allow read, write: if false;
+    }
+
+    // Orders Collection
+    match /orders/{orderId} {
+      // Users can read only their own orders. Admins can read all.
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      
+      // Order Creation is completely disabled for client SDKs.
+      // ALL checkout operations must go through the Vercel API endpoint for atomic stock verification.
+      allow create: if false;
+      
+      // Only admins can update or delete orders.
+      allow update, delete: if isAdmin();
+    }
+  }
+}
