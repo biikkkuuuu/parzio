@@ -214,7 +214,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         setOtpError(error.message || "Failed to send OTP. Please check your number.");
         if (window.recaptchaVerifier) {
           window.recaptchaVerifier.render().then((widgetId: any) => {
-            grecaptcha.reset(widgetId);
+            (window as any).grecaptcha?.reset(widgetId);
           });
         }
       } finally {

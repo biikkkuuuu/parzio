@@ -69,7 +69,7 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
       console.error(err);
       setError('Failed to send OTP. Try again.');
       if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.render().then((widgetId: any) => grecaptcha.reset(widgetId));
+        window.recaptchaVerifier.render().then((widgetId: any) => (window as any).grecaptcha?.reset(widgetId));
       }
     } finally {
       setIsLoading(false);
@@ -188,7 +188,9 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
                 {otpValues.map((digit, idx) => (
                   <input
                     key={idx}
-                    ref={el => (otpInputRefs.current[idx] = el)}
+                    ref={el => {
+                      otpInputRefs.current[idx] = el;
+                    }}
                     type="text"
                     maxLength={1}
                     value={digit}

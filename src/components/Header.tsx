@@ -40,6 +40,7 @@ const NAV_ITEMS = [
 
 export const Header: React.FC<HeaderProps> = ({
   cartCount,
+  wishlistCount = 0,
   onOpenCart,
   onOpenWishlist,
   onOpenAccount,

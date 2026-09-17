@@ -162,6 +162,8 @@ export interface OrderItem {
   rtoPercent?: number;
   amount: number;
   paymentMethod: 'COD' | 'Prepaid UPI';
+  isPrepaid?: boolean;
+  deliveryDate?: string;
   status: OrderStatus;
   productName: string;
   sku: string;
@@ -172,6 +174,9 @@ export interface OrderItem {
   trackingNumber?: string;
   phoneVerified: boolean;
   notes?: string;
+  items?: any[];
+  totalAmount?: number;
+  placedAt?: string;
 }
 
 export interface StorefrontConfig {
