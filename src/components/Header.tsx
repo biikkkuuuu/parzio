@@ -74,8 +74,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center">
           <button
             onClick={() => {
-              if (onToggleScreen) onToggleScreen('storefront');
-              onSelectCategory('ALL');
+              onSelectCategory('HOME');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             className="text-left focus:outline-none cursor-pointer"
@@ -88,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({
         <nav className="hidden lg:flex items-center gap-7 text-[13px] font-medium tracking-wide">
           {NAV_ITEMS.map((item) => {
             const isActive =
-              (item.id === 'home' && activeCategory === 'ALL') ||
+              (item.id === 'home' && (activeCategory === 'ALL' || activeCategory === 'HOME' || activeCategory === 'NEW ARRIVALS')) ||
               activeCategory.toLowerCase() === item.label.toLowerCase() ||
               activeCategory.toLowerCase() === item.id;
             return (
@@ -96,8 +95,11 @@ export const Header: React.FC<HeaderProps> = ({
                 key={item.id}
                 onClick={() => {
                   if (item.id === 'home') {
-                    onSelectCategory('ALL');
+                    onSelectCategory('HOME');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                  } else if (item.id === 'shop') {
+                    onSelectCategory('ALL');
+                    document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
                   } else {
                     onSelectCategory(item.label);
                     document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
@@ -171,16 +173,20 @@ export const Header: React.FC<HeaderProps> = ({
             key={item.id}
             onClick={() => {
               if (item.id === 'home') {
-                onSelectCategory('ALL');
+                onSelectCategory('HOME');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+              } else if (item.id === 'shop') {
+                onSelectCategory('ALL');
+                document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
               } else {
                 onSelectCategory(item.label);
                 document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
               }
             }}
             className={`px-2.5 py-1 rounded-full transition-colors ${
-              (item.id === 'home' && activeCategory === 'ALL') ||
-              activeCategory.toLowerCase() === item.label.toLowerCase()
+              (item.id === 'home' && (activeCategory === 'ALL' || activeCategory === 'HOME' || activeCategory === 'NEW ARRIVALS')) ||
+              activeCategory.toLowerCase() === item.label.toLowerCase() ||
+              activeCategory.toLowerCase() === item.id
                 ? 'bg-[#9e7144] text-white'
                 : 'text-[#555] hover:text-[#141414]'
             }`}

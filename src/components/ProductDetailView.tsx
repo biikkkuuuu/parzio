@@ -119,7 +119,13 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           </button>
 
           <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-[#747878] font-medium">
-            <span>Home</span>
+            <button
+              type="button"
+              onClick={onBack}
+              className="hover:text-[#8c7138] hover:underline cursor-pointer"
+            >
+              Home
+            </button>
             <ChevronRight className="w-3 h-3 text-[#c4c4c4]" />
             <span className="capitalize">{product.category}</span>
             <ChevronRight className="w-3 h-3 text-[#c4c4c4]" />

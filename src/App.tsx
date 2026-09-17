@@ -813,8 +813,12 @@ export default function App() {
   };
 
   const handleSelectCategory = (cat: string) => {
-    setActiveCategory(cat.toUpperCase());
+    const upper = cat.toUpperCase();
+    setActiveCategory(upper === 'HOME' ? 'ALL' : upper);
     setSelectedProduct(null);
+    if (window.location.hash.startsWith('#/product/')) {
+      window.history.pushState({ type: 'tab', tab: 'home' }, '', '#/');
+    }
     if (activeTab !== 'home') {
       setActiveTab('home');
       try {
@@ -822,9 +826,15 @@ export default function App() {
       } catch {}
       window.history.pushState({ type: 'tab', tab: 'home' }, '', '#/');
     }
-    setTimeout(() => {
-      scrollToVault();
-    }, 80);
+    // If Home is clicked, stay/scroll smoothly to top of home screen (Hero Banner)
+    if (upper === 'HOME') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Specific category or 'ALL' / 'SHOP' selected -> scroll to product vault
+      setTimeout(() => {
+        scrollToVault();
+      }, 80);
+    }
   };
 
   // If Atelier Operations Hub view is active
@@ -945,7 +955,13 @@ export default function App() {
           activeCategory={activeCategory}
           onSelectCategory={handleSelectCategory}
           activeScreen={activeScreen}
-          onToggleScreen={handleOpenAtelierOps}
+          onToggleScreen={(screen) => {
+            if (screen === 'atelier-ops') {
+              handleOpenAtelierOps();
+            } else {
+              setActiveScreen('storefront');
+            }
+          }}
           deviceMode="desktop"
           onToggleDeviceMode={() => {}}
           searchQuery={searchQuery}

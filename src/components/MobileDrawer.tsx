@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, ChevronRight, Sparkles, ShieldCheck, Truck, RotateCcw, User, Phone, LayoutDashboard, Heart } from 'lucide-react';
+import { Home, X, ChevronRight, Sparkles, ShieldCheck, Truck, RotateCcw, User, Phone, LayoutDashboard, Heart } from 'lucide-react';
 import { Logo } from './Logo';
 import { TabType } from './BottomNav';
 
@@ -41,7 +41,17 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
       <div className="fixed inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl flex flex-col justify-between border-r border-[#eae5dc] z-50">
         {/* Drawer Header */}
         <div className="p-4 border-b border-[#eae5dc] flex items-center justify-between bg-[#fbf9f6]">
-          <Logo className="h-6 w-auto" />
+          <button
+            onClick={() => {
+              onNavigateTab('home');
+              onSelectCategory('HOME');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              onClose();
+            }}
+            className="text-left"
+          >
+            <Logo className="h-6 w-auto" />
+          </button>
           <button
             onClick={onClose}
             className="p-1.5 rounded-full hover:bg-[#efeeeb] text-[#444748] transition-colors"
@@ -51,7 +61,23 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
         </div>
 
         {/* Navigation Categories */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Home Link */}
+          <button
+            onClick={() => {
+              onNavigateTab('home');
+              onSelectCategory('HOME');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              onClose();
+            }}
+            className="w-full p-3 rounded-2xl bg-[#faf8f5] hover:bg-[#f3efe9] border border-[#eae5dc] flex items-center gap-2.5 text-left transition-colors"
+          >
+            <Home className="w-4 h-4 text-[#8c7138]" />
+            <span className="font-display font-bold text-sm text-[#141414]">
+              Home
+            </span>
+          </button>
+
           {/* ₹99 Flash Highlight */}
           <button
             onClick={() => {
