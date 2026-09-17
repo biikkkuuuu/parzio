@@ -162,7 +162,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
 
   return (
     <div className="min-h-screen bg-[#f1f2f4] pb-28 font-sans">
-      <div className="max-w-2xl lg:max-w-3xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 space-y-3.5">
+      <div className="w-full max-w-[1400px] mx-auto px-3 sm:px-8 lg:px-14 pt-4 sm:pt-6 space-y-5">
 
         {/* PC Desktop Top Navigation Bar */}
         <div className="hidden sm:flex items-center justify-between pb-1">
@@ -175,233 +175,444 @@ export const AccountView: React.FC<AccountViewProps> = ({
             onClick={() => {
               window.location.hash = '#/';
             }}
-            className="text-xs font-semibold text-[#8c7138] hover:text-[#705220] transition-colors cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#e4e6eb] shadow-2xs hover:border-[#8c7138]"
+            className="text-xs font-semibold text-[#8c7138] hover:text-[#705220] transition-colors cursor-pointer flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-[#e4e6eb] shadow-2xs hover:border-[#8c7138]"
           >
             ← Back to Store
           </button>
         </div>
 
-        {/* 1. Flipkart-Grade Profile Header Card */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#e4e6eb] shadow-2xs">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3.5">
-              <div className="relative">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#8c7138] to-[#d4af37] text-white flex items-center justify-center font-bold text-lg shadow-xs">
-                  {userName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+        {/* Row 1: Profile Header Card (4 cols on lg) + Quick Action Tiles (8 cols on lg) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
+          {/* 1. Flipkart-Grade Profile Header Card */}
+          <div className="lg:col-span-4 bg-white rounded-2xl p-4 sm:p-5 border border-[#e4e6eb] shadow-2xs flex flex-col justify-center">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3.5">
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#8c7138] to-[#d4af37] text-white flex items-center justify-center font-bold text-lg shadow-xs">
+                    {userName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                  </div>
+                  <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white" />
                 </div>
-                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white" />
+
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h2 className="text-base sm:text-lg font-bold text-[#141414] leading-tight">
+                      {userName}
+                    </h2>
+                  </div>
+                  <p className="text-xs text-[#717478] mt-0.5">{userPhone}</p>
+                  <p className="text-[11px] text-[#717478] break-all">{userEmail}</p>
+                </div>
               </div>
 
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h2 className="text-base sm:text-lg font-bold text-[#141414] leading-tight">
-                    {userName}
-                  </h2>
-                </div>
-                <p className="text-xs text-[#717478] mt-0.5">{userPhone}</p>
-                <p className="text-[11px] text-[#717478] break-all">{userEmail}</p>
-              </div>
+              <button
+                onClick={() => setActiveModal('profile')}
+                className="p-2 rounded-full hover:bg-neutral-100 text-[#717478] hover:text-[#141414] transition-colors cursor-pointer"
+                title="Edit Profile"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
             </div>
+          </div>
 
+          {/* 2. Top 4 Core Quick Action Tiles (8 cols on lg: 4 columns in 1 row) */}
+          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 items-stretch">
+            {/* Orders */}
             <button
-              onClick={() => setActiveModal('profile')}
-              className="p-2 rounded-full hover:bg-neutral-100 text-[#717478] hover:text-[#141414] transition-colors cursor-pointer"
-              title="Edit Profile"
+              onClick={onTrackOrder}
+              className="p-3.5 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
             >
-              <Edit2 className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <Package className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold text-[#141414] leading-tight">Orders</h3>
+                <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">
+                  {orders.length > 0 ? `${orders.length} Orders` : 'Track Orders'}
+                </p>
+              </div>
+            </button>
+
+            {/* Wishlist */}
+            <button
+              onClick={onOpenWishlist}
+              className="p-3.5 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
+            >
+              <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
+                <Heart className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold text-[#141414] leading-tight">Wishlist</h3>
+                <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">Saved Items</p>
+              </div>
+            </button>
+
+            {/* Coupons */}
+            <button
+              onClick={() => setActiveModal('coupons')}
+              className="p-3.5 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
+            >
+              <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <Tag className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold text-[#141414] leading-tight">Coupons</h3>
+                <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">View Offers</p>
+              </div>
+            </button>
+
+            {/* Help Center */}
+            <button
+              onClick={() => setActiveModal('help')}
+              className="p-3.5 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
+            >
+              <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <Headphones className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xs font-bold text-[#141414] leading-tight">Help Center</h3>
+                <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">24×7 Support</p>
+              </div>
             </button>
           </div>
         </div>
 
-        {/* 2. Top 4 Core Quick Action Tiles (2x2 on Mobile, 4x1 on PC Desktop) */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          {/* Orders */}
-          <button
-            onClick={onTrackOrder}
-            className="p-3 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
-          >
-            <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <Package className="w-4.5 h-4.5" />
+        {/* Row 2: Left column (Account Menu, Feedback, Admin, Logout) + Right column on Desktop (Saved Addresses Panel) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-start">
+          {/* Left Column (4 cols on lg) */}
+          <div className="lg:col-span-4 space-y-4">
+            {/* 3. Account Settings (Flipkart List Menu) */}
+            <div className="bg-white rounded-2xl p-4 border border-[#e4e6eb] shadow-2xs space-y-2.5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#717478] px-1">
+                Account Settings
+              </h3>
+
+              <div className="divide-y divide-[#f0f1f3]">
+                {/* Saved Addresses */}
+                <div
+                  onClick={() => setActiveModal('address')}
+                  className="py-2.5 flex items-center justify-between cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3">
+                    <MapPin className="w-4 h-4 text-[#8c7138]" />
+                    <div>
+                      <h4 className="text-xs font-semibold text-[#141414] group-hover:text-[#8c7138] transition-colors">
+                        Saved Delivery Addresses
+                      </h4>
+                      <p className="text-[10px] text-[#717478]">{addresses.length} addresses saved</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138]" />
+                </div>
+
+                {/* Edit Profile */}
+                <div
+                  onClick={() => setActiveModal('profile')}
+                  className="py-2.5 flex items-center justify-between cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3">
+                    <User className="w-4 h-4 text-[#8c7138]" />
+                    <div>
+                      <h4 className="text-xs font-semibold text-[#141414] group-hover:text-[#8c7138] transition-colors">
+                        Personal Information
+                      </h4>
+                      <p className="text-[10px] text-[#717478]">Name, Phone number &amp; Email</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138]" />
+                </div>
+
+                {/* Notification Preferences */}
+                <div className="py-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Bell className="w-4 h-4 text-[#8c7138]" />
+                    <div>
+                      <h4 className="text-xs font-semibold text-[#141414]">Order WhatsApp Alerts</h4>
+                      <p className="text-[10px] text-[#717478]">Instant tracking updates via WhatsApp</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Enabled</span>
+                </div>
+
+                {/* Language */}
+                <div className="py-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Globe className="w-4 h-4 text-[#8c7138]" />
+                    <div>
+                      <h4 className="text-xs font-semibold text-[#141414]">Language Selection</h4>
+                      <p className="text-[10px] text-[#717478]">English &amp; Hinglish</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-[#717478] font-medium">Default</span>
+                </div>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h3 className="text-xs font-bold text-[#141414] leading-tight">Orders</h3>
-              <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">
-                {orders.length > 0 ? `${orders.length} Orders` : 'Track Orders'}
+
+            {/* 4. Feedback & Legal Information */}
+            <div className="bg-white rounded-2xl p-4 border border-[#e4e6eb] shadow-2xs space-y-2.5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#717478] px-1">
+                Feedback &amp; Policies
+              </h3>
+
+              <div className="divide-y divide-[#f0f1f3]">
+                <div
+                  onClick={() => setActiveModal('privacy')}
+                  className="py-2.5 flex items-center justify-between cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-4 h-4 text-[#8c7138]" />
+                    <h4 className="text-xs font-semibold text-[#141414] group-hover:text-[#8c7138] transition-colors">
+                      Privacy Policy &amp; Terms of Service
+                    </h4>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138]" />
+                </div>
+
+                <div
+                  onClick={() => setActiveModal('help')}
+                  className="py-2.5 flex items-center justify-between cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="w-4 h-4 text-[#8c7138]" />
+                    <h4 className="text-xs font-semibold text-[#141414] group-hover:text-[#8c7138] transition-colors">
+                      316L Anti-Tarnish Lifetime Warranty Policy
+                    </h4>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138]" />
+                </div>
+              </div>
+            </div>
+
+            {/* 5. Atelier Ops / Enterprise Portal */}
+            <div className="pt-1">
+              <button
+                onClick={onOpenAtelierOps}
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#141414] text-white hover:bg-[#8c7138] transition-colors text-xs font-bold cursor-pointer shadow-2xs"
+              >
+                <div className="flex items-center gap-2.5">
+                  <LayoutDashboard className="w-4 h-4 text-[#fed488]" />
+                  <span>Admin Atelier Ops Hub (Inventory &amp; Orders)</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-neutral-400" />
+              </button>
+            </div>
+
+            {/* 6. Flipkart-Style Log Out Button */}
+            <div className="pt-1">
+              <button
+                onClick={handleLogout}
+                className="w-full py-2.5 rounded-xl bg-white border border-[#e4e6eb] text-rose-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-rose-50 transition-colors shadow-2xs cursor-pointer active:scale-98"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Log Out of PARZIO</span>
+              </button>
+              <p className="text-[10px] text-center text-[#a0a3a8] mt-2">
+                PARZIO App Version 2.4.0 • Crafted with care in Giridih &amp; Mumbai
               </p>
             </div>
-          </button>
+          </div>
 
-          {/* Wishlist */}
-          <button
-            onClick={onOpenWishlist}
-            className="p-3 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
-          >
-            <div className="w-9 h-9 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
-              <Heart className="w-4.5 h-4.5" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-xs font-bold text-[#141414] leading-tight">Wishlist</h3>
-              <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">Saved Items</p>
-            </div>
-          </button>
+          {/* Right Column on Desktop (8 cols on lg): Interactive Address Book & Assurance */}
+          <div className="hidden lg:block lg:col-span-8 space-y-4">
+            {/* Saved Delivery Addresses Direct Panel */}
+            <div className="bg-white rounded-2xl p-5 border border-[#e4e6eb] shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-[#f0f1f3] pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#faf8f5] text-[#8c7138] flex items-center justify-center border border-[#eae5dc]">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#141414]">Saved Delivery Addresses</h3>
+                    <p className="text-[11px] text-[#717478]">Manage your home, office and atelier delivery locations</p>
+                  </div>
+                </div>
 
-          {/* Coupons */}
-          <button
-            onClick={() => setActiveModal('coupons')}
-            className="p-3 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
-          >
-            <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <Tag className="w-4.5 h-4.5" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-xs font-bold text-[#141414] leading-tight">Coupons</h3>
-              <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">View Offers</p>
-            </div>
-          </button>
+                <button
+                  onClick={() => setIsAddingAddress(true)}
+                  className="px-3 py-1.5 rounded-full bg-[#8c7138] text-white text-xs font-bold hover:bg-[#705220] transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add New Address</span>
+                </button>
+              </div>
 
-          {/* Help Center */}
-          <button
-            onClick={() => setActiveModal('help')}
-            className="p-3 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
-          >
-            <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-              <Headphones className="w-4.5 h-4.5" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-xs font-bold text-[#141414] leading-tight">Help Center</h3>
-              <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">24×7 Support</p>
-            </div>
-          </button>
-        </div>
+              {/* Add Address Form on Desktop */}
+              {isAddingAddress && (
+                <div className="p-4 rounded-xl bg-[#faf8f5] border border-[#eae5dc] space-y-3">
+                  <h4 className="text-xs font-bold text-[#141414]">New Delivery Address</h4>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">Full Name</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Pooja Sharma"
+                        value={newAddrName}
+                        onChange={(e) => setNewAddrName(e.target.value)}
+                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">Phone Number</label>
+                      <input
+                        type="text"
+                        placeholder="10-digit mobile"
+                        value={newAddrPhone}
+                        onChange={(e) => setNewAddrPhone(e.target.value)}
+                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">Street Address / House No.</label>
+                      <input
+                        type="text"
+                        placeholder="Flat, Road, Area, Landmark"
+                        value={newAddrStreet}
+                        onChange={(e) => setNewAddrStreet(e.target.value)}
+                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">City</label>
+                      <input
+                        type="text"
+                        placeholder="City"
+                        value={newAddrCity}
+                        onChange={(e) => setNewAddrCity(e.target.value)}
+                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">State &amp; Pincode</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          placeholder="State"
+                          value={newAddrState}
+                          onChange={(e) => setNewAddrState(e.target.value)}
+                          className="w-full px-2 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Pincode"
+                          value={newAddrPincode}
+                          onChange={(e) => setNewAddrPincode(e.target.value)}
+                          className="w-full px-2 py-1.5 rounded-lg bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-        {/* 3. Account Settings (Flipkart List Menu) */}
-        <div className="bg-white rounded-2xl p-4 border border-[#e4e6eb] shadow-2xs space-y-2.5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[#717478] px-1">
-            Account Settings
-          </h3>
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setNewAddrType('HOME')}
+                        className={`px-3 py-1 rounded text-xs font-bold ${newAddrType === 'HOME' ? 'bg-[#8c7138] text-white' : 'bg-white border text-neutral-600'}`}
+                      >
+                        Home
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNewAddrType('WORK')}
+                        className={`px-3 py-1 rounded text-xs font-bold ${newAddrType === 'WORK' ? 'bg-[#8c7138] text-white' : 'bg-white border text-neutral-600'}`}
+                      >
+                        Work
+                      </button>
+                    </div>
 
-          <div className="divide-y divide-[#f0f1f3]">
-            {/* Saved Addresses */}
-            <div
-              onClick={() => setActiveModal('address')}
-              className="py-2.5 flex items-center justify-between cursor-pointer group"
-            >
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsAddingAddress(false)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold text-neutral-600 hover:bg-neutral-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveAddress}
+                        className="px-4 py-1.5 rounded-lg bg-[#8c7138] text-white text-xs font-bold hover:bg-[#705220]"
+                      >
+                        Save Address
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Saved Address Cards Grid on Desktop */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {addresses.map((addr) => (
+                  <div
+                    key={addr.id}
+                    className={`p-3.5 rounded-xl border transition-all ${
+                      addr.isDefault
+                        ? 'border-[#8c7138] bg-[#faf8f5]/60 shadow-2xs'
+                        : 'border-[#eae5dc] bg-white hover:border-[#8c7138]/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-[#141414]">{addr.name}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-neutral-100 text-neutral-600">
+                          {addr.type}
+                        </span>
+                      </div>
+                      {addr.isDefault && (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Default
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#141414] leading-relaxed">
+                      {addr.street}, {addr.city}, {addr.state} - {addr.pincode}
+                    </p>
+                    <p className="text-xs text-[#717478] mt-1">Phone: {addr.phone}</p>
+
+                    <div className="mt-3 pt-2 border-t border-[#f0f1f3] flex items-center justify-between text-xs">
+                      {!addr.isDefault ? (
+                        <button
+                          onClick={() => handleSetDefaultAddress(addr.id)}
+                          className="text-[11px] font-bold text-[#8c7138] hover:underline"
+                        >
+                          Set as Default
+                        </button>
+                      ) : (
+                        <span className="text-[10px] text-emerald-700 font-semibold">Primary Address</span>
+                      )}
+
+                      <button
+                        onClick={() => handleDeleteAddress(addr.id)}
+                        className="text-[11px] text-rose-600 hover:underline flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" /> Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Personal Info & Warranty Assurance Summary on Desktop */}
+            <div className="bg-white rounded-2xl p-5 border border-[#e4e6eb] shadow-2xs flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <MapPin className="w-4 h-4 text-[#8c7138]" />
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
                 <div>
-                  <h4 className="text-xs font-semibold text-[#141414] group-hover:text-[#8c7138] transition-colors">
-                    Saved Delivery Addresses
-                  </h4>
-                  <p className="text-[10px] text-[#717478]">{addresses.length} addresses saved</p>
+                  <h4 className="text-xs font-bold text-[#141414]">316L Surgical Stainless Steel Guarantee</h4>
+                  <p className="text-[11px] text-[#717478]">
+                    All jewelry is 100% waterproof, anti-tarnish &amp; skin safe with lifetime polish retention.
+                  </p>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138]" />
-            </div>
 
-            {/* Edit Profile */}
-            <div
-              onClick={() => setActiveModal('profile')}
-              className="py-2.5 flex items-center justify-between cursor-pointer group"
-            >
-              <div className="flex items-center gap-3">
-                <User className="w-4 h-4 text-[#8c7138]" />
-                <div>
-                  <h4 className="text-xs font-semibold text-[#141414] group-hover:text-[#8c7138] transition-colors">
-                    Personal Information
-                  </h4>
-                  <p className="text-[10px] text-[#717478]">Name, Phone number &amp; Email</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138]" />
-            </div>
-
-            {/* Notification Preferences */}
-            <div className="py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Bell className="w-4 h-4 text-[#8c7138]" />
-                <div>
-                  <h4 className="text-xs font-semibold text-[#141414]">Order WhatsApp Alerts</h4>
-                  <p className="text-[10px] text-[#717478]">Instant tracking updates via WhatsApp</p>
-                </div>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Enabled</span>
-            </div>
-
-            {/* Language */}
-            <div className="py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Globe className="w-4 h-4 text-[#8c7138]" />
-                <div>
-                  <h4 className="text-xs font-semibold text-[#141414]">Language Selection</h4>
-                  <p className="text-[10px] text-[#717478]">English &amp; Hinglish</p>
-                </div>
-              </div>
-              <span className="text-[10px] text-[#717478] font-medium">Default</span>
+              <button
+                onClick={() => setActiveModal('help')}
+                className="px-3.5 py-1.5 rounded-full border border-[#eae5dc] text-xs font-semibold text-[#141414] hover:border-[#8c7138] hover:text-[#8c7138] transition-colors whitespace-nowrap shrink-0"
+              >
+                View Warranty
+              </button>
             </div>
           </div>
-        </div>
-
-        {/* 4. Feedback & Legal Information */}
-        <div className="bg-white rounded-2xl p-4 border border-[#e4e6eb] shadow-2xs space-y-2.5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[#717478] px-1">
-            Feedback &amp; Policies
-          </h3>
-
-          <div className="divide-y divide-[#f0f1f3]">
-            <div
-              onClick={() => setActiveModal('privacy')}
-              className="py-2.5 flex items-center justify-between cursor-pointer group"
-            >
-              <div className="flex items-center gap-3">
-                <FileText className="w-4 h-4 text-[#8c7138]" />
-                <h4 className="text-xs font-semibold text-[#141414] group-hover:text-[#8c7138] transition-colors">
-                  Privacy Policy &amp; Terms of Service
-                </h4>
-              </div>
-              <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138]" />
-            </div>
-
-            <div
-              onClick={() => setActiveModal('help')}
-              className="py-2.5 flex items-center justify-between cursor-pointer group"
-            >
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="w-4 h-4 text-[#8c7138]" />
-                <h4 className="text-xs font-semibold text-[#141414] group-hover:text-[#8c7138] transition-colors">
-                  316L Anti-Tarnish Lifetime Warranty Policy
-                </h4>
-              </div>
-              <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138]" />
-            </div>
-          </div>
-        </div>
-
-        {/* 5. Atelier Ops / Enterprise Portal */}
-        <div className="pt-1">
-          <button
-            onClick={onOpenAtelierOps}
-            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#141414] text-white hover:bg-[#8c7138] transition-colors text-xs font-bold cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5">
-              <LayoutDashboard className="w-4 h-4 text-[#fed488]" />
-              <span>Admin Atelier Ops Hub (Inventory &amp; Orders)</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-neutral-400" />
-          </button>
-        </div>
-
-        {/* 6. Flipkart-Style Log Out Button */}
-        <div className="pt-1">
-          <button
-            onClick={handleLogout}
-            className="w-full py-2.5 rounded-xl bg-white border border-[#e4e6eb] text-rose-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-rose-50 transition-colors shadow-2xs cursor-pointer active:scale-98"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Log Out of PARZIO</span>
-          </button>
-          <p className="text-[10px] text-center text-[#a0a3a8] mt-2">
-            PARZIO App Version 2.4.0 • Crafted with care in Giridih &amp; Mumbai
-          </p>
         </div>
 
       </div>
