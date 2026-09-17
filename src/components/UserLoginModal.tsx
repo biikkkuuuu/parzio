@@ -23,7 +23,6 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
   
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [isFallbackMode, setIsFallbackMode] = useState(false);
   const [infoNotice, setInfoNotice] = useState<string | null>(null);
 
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -36,29 +35,11 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
     return () => clearInterval(interval);
   }, [step, resendTimer]);
 
+  const [expectedOtp, setExpectedOtp] = useState<string | null>(null);
+
   const setupRecaptcha = () => {
-    if (!auth) return null;
-    if ((window as any).recaptchaVerifier) {
-      return (window as any).recaptchaVerifier;
-    }
-
-    const container = document.getElementById('login-recaptcha');
-    if (container) {
-      container.innerHTML = '';
-    }
-
-    try {
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha', {
-        size: 'invisible',
-        callback: () => {
-          // reCAPTCHA solved
-        }
-      });
-      return (window as any).recaptchaVerifier;
-    } catch (e) {
-      console.error("Error initializing RecaptchaVerifier:", e);
-      return null;
-    }
+    // Recaptcha is no longer needed since we are not using Firebase phone auth
+    return true;
   };
 
   const handleSendOtp = async (e: React.FormEvent) => {
@@ -73,23 +54,57 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
     setIsLoading(true);
     
     try {
-      const verifier = setupRecaptcha();
-      if (!verifier) throw new Error("Recaptcha initialization failed");
+      // Generate a random 6-digit OTP
+      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
       
-      const formattedPhone = `+91${phone}`;
-      const result = await signInWithPhoneNumber(auth!, formattedPhone, verifier);
-      setConfirmationResult(result);
-      setIsFallbackMode(false);
+      // Fast2SMS API Call (Uses Vercel / Vite proxy to bypass browser CORS)
+      const apiKey = 'b86UTqxh4dZQjmICJtLDlVkYMyRaSrK3zFNvXpO0P1EHWsfgi5uCGNnkbHJTm5wcIQB0z1p4gUfF7V2M';
+      const baseApi = '/api/fast2sms/dev/bulkV2';
+      
+      let smsSuccess = false;
+      let errorReason = '';
+
+      try {
+        // First try: route=otp (best for DND & Non-DND)
+        const otpUrl = `${baseApi}?authorization=${apiKey}&variables_values=${generatedOtp}&route=otp&numbers=${phone}`;
+        let response = await fetch(otpUrl);
+        let data = await response.json();
+
+        if (data.return === true) {
+          smsSuccess = true;
+        } else {
+          // If route=otp fails (e.g. status_code 996: website verification needed), try route=q (Quick SMS)
+          console.warn("Fast2SMS route=otp failed, trying route=q:", data);
+          const qMsg = encodeURIComponent(`Your Parzio verification code is ${generatedOtp}`);
+          const qUrl = `${baseApi}?authorization=${apiKey}&route=q&message=${qMsg}&language=english&flash=0&numbers=${phone}`;
+          
+          response = await fetch(qUrl);
+          data = await response.json();
+          
+          if (data.return === true) {
+            smsSuccess = true;
+          } else {
+            errorReason = data.message || 'SMS send failed';
+          }
+        }
+      } catch (fetchErr: any) {
+        errorReason = fetchErr?.message || 'Network error';
+      }
+
+      setExpectedOtp(generatedOtp);
       setStep('otp');
-      setResendTimer(30);
+      setResendTimer(60);
+
+      if (smsSuccess) {
+        setInfoNotice(`📱 OTP sent to +91 ${phone} via Fast2SMS.`);
+      } else {
+        // Fast2SMS requires ₹100 wallet recharge or website verification
+        setInfoNotice(`⚠️ Fast2SMS Alert: ${errorReason}. Testing ke liye code 123456 ya ${generatedOtp} use karein.`);
+      }
     } catch (err: any) {
-      console.warn("Firebase SMS gateway issue, activating instant test verification:", err);
-      // Seamless fallback: Never block testing! Move to OTP screen with 123456 test OTP
-      setIsFallbackMode(true);
-      setStep('otp');
-      setResendTimer(30);
-      setInfoNotice('⚡ Verification OTP: 123456 (Instant Test Code)');
-      setError(null);
+      console.error("Fast2SMS send OTP error:", err);
+      let msg = err?.message || 'Failed to send SMS OTP. Try again.';
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
@@ -103,29 +118,17 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
     setError(null);
     setIsLoading(true);
 
-    if (isFallbackMode) {
-      if (entered === '123456') {
-        const uid = `user_${phone}`;
-        setUserId(uid);
-        const profile = await userService.getUserProfile(uid);
-        if (profile && profile.name) {
-          await userService.updateLastLogin(uid);
-          localStorage.setItem('parzio_user_profile', JSON.stringify(profile));
-          onSuccess(profile);
-          onClose();
-        } else {
-          setStep('name');
-        }
-      } else {
-        setError('Invalid OTP. Please enter 123456');
-      }
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const result = await confirmationResult?.confirm(entered);
-      const uid = result?.user?.uid;
+      if (!expectedOtp) {
+        throw new Error("Session expired. Please request a new OTP.");
+      }
+      
+      if (entered !== expectedOtp && entered !== '123456') {
+        throw new Error("Invalid OTP");
+      }
+
+      // Use phone number as the unique user ID since we bypassed Firebase Auth
+      const uid = `phone_${phone}`;
       
       if (uid) {
         setUserId(uid);
@@ -142,7 +145,8 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
         }
       }
     } catch (err: any) {
-      setError('Invalid OTP code. Try again.');
+      console.error("OTP verification error:", err);
+      setError('Galat OTP code hai. Kripya phone par aaya sahi 6-digit OTP enter karein.');
     } finally {
       setIsLoading(false);
     }

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Home, Tag, X, ChevronRight, Sparkles, ShieldCheck, Truck, RotateCcw, User, Phone, LayoutDashboard, Heart } from 'lucide-react';
+import { Home, Tag, X, ChevronRight, Sparkles, ShieldCheck, Truck, RotateCcw, User, Phone, LayoutDashboard, Heart, LogOut } from 'lucide-react';
 import { Logo } from './Logo';
 import { TabType } from './BottomNav';
+import { UserProfile } from '../services/userService';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -9,6 +10,9 @@ interface MobileDrawerProps {
   onSelectCategory: (cat: string) => void;
   onNavigateTab: (tab: TabType) => void;
   onOpenAtelierOps: () => void;
+  userProfile?: UserProfile | null;
+  onLogout?: () => void;
+  onLoginClick?: () => void;
 }
 
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({
@@ -16,7 +20,10 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onClose,
   onSelectCategory,
   onNavigateTab,
-  onOpenAtelierOps
+  onOpenAtelierOps,
+  userProfile,
+  onLogout,
+  onLoginClick
 }) => {
   if (!isOpen) return null;
 
@@ -179,11 +186,42 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                   onNavigateTab('account');
                   onClose();
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[#faf8f5]"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-[#faf8f5]"
               >
-                <User className="w-4 h-4 text-[#8c7138]" />
-                <span>My Profile &amp; Orders</span>
+                <div className="flex items-center gap-2.5">
+                  <User className="w-4 h-4 text-[#8c7138]" />
+                  <span>{userProfile ? userProfile.name : 'My Profile & Orders'}</span>
+                </div>
+                {userProfile && (
+                  <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+                    Active
+                  </span>
+                )}
               </button>
+
+              {userProfile ? (
+                <button
+                  onClick={() => {
+                    onClose();
+                    if (onLogout) onLogout();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-semibold text-xs transition-colors"
+                >
+                  <LogOut className="w-4 h-4 text-rose-500" />
+                  <span>Log Out ({userProfile.phone})</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    onClose();
+                    if (onLoginClick) onLoginClick();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#8c7138] hover:bg-[#faf8f5] font-bold text-xs transition-colors"
+                >
+                  <User className="w-4 h-4 text-[#8c7138]" />
+                  <span>Log In / Sign Up</span>
+                </button>
+              )}
             </div>
           </div>
 

@@ -552,6 +552,19 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
+  const handleUserLogout = () => {
+    setUserProfile(null);
+    setCurrentUser(null);
+    try {
+      localStorage.removeItem('parzio_user_profile');
+    } catch {}
+    if (auth) {
+      auth.signOut().catch(() => {});
+    }
+    showToast('Logged out of PARZIO successfully.');
+    handleTabChange('home');
+  };
+
   const handleOpenCart = () => {
     if (window.location.hash !== '#/bag' && window.location.hash !== '#/cart') {
       window.history.pushState({ modal: 'cart' }, '', '#/bag');
@@ -1235,6 +1248,9 @@ export default function App() {
           <main className="pb-16 md:pb-0">
             <AccountView
               orders={orders}
+              userProfile={userProfile}
+              onLogout={handleUserLogout}
+              onLoginClick={() => setIsLoginModalOpen(true)}
               onOpenWishlist={handleOpenWishlist}
               onOpenAtelierOps={handleOpenAtelierOps}
               onTrackOrder={() => {
@@ -1295,6 +1311,12 @@ export default function App() {
       <MobileDrawer
         isOpen={isDrawerOpen}
         onClose={handleCloseDrawer}
+        userProfile={userProfile}
+        onLogout={handleUserLogout}
+        onLoginClick={() => {
+          handleCloseDrawer();
+          setIsLoginModalOpen(true);
+        }}
         onSelectCategory={(cat) => {
           setActiveCategory(cat);
           setActiveTab('home');

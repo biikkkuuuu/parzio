@@ -22,9 +22,13 @@ import {
 } from 'lucide-react';
 import { OrderItem } from '../types';
 import { lookupPincode } from '../services/postalService';
+import { UserProfile } from '../services/userService';
 
 interface AccountViewProps {
   orders: OrderItem[];
+  userProfile?: UserProfile | null;
+  onLogout?: () => void;
+  onLoginClick?: () => void;
   onOpenWishlist: () => void;
   onOpenAtelierOps: () => void;
   onTrackOrder: () => void;
@@ -70,6 +74,9 @@ const DEFAULT_ADDRESSES: AddressItem[] = [
 
 export const AccountView: React.FC<AccountViewProps> = ({
   orders,
+  userProfile,
+  onLogout,
+  onLoginClick,
   onOpenWishlist,
   onOpenAtelierOps,
   onTrackOrder
@@ -78,9 +85,9 @@ export const AccountView: React.FC<AccountViewProps> = ({
     'profile' | 'coupons' | 'address' | 'help' | 'privacy' | null
   >(null);
 
-  const [userName, setUserName] = useState('Pooja Sharma');
-  const [userPhone, setUserPhone] = useState('+91 98765 43210');
-  const [userEmail, setUserEmail] = useState('pooja.sharma@parzio.in');
+  const userName = userProfile?.name || 'Guest User';
+  const userPhone = userProfile?.phone || '';
+  const userEmail = userProfile ? `${userProfile.name.toLowerCase().replace(/\s+/g, '')}@parzio.in` : '';
   const [showLogoutToast, setShowLogoutToast] = useState(false);
 
   // Addresses State with LocalStorage Persistence
@@ -201,6 +208,12 @@ export const AccountView: React.FC<AccountViewProps> = ({
   const handleConfirmLogout = () => {
     setIsConfirmLogoutOpen(false);
     setShowLogoutToast(true);
+    try {
+      localStorage.removeItem('parzio_user_profile');
+    } catch {}
+    if (onLogout) {
+      onLogout();
+    }
     setTimeout(() => setShowLogoutToast(false), 2500);
   };
 
@@ -229,34 +242,56 @@ export const AccountView: React.FC<AccountViewProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
           {/* 1. Flipkart-Grade Profile Header Card */}
           <div className="lg:col-span-4 bg-white rounded-2xl p-4 sm:p-5 border border-[#e4e6eb] shadow-2xs flex flex-col justify-center">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3.5">
-                <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#8c7138] to-[#d4af37] text-white flex items-center justify-center font-bold text-lg shadow-xs">
-                    {userName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+            {userProfile ? (
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3.5">
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#8c7138] to-[#d4af37] text-white flex items-center justify-center font-bold text-lg shadow-xs">
+                      {userName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                    </div>
+                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white" />
                   </div>
-                  <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white" />
+
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <h2 className="text-base sm:text-lg font-bold text-[#141414] leading-tight">
+                        {userName}
+                      </h2>
+                    </div>
+                    <p className="text-xs text-[#717478] mt-0.5">{userPhone}</p>
+                    {userEmail && <p className="text-[11px] text-[#717478] break-all">{userEmail}</p>}
+                  </div>
                 </div>
 
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <h2 className="text-base sm:text-lg font-bold text-[#141414] leading-tight">
-                      {userName}
-                    </h2>
-                  </div>
-                  <p className="text-xs text-[#717478] mt-0.5">{userPhone}</p>
-                  <p className="text-[11px] text-[#717478] break-all">{userEmail}</p>
-                </div>
+                <button
+                  onClick={() => setActiveModal('profile')}
+                  className="p-2 rounded-full hover:bg-neutral-100 text-[#717478] hover:text-[#141414] transition-colors cursor-pointer"
+                  title="Edit Profile"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
               </div>
-
-              <button
-                onClick={() => setActiveModal('profile')}
-                className="p-2 rounded-full hover:bg-neutral-100 text-[#717478] hover:text-[#141414] transition-colors cursor-pointer"
-                title="Edit Profile"
-              >
-                <Edit2 className="w-4 h-4" />
-              </button>
-            </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-14 h-14 rounded-full bg-neutral-100 text-neutral-400 flex items-center justify-center font-bold text-lg border border-neutral-200">
+                    <User className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-[#141414]">Guest User</h2>
+                    <p className="text-xs text-[#717478] mt-0.5">Please login to view account</p>
+                  </div>
+                </div>
+                {onLoginClick && (
+                  <button
+                    onClick={onLoginClick}
+                    className="px-3.5 py-2 rounded-xl bg-[#141414] text-[#fed488] text-xs font-bold shadow-md hover:bg-[#2a2a2a] transition-all cursor-pointer"
+                  >
+                    Log In
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* 2. Top 4 Core Quick Action Tiles (8 cols on lg: 4 columns in 1 row) */}
@@ -441,16 +476,27 @@ export const AccountView: React.FC<AccountViewProps> = ({
               </button>
             </div>
 
-            {/* 6. Flipkart-Style Log Out Button */}
+            {/* 6. Flipkart-Style Log Out / Log In Button */}
             <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => setIsConfirmLogoutOpen(true)}
-                className="w-full py-2.5 rounded-xl bg-white border border-[#e4e6eb] text-rose-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-rose-50 transition-colors shadow-2xs cursor-pointer active:scale-98"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Log Out of PARZIO</span>
-              </button>
+              {userProfile ? (
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmLogoutOpen(true)}
+                  className="w-full py-2.5 rounded-xl bg-white border border-[#e4e6eb] text-rose-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-rose-50 transition-colors shadow-2xs cursor-pointer active:scale-98"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Log Out of PARZIO</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onLoginClick}
+                  className="w-full py-2.5 rounded-xl bg-[#141414] text-[#fed488] font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#2a2a2a] transition-colors shadow-2xs cursor-pointer active:scale-98"
+                >
+                  <User className="w-4 h-4" />
+                  <span>Log In to Your Account</span>
+                </button>
+              )}
               <p className="text-[10px] text-center text-[#a0a3a8] mt-2">
                 PARZIO App Version 2.4.0 • Crafted with care in Giridih &amp; Mumbai
               </p>
