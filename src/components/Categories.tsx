@@ -20,7 +20,7 @@ const CATEGORIES_ITEMS = [
   {
     name: 'Jewellery Sets',
     subtitle: 'Complete Your Look',
-    image: 'https://images.unsplash.com/photo-1611591475816-43b664d4b121?auto=format&fit=crop&w=600&q=80'
+    image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80'
   },
   {
     name: 'Earrings',
@@ -82,6 +82,10 @@ export const Categories: React.FC<CategoriesProps> = ({
                 <img
                   src={cat.image}
                   alt={cat.name}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80';
+                  }}
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
                   loading="lazy"
                 />

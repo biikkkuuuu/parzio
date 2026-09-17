@@ -147,42 +147,6 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       )}
 
-      {/* Mobile Nav Strip */}
-      <nav className="lg:hidden border-t border-[#eae5dc] bg-[#faf8f5] overflow-x-auto no-scrollbar py-2 px-4 flex gap-4 text-xs font-medium whitespace-nowrap">
-        {NAV_ITEMS.map((item) => {
-          const isActive =
-            (item.id === 'home' && activeTab === 'home' && (activeCategory === 'ALL' || activeCategory === 'HOME' || activeCategory === 'NEW ARRIVALS')) ||
-            (item.id === 'shop' && activeTab === 'home' && activeCategory === 'SHOP') ||
-            (item.id === 'offers' && activeTab === 'offers') ||
-            (activeTab === 'home' && (activeCategory.toLowerCase() === item.label.toLowerCase() || activeCategory.toLowerCase() === item.id));
-          return (
-            <button
-              key={item.id}
-              onClick={() => {
-                if (item.id === 'home') {
-                  if (onNavigateTab) onNavigateTab('home');
-                  onSelectCategory('HOME');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else if (item.id === 'shop') {
-                  onSelectCategory('SHOP');
-                } else if (item.id === 'offers') {
-                  if (onNavigateTab) onNavigateTab('offers');
-                  else onSelectCategory('OFFERS');
-                } else {
-                  onSelectCategory(item.label);
-                }
-              }}
-              className={`px-2.5 py-1 rounded-full transition-colors ${
-                isActive
-                  ? 'bg-[#9e7144] text-white'
-                  : 'text-[#555] hover:text-[#141414]'
-              }`}
-            >
-              {item.label}
-            </button>
-          );
-        })}
-      </nav>
     </header>
   );
 };
