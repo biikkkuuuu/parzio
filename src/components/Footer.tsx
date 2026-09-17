@@ -13,11 +13,11 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
 
   return (
     <>
-      <footer className="bg-[#161311] text-white border-t border-[#26201b] pt-10 pb-6 font-sans">
+      <footer className="bg-[#161311] text-white border-t border-[#26201b] pt-6 sm:pt-10 pb-16 sm:pb-6 font-sans">
         <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-14">
           
-          {/* Main Footer Grid matching screenshot */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-8 border-b border-[#2a241f] text-xs">
+          {/* Main Footer Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 sm:gap-8 pb-6 sm:pb-8 border-b border-[#2a241f] text-xs">
             
             {/* Column 1: PARZIO Crown Logo */}
             <div className="flex flex-col items-start">

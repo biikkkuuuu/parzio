@@ -23,21 +23,21 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   return (
     <nav
       id="mobile-bottom-bar"
-      className={`fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#eae5dc] shadow-[0_-4px_15px_rgba(0,0,0,0.06)] md:hidden select-none pb-safe ${className}`}
+      className={`fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#eae5dc] shadow-[0_-2px_10px_rgba(0,0,0,0.05)] md:hidden select-none ${className}`}
     >
-      <div className="w-full max-w-md mx-auto flex items-center justify-around py-1.5 px-2 h-13">
+      <div className="w-full max-w-md mx-auto flex items-center justify-around px-1 h-12">
         {/* Home */}
         <button
           onClick={() => {
             onTabChange('home');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className={`flex-1 flex flex-col items-center justify-center transition-all active:scale-95 ${
-            activeTab === 'home' ? 'text-[#8c7138] font-bold' : 'text-[#747878]'
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors active:scale-95 cursor-pointer ${
+            activeTab === 'home' ? 'text-[#9e7144] font-bold' : 'text-[#747878]'
           }`}
         >
-          <Home className={`w-4 h-4 ${activeTab === 'home' ? 'text-[#8c7138] scale-110' : 'text-[#747878]'}`} />
-          <span className="text-[9px] mt-0.5 font-medium tracking-tight">Home</span>
+          <Home className={`w-4 h-4 ${activeTab === 'home' ? 'text-[#9e7144]' : 'text-[#747878]'}`} />
+          <span className="text-[10px] mt-0.5 leading-none">Home</span>
         </button>
 
         {/* Sales / Products */}
@@ -46,17 +46,17 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             onTabChange('sale');
             window.scrollTo({ top: 0, behavior: 'instant' });
           }}
-          className={`flex-1 flex flex-col items-center justify-center transition-all active:scale-95 ${
-            activeTab === 'sale' ? 'text-[#8c7138] font-bold' : 'text-[#747878]'
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors active:scale-95 cursor-pointer ${
+            activeTab === 'sale' ? 'text-[#9e7144] font-bold' : 'text-[#747878]'
           }`}
         >
           <div className="relative">
-            <Sparkles className={`w-4 h-4 ${activeTab === 'sale' ? 'text-[#8c7138] scale-110' : 'text-[#747878]'}`} />
-            <span className="absolute -top-1 -right-2 px-1 rounded-full bg-red-600 text-white text-[7px] font-extrabold uppercase">
+            <Sparkles className={`w-4 h-4 ${activeTab === 'sale' ? 'text-[#9e7144]' : 'text-[#747878]'}`} />
+            <span className="absolute -top-1 -right-2 px-1 rounded-full bg-red-600 text-white text-[7px] font-extrabold uppercase leading-tight">
               HOT
             </span>
           </div>
-          <span className="text-[9px] mt-0.5 font-medium tracking-tight">Sales</span>
+          <span className="text-[10px] mt-0.5 leading-none">Sales</span>
         </button>
 
         {/* Cart Bag */}
@@ -64,19 +64,17 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           onClick={() => {
             if (onOpenCart) onOpenCart();
           }}
-          className="flex-1 flex flex-col items-center justify-center relative transition-all active:scale-95 text-[#747878]"
+          className="flex-1 flex flex-col items-center justify-center py-1 relative transition-colors active:scale-95 cursor-pointer text-[#747878]"
         >
           <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-[#141414] text-[#fed488] flex items-center justify-center shadow-md -mt-3.5 border-2 border-white">
-              <ShoppingBag className="w-3.5 h-3.5" />
-            </div>
+            <ShoppingBag className="w-4 h-4 text-[#747878]" />
             {cartCount > 0 && (
-              <span className="absolute -top-4 -right-1 w-3.5 h-3.5 rounded-full bg-[#8c7138] text-white text-[8px] font-bold flex items-center justify-center border border-white">
+              <span className="absolute -top-1.5 -right-2 min-w-3.5 h-3.5 px-1 rounded-full bg-[#9e7144] text-white text-[8px] font-bold flex items-center justify-center">
                 {cartCount}
               </span>
             )}
           </div>
-          <span className="text-[9px] mt-0.5 font-bold tracking-tight text-[#141414]">Bag</span>
+          <span className="text-[10px] mt-0.5 leading-none font-medium text-[#141414]">Bag</span>
         </button>
 
         {/* Orders / Track */}
@@ -85,12 +83,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             onTabChange('track');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className={`flex-1 flex flex-col items-center justify-center transition-all active:scale-95 ${
-            activeTab === 'track' ? 'text-[#8c7138] font-bold' : 'text-[#747878]'
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors active:scale-95 cursor-pointer ${
+            activeTab === 'track' ? 'text-[#9e7144] font-bold' : 'text-[#747878]'
           }`}
         >
-          <Truck className={`w-4 h-4 ${activeTab === 'track' ? 'text-[#8c7138] scale-110' : 'text-[#747878]'}`} />
-          <span className="text-[9px] mt-0.5 font-medium tracking-tight">Orders</span>
+          <Truck className={`w-4 h-4 ${activeTab === 'track' ? 'text-[#9e7144]' : 'text-[#747878]'}`} />
+          <span className="text-[10px] mt-0.5 leading-none">Orders</span>
         </button>
 
         {/* Account */}
@@ -99,12 +97,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             onTabChange('account');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className={`flex-1 flex flex-col items-center justify-center transition-all active:scale-95 ${
-            activeTab === 'account' ? 'text-[#8c7138] font-bold' : 'text-[#747878]'
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors active:scale-95 cursor-pointer ${
+            activeTab === 'account' ? 'text-[#9e7144] font-bold' : 'text-[#747878]'
           }`}
         >
-          <User className={`w-4 h-4 ${activeTab === 'account' ? 'text-[#8c7138] scale-110' : 'text-[#747878]'}`} />
-          <span className="text-[9px] mt-0.5 font-medium tracking-tight">Account</span>
+          <User className={`w-4 h-4 ${activeTab === 'account' ? 'text-[#9e7144]' : 'text-[#747878]'}`} />
+          <span className="text-[10px] mt-0.5 leading-none">Account</span>
         </button>
       </div>
     </nav>

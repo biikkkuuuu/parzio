@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Product, SaleBannerConfig, SalePoster } from '../types';
-import { ArrowUp, Tag, ShieldCheck, Zap, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
+import { ArrowUp, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 
 interface SalesSectionProps {
   products: Product[];
@@ -94,31 +94,6 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
 
   return (
     <div className="relative bg-[#f4eee6] min-h-screen pb-16">
-      {/* Sales Header Banner (Clean, Light & Luxury) */}
-      <div className="bg-white text-[#141414] py-3.5 sm:py-5 px-4 sm:px-8 border-b border-[#eae5dc] relative overflow-hidden">
-        <div className="max-w-4xl mx-auto flex flex-col items-center text-center gap-1.5 relative z-10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#faf7f2] border border-[#e5decb] text-[#9e7144] text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-            <Zap className="w-3 h-3 text-[#9e7144]" />
-            {bConfig.badge}
-          </span>
-          
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#141414]">
-            {bConfig.title} <span className="text-[#9e7144]">{bConfig.highlightText}</span>
-          </h1>
-
-          <div className="flex items-center gap-4 text-[11px] text-[#9e7144] font-semibold pt-0.5">
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              100% Waterproof
-            </span>
-            <span>•</span>
-            <span className="flex items-center gap-1">
-              <Tag className="w-3.5 h-3.5" />
-              Up to 93% Off
-            </span>
-          </div>
-        </div>
-      </div>
 
       {/* Category Chips Bar */}
       <div className="sticky top-[53px] z-30 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-3 py-2.5 overflow-x-auto no-scrollbar shadow-xs">
