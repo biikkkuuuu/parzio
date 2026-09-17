@@ -43,7 +43,7 @@ export const Categories: React.FC<CategoriesProps> = ({
   onSelectCategory
 }) => {
   return (
-    <section id="categories-section" className="py-8 bg-white border-b border-[#eae5dc]">
+    <section id="categories-section" className="scroll-mt-24 sm:scroll-mt-28 py-8 bg-white border-b border-[#eae5dc]">
       <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-14">
         
         {/* Header: "Shop by Category —" + "View All →" matching screenshot */}

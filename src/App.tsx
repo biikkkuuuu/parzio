@@ -857,8 +857,16 @@ export default function App() {
       }
       setTimeout(() => {
         const el = document.getElementById('categories-section');
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }, 80);
+        if (el) {
+          const headerOffset = 90;
+          const elementPosition = el.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({
+            top: Math.max(0, offsetPosition),
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
       return;
     }
     if (upper === 'HOME') {

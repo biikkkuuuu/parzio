@@ -78,20 +78,12 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectCategory('HOME');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   } else if (item.id === 'shop') {
-                    if (onNavigateTab) onNavigateTab('home');
                     onSelectCategory('SHOP');
-                    setTimeout(() => {
-                      document.getElementById('categories-section')?.scrollIntoView({ behavior: 'smooth' });
-                    }, 80);
                   } else if (item.id === 'offers') {
                     if (onNavigateTab) onNavigateTab('offers');
                     else onSelectCategory('OFFERS');
                   } else {
-                    if (onNavigateTab) onNavigateTab('home');
                     onSelectCategory(item.label);
-                    setTimeout(() => {
-                      document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
-                    }, 80);
                   }
                 }}
                 className={`py-1 relative transition-colors cursor-pointer ${
@@ -172,20 +164,12 @@ export const Header: React.FC<HeaderProps> = ({
                   onSelectCategory('HOME');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else if (item.id === 'shop') {
-                  if (onNavigateTab) onNavigateTab('home');
                   onSelectCategory('SHOP');
-                  setTimeout(() => {
-                    document.getElementById('categories-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 80);
                 } else if (item.id === 'offers') {
                   if (onNavigateTab) onNavigateTab('offers');
                   else onSelectCategory('OFFERS');
                 } else {
-                  if (onNavigateTab) onNavigateTab('home');
                   onSelectCategory(item.label);
-                  setTimeout(() => {
-                    document.getElementById('vault-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 80);
                 }
               }}
               className={`px-2.5 py-1 rounded-full transition-colors ${
