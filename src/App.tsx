@@ -1051,9 +1051,9 @@ export default function App() {
           <main className="pb-16 md:pb-0">
             {/* Hero Section */}
             <HeroBanner
+              banners={banners}
               onExploreVault={scrollToVault}
               onScrollToVault={scrollToVault}
-              onAddToCart={handleAddToCart}
             />
 
             {/* Shop by Category */}

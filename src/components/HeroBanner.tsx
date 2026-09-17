@@ -1,15 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight, Gem, Truck, ShieldCheck, Gift } from 'lucide-react';
+import { StoreBanner } from '../types';
 
 interface HeroBannerProps {
+  banners?: StoreBanner[];
   onScrollToVault?: () => void;
   onExploreVault?: () => void;
 }
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({
+  banners = [],
   onScrollToVault,
   onExploreVault
 }) => {
+  const activeBanners = banners.filter((b) => b.active);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  // Auto-slide every 5s if multiple banners are active
+  useEffect(() => {
+    if (activeBanners.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlideIndex((prev) => (prev + 1) % activeBanners.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [activeBanners.length]);
+
+  const activeBanner = activeBanners[currentSlideIndex] || activeBanners[0];
+  const bannerImage = activeBanner?.image || '/images/parzio-hero-banner.jpg';
+
   const handleShopNow = () => {
     if (onScrollToVault) {
       onScrollToVault();
@@ -102,27 +120,41 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             </div>
           </div>
 
-          {/* Right Hero: Indian Bridal Model + Cursive Handwriting Script */}
+          {/* Right Hero: Dynamic Storefront Banner (Managed & Editable from Admin Panel) */}
           <div className="lg:col-span-6 relative flex items-center justify-end">
-            <div className="relative w-full max-w-[540px] aspect-[4/3] sm:aspect-[16/11] rounded-2xl overflow-hidden shadow-lg border border-[#d8c8b4]/60">
+            <div
+              onClick={handleShopNow}
+              className="relative w-full max-w-[580px] aspect-[16/10] sm:aspect-[16/9] lg:aspect-[16/8.8] rounded-2xl overflow-hidden shadow-lg border border-[#d8c8b4]/60 bg-white group cursor-pointer"
+            >
               <img
-                src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1200&q=85"
-                alt="PARZIO Indian Traditional Jewellery"
-                className="w-full h-full object-cover object-top filter brightness-[0.98]"
+                src={bannerImage}
+                alt={activeBanner?.title || 'PARZIO Hero Banner'}
+                className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                 loading="eager"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = '/images/parzio-hero-banner.jpg';
+                }}
               />
 
-              {/* Floating Cursive Script Quote on Right matching screenshot */}
-              <div className="absolute right-4 top-8 sm:top-12 z-20 text-right pointer-events-none drop-shadow-md">
-                <p className="font-script text-3xl sm:text-4xl lg:text-5xl text-white leading-tight font-normal">
-                  More <br />
-                  Than Jewellery <br />
-                  <span className="italic">It's a Feeling</span>
-                </p>
-                <div className="text-white text-2xl sm:text-3xl mt-1 font-light pr-2">
-                  ♡
+              {/* Slider Dots if multiple banners are active in Admin Panel */}
+              {activeBanners.length > 1 && (
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-black/40 backdrop-blur-xs px-2.5 py-1 rounded-full">
+                  {activeBanners.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentSlideIndex(idx);
+                      }}
+                      className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                        idx === currentSlideIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50'
+                      }`}
+                      title={`Banner ${idx + 1}`}
+                    />
+                  ))}
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

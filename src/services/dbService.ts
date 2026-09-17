@@ -311,7 +311,20 @@ export const dbService = {
   getBanners(): StoreBanner[] {
     try {
       const saved = localStorage.getItem(KEYS.BANNERS);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: StoreBanner[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // If first banner still has old unsplash placeholder, migrate to new official PARZIO banner
+          if (parsed[0].id === 'ban-1' && parsed[0].image && parsed[0].image.includes('images.unsplash.com')) {
+            parsed[0].image = '/images/parzio-hero-banner.jpg';
+            parsed[0].title = 'Khoobsurati Aapki';
+            parsed[0].highlightText = 'Andaz PARZIO Ka';
+            parsed[0].subtitle = 'Aapke Shringar, Hamara Pyaar';
+            this.saveBanners(parsed);
+          }
+          return parsed;
+        }
+      }
     } catch {}
     return INITIAL_BANNERS;
   },

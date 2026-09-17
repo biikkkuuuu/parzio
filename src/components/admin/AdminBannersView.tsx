@@ -256,10 +256,6 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
   };
 
   const handleDeleteBanner = (id: string) => {
-    if (banners.length <= 1) {
-      onTriggerToast('You must keep at least 1 hero banner active.');
-      return;
-    }
     const filtered = banners.filter((b) => b.id !== id);
     onUpdateBanners(filtered);
     onTriggerToast('Banner removed from storefront.');
