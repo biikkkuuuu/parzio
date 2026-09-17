@@ -96,7 +96,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
     <div className="relative bg-[#f4eee6] min-h-screen pb-16">
 
       {/* Category Chips Bar */}
-      <div className="sticky top-[53px] z-30 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-3 py-2.5 overflow-x-auto no-scrollbar shadow-xs">
+      <div className="sticky top-[44px] sm:top-[56px] z-30 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-3 py-2.5 overflow-x-auto no-scrollbar shadow-xs">
         <div className="flex items-center gap-2 min-w-max max-w-4xl mx-auto justify-start sm:justify-center">
           {SALE_CATEGORIES.map((cat) => (
             <button

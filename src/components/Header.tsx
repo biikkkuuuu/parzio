@@ -49,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-xs">
       {/* Main Navigation Bar */}
-      <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-14 py-3 flex items-center justify-between gap-4">
+      <div className="w-full max-w-[1800px] mx-auto px-3 sm:px-8 lg:px-14 py-1.5 sm:py-2.5 flex items-center justify-between gap-3 sm:gap-4">
         {/* Left: Brand Logo */}
         <div className="flex items-center">
           <button
@@ -59,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
             }}
             className="text-left focus:outline-none cursor-pointer"
           >
-            <Logo className="h-8 sm:h-10 w-auto" />
+            <Logo className="h-7 sm:h-9 w-auto" />
           </button>
         </div>
 
@@ -101,14 +101,14 @@ export const Header: React.FC<HeaderProps> = ({
           })}
         </nav>
 
-        {/* Right: Actions (Search, User, Cart with '0' badge) */}
-        <div className="flex items-center gap-4">
+        {/* Right: Actions (Search, User, Cart with badge) */}
+        <div className="flex items-center gap-3 sm:gap-4">
           <button
             onClick={() => setIsSearchExpanded(!isSearchExpanded)}
             className="text-[#2a2a2a] hover:text-[#9e7144] transition-colors cursor-pointer"
             title="Search"
           >
-            <Search className="w-5 h-5" />
+            <Search className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
           </button>
 
           <button
@@ -116,7 +116,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="text-[#2a2a2a] hover:text-[#9e7144] transition-colors cursor-pointer"
             title="Account / Operations"
           >
-            <User className="w-5 h-5" />
+            <User className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
           </button>
 
           <button
@@ -124,8 +124,8 @@ export const Header: React.FC<HeaderProps> = ({
             className="text-[#2a2a2a] hover:text-[#9e7144] transition-colors relative cursor-pointer"
             title="Bag"
           >
-            <ShoppingBag className="w-5 h-5" />
-            <span className="absolute -top-1 -right-2 bg-[#9e7144] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+            <ShoppingBag className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            <span className="absolute -top-1 -right-1.5 bg-[#9e7144] text-white text-[9px] sm:text-[10px] font-bold w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full flex items-center justify-center">
               {cartCount}
             </span>
           </button>
