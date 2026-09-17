@@ -212,6 +212,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   // Finalize Order
   const finalizeOrder = (isPhoneVerified: boolean) => {
+    // Basic Rate Limiting: Prevent more than 1 order per minute to stop spam/bots
+    const lastOrderTime = localStorage.getItem('parzio_last_order_time');
+    const now = Date.now();
+    if (lastOrderTime && now - parseInt(lastOrderTime) < 60000) {
+      alert('You are placing orders too quickly. Please wait a minute before trying again.');
+      return;
+    }
+    localStorage.setItem('parzio_last_order_time', now.toString());
+
     setIsSubmitting(true);
     const generatedId = `PARZIO-${Math.floor(10000 + Math.random() * 90000)}`;
     setPlacedOrderId(generatedId);

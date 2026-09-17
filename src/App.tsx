@@ -29,6 +29,7 @@ import { dbService } from './services/dbService';
 const AtelierOpsHub = React.lazy(() =>
   import('./components/AtelierOpsHub').then((m) => ({ default: m.AtelierOpsHub }))
 );
+import { AdminProtected } from './components/admin/AdminProtected';
 import { CartDrawer } from './components/CartDrawer';
 import { ProductModal } from './components/ProductModal';
 import { ProductDetailView } from './components/ProductDetailView';
@@ -903,64 +904,66 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // If Atelier Operations Hub view is active
   if (activeScreen === 'atelier-ops') {
     return (
-      <React.Suspense
-        fallback={
-          <div className="min-h-screen bg-[#f4f2ee] flex items-center justify-center text-[#8c7138] font-bold text-sm">
-            Loading Operations Hub...
-          </div>
-        }
-      >
-        <AtelierOpsHub
-          orders={orders}
-          products={products}
-          onBackToStore={() => {
-            if (activeScreen === 'atelier-ops') {
-              window.history.back();
-            } else {
+      <AdminProtected>
+        <React.Suspense
+          fallback={
+            <div className="min-h-screen bg-[#f4f2ee] flex items-center justify-center text-[#8c7138] font-bold text-sm">
+              Loading Operations Hub...
+            </div>
+          }
+        >
+          <AtelierOpsHub
+            orders={orders}
+            products={products}
+            onBackToStore={() => {
+              if (activeScreen === 'atelier-ops') {
+                window.history.back();
+              } else {
+                setActiveScreen('storefront');
+              }
+            }}
+            onLogout={() => {
               setActiveScreen('storefront');
-            }
-          }}
-          onLogout={() => {
-            setActiveScreen('storefront');
-            showToast('Admin session logged out successfully.');
-          }}
-          onUpdateOrderStatus={handleUpdateOrderStatus}
-          onAddOrder={handleAddOrder}
-          onEditOrder={handleEditOrder}
-          onDeleteOrder={handleDeleteOrder}
-          onAddProduct={handleAddProduct}
-          onEditProduct={handleEditProduct}
-          onDeleteProduct={handleDeleteProduct}
-          categories={categories}
-          onAddCategory={handleAddCategory}
-          onEditCategory={handleEditCategory}
-          onDeleteCategory={handleDeleteCategory}
-          onUpdateStock={handleUpdateStock}
-          onToggleLive={handleToggleLive}
-          emergencyConfig={emergencyConfig}
-          onUpdateEmergencyConfig={setEmergencyConfig}
-          topMarqueeItems={topMarqueeItems}
-          bannerMarqueeItems={bannerMarqueeItems}
-          banners={banners}
-          salePosters={salePosters}
-          skinSafeConfig={skinSafeConfig}
-          saleBannerConfig={saleBannerConfig}
-          onUpdateTopMarquee={setTopMarqueeItems}
-          onUpdateBannerMarquee={setBannerMarqueeItems}
-          onUpdateBanners={setBanners}
-          onUpdateSalePosters={setSalePosters}
-          onUpdateSkinSafeConfig={setSkinSafeConfig}
-          onUpdateSaleBannerConfig={setSaleBannerConfig}
-          coupons={coupons}
-          onUpdateCoupons={(updated) => {
-            setCoupons(updated);
-            dbService.saveCoupons(updated);
-          }}
-        />
-      </React.Suspense>
+              sessionStorage.removeItem('parzio_admin_auth');
+              showToast('Admin session logged out successfully.');
+            }}
+            onUpdateOrderStatus={handleUpdateOrderStatus}
+            onAddOrder={handleAddOrder}
+            onEditOrder={handleEditOrder}
+            onDeleteOrder={handleDeleteOrder}
+            onAddProduct={handleAddProduct}
+            onEditProduct={handleEditProduct}
+            onDeleteProduct={handleDeleteProduct}
+            categories={categories}
+            onAddCategory={handleAddCategory}
+            onEditCategory={handleEditCategory}
+            onDeleteCategory={handleDeleteCategory}
+            onUpdateStock={handleUpdateStock}
+            onToggleLive={handleToggleLive}
+            emergencyConfig={emergencyConfig}
+            onUpdateEmergencyConfig={setEmergencyConfig}
+            topMarqueeItems={topMarqueeItems}
+            bannerMarqueeItems={bannerMarqueeItems}
+            banners={banners}
+            salePosters={salePosters}
+            skinSafeConfig={skinSafeConfig}
+            saleBannerConfig={saleBannerConfig}
+            onUpdateTopMarquee={setTopMarqueeItems}
+            onUpdateBannerMarquee={setBannerMarqueeItems}
+            onUpdateBanners={setBanners}
+            onUpdateSalePosters={setSalePosters}
+            onUpdateSkinSafeConfig={setSkinSafeConfig}
+            onUpdateSaleBannerConfig={setSaleBannerConfig}
+            coupons={coupons}
+            onUpdateCoupons={(updated) => {
+              setCoupons(updated);
+              dbService.saveCoupons(updated);
+            }}
+          />
+        </React.Suspense>
+      </AdminProtected>
     );
   }
 
