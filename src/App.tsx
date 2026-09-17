@@ -51,8 +51,21 @@ export default function App() {
 
   // Auth State
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
+    try {
+      const saved = localStorage.getItem('parzio_user_profile');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (userProfile) {
+      localStorage.setItem('parzio_user_profile', JSON.stringify(userProfile));
+    }
+  }, [userProfile]);
 
   useEffect(() => {
     if (!auth) return;
@@ -60,9 +73,9 @@ export default function App() {
       setCurrentUser(user);
       if (user) {
         const profile = await userService.getUserProfile(user.uid);
-        setUserProfile(profile);
-      } else {
-        setUserProfile(null);
+        if (profile) {
+          setUserProfile(profile);
+        }
       }
     });
     return () => unsubscribe();
