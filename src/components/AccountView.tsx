@@ -180,12 +180,9 @@ export const AccountView: React.FC<AccountViewProps> = ({
                   <h2 className="text-base sm:text-lg font-bold text-[#141414] leading-tight">
                     {userName}
                   </h2>
-                  <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[9px] font-extrabold uppercase">
-                    Plus VIP
-                  </span>
                 </div>
                 <p className="text-xs text-[#717478] mt-0.5">{userPhone}</p>
-                <p className="text-[11px] text-[#717478] truncate max-w-[200px]">{userEmail}</p>
+                <p className="text-[11px] text-[#717478] break-all">{userEmail}</p>
               </div>
             </div>
 
@@ -204,15 +201,15 @@ export const AccountView: React.FC<AccountViewProps> = ({
           {/* Orders */}
           <button
             onClick={onTrackOrder}
-            className="p-3.5 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-3"
+            className="p-3 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
           >
-            <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <Package className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <Package className="w-4.5 h-4.5" />
             </div>
             <div className="min-w-0">
               <h3 className="text-xs font-bold text-[#141414] leading-tight">Orders</h3>
-              <p className="text-[10px] text-[#717478] truncate mt-0.5">
-                {orders.length > 0 ? `${orders.length} orders placed` : 'Check your orders'}
+              <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">
+                {orders.length > 0 ? `${orders.length} Orders` : 'Track Orders'}
               </p>
             </div>
           </button>
@@ -220,42 +217,42 @@ export const AccountView: React.FC<AccountViewProps> = ({
           {/* Wishlist */}
           <button
             onClick={onOpenWishlist}
-            className="p-3.5 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-3"
+            className="p-3 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
           >
-            <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
-              <Heart className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
+              <Heart className="w-4.5 h-4.5" />
             </div>
             <div className="min-w-0">
               <h3 className="text-xs font-bold text-[#141414] leading-tight">Wishlist</h3>
-              <p className="text-[10px] text-[#717478] truncate mt-0.5">Your saved pieces</p>
+              <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">Saved Items</p>
             </div>
           </button>
 
           {/* Coupons */}
           <button
             onClick={() => setActiveModal('coupons')}
-            className="p-3.5 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-3"
+            className="p-3 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
           >
-            <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <Tag className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <Tag className="w-4.5 h-4.5" />
             </div>
             <div className="min-w-0">
               <h3 className="text-xs font-bold text-[#141414] leading-tight">Coupons</h3>
-              <p className="text-[10px] text-[#717478] truncate mt-0.5">3 active vouchers</p>
+              <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">View Offers</p>
             </div>
           </button>
 
           {/* Help Center */}
           <button
             onClick={() => setActiveModal('help')}
-            className="p-3.5 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-3"
+            className="p-3 rounded-xl bg-white border border-[#e4e6eb] shadow-2xs text-left hover:border-[#8c7138] transition-all cursor-pointer flex items-center gap-2.5"
           >
-            <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-              <Headphones className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <Headphones className="w-4.5 h-4.5" />
             </div>
             <div className="min-w-0">
               <h3 className="text-xs font-bold text-[#141414] leading-tight">Help Center</h3>
-              <p className="text-[10px] text-[#717478] truncate mt-0.5">24x7 Customer support</p>
+              <p className="text-[10px] text-[#717478] mt-0.5 whitespace-nowrap">24×7 Support</p>
             </div>
           </button>
         </div>
