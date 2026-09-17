@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Playfair Display", Georgia, serif;
-  --font-serif: "Playfair Display", Georgia, serif;
-  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-script: "Alex Brush", "Caveat", cursive;
-  --font-handwriting: "Caveat", cursive;
+  --font-script: "Inter", "Plus Jakarta Sans", sans-serif;
+  --font-handwriting: "Inter", "Plus Jakarta Sans", sans-serif;
 }
 
 body {
@@ -24,13 +24,9 @@ input, button, select, textarea {
 }
 
 
-/* Luxury Display Serif Typography */
+/* Global Clean Modern Typography (Flipkart Standard) */
 .font-display,
-.font-serif {
-  font-family: var(--font-display);
-}
-
-/* Modern Clean Body Sans Typography */
+.font-serif,
 .font-sans {
   font-family: var(--font-sans);
 }
@@ -40,13 +36,9 @@ input, button, select, textarea {
   font-family: var(--font-mono);
 }
 
-/* Signature Calligraphy Script Typography */
-.font-script {
-  font-family: var(--font-script);
-}
-
+.font-script,
 .font-handwriting {
-  font-family: var(--font-handwriting);
+  font-family: var(--font-sans);
 }
 
 /* Hide scrollbars globally across browsers */

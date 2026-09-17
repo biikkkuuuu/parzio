@@ -121,7 +121,7 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
         {/* Header: "New Arrivals —" + "View All Products →" */}
         <div className="flex items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <h2 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight capitalize">
+            <h2 className="text-2xl sm:text-3xl text-[#141414] font-bold tracking-tight capitalize">
               {sectionHeading}
             </h2>
             <span className="text-xl sm:text-2xl text-[#9e7144] font-light">—</span>

@@ -49,7 +49,7 @@ export const Categories: React.FC<CategoriesProps> = ({
         {/* Header: "Shop by Category —" + "View All →" matching screenshot */}
         <div className="flex items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <h2 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight">
+            <h2 className="text-2xl sm:text-3xl text-[#141414] font-bold tracking-tight">
               Shop by Category
             </h2>
             <span className="text-xl sm:text-2xl text-[#9e7144] font-light">—</span>

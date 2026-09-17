@@ -86,8 +86,8 @@ export const OffersView: React.FC<OffersViewProps> = ({
             <span>Official PARZIO Privileges</span>
           </div>
 
-          <h1 className="font-display text-2xl sm:text-4xl text-[#1a1714] font-normal tracking-tight">
-            Curated Offers &amp; <span className="text-[#9e7144] italic">Luxury Privileges</span>
+          <h1 className="text-2xl sm:text-4xl text-[#141414] font-extrabold tracking-tight">
+            Curated Offers &amp; <span className="text-[#9e7144]">Luxury Privileges</span>
           </h1>
 
           <p className="mt-2 text-xs sm:text-sm text-[#747878] max-w-xl mx-auto font-light leading-relaxed">
@@ -100,7 +100,7 @@ export const OffersView: React.FC<OffersViewProps> = ({
       <section className="py-12 px-4 sm:px-8 lg:px-14 max-w-[1800px] mx-auto w-full flex-1">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight">
+            <h2 className="text-xl sm:text-2xl text-[#141414] font-bold tracking-tight">
               Active Promo Deals ({activeCoupons.length})
             </h2>
             <p className="text-xs text-[#747878] mt-1 font-medium">
@@ -128,7 +128,7 @@ export const OffersView: React.FC<OffersViewProps> = ({
             <div className="w-14 h-14 rounded-2xl bg-[#faf8f5] text-[#9e7144] flex items-center justify-center mx-auto mb-4 border border-[#eae5dc]">
               <Gift className="w-7 h-7" />
             </div>
-            <h3 className="font-display text-lg font-bold text-[#141414]">New Offers Launching Soon</h3>
+            <h3 className="text-lg font-bold text-[#141414]">New Offers Launching Soon</h3>
             <p className="text-xs text-[#747878] mt-2 leading-relaxed">
               Our bespoke atelier promotions are being updated. Check back shortly or explore our current collection!
             </p>
@@ -168,10 +168,10 @@ export const OffersView: React.FC<OffersViewProps> = ({
 
                   {/* Main Value Banner */}
                   <div className="my-2">
-                    <div className="text-2xl sm:text-3xl font-display font-extrabold text-[#141414] tracking-tight group-hover:text-[#9e7144] transition-colors">
+                    <div className="text-2xl sm:text-3xl font-black text-[#141414] tracking-tight group-hover:text-[#9e7144] transition-colors">
                       {discountText}
                     </div>
-                    <h3 className="font-display text-base font-bold text-[#141414] mt-1">
+                    <h3 className="text-sm sm:text-base font-bold text-[#141414] mt-1">
                       {coupon.title || `Special Privilege on Orders Above ₹${coupon.minOrderValue}`}
                     </h3>
                     <p className="text-xs text-[#747878] mt-1.5 leading-relaxed">
@@ -236,7 +236,7 @@ export const OffersView: React.FC<OffersViewProps> = ({
             <span className="text-[11px] font-bold text-[#9e7144] uppercase tracking-widest">
               Simple 3-Step Redemption
             </span>
-            <h3 className="font-display text-2xl sm:text-3xl font-normal text-[#141414] mt-1">
+            <h3 className="text-xl sm:text-2xl font-bold text-[#141414] mt-1">
               How to Claim Your Savings
             </h3>
           </div>

@@ -235,7 +235,7 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
       <section className="bg-white border-b border-[#eae5dc] py-4 sm:py-6 px-4 sm:px-8 lg:px-14">
         <div className="max-w-[1800px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight capitalize">
+            <h1 className="text-2xl sm:text-3xl text-[#141414] font-bold tracking-tight capitalize">
               {categoryName}
             </h1>
             <span className="text-xl text-[#9e7144] font-light">—</span>

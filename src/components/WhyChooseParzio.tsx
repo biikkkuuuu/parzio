@@ -10,7 +10,7 @@ export const WhyChooseParzio: React.FC = () => {
           
           {/* Left Column: Title + 4 Circular Badges */}
           <div className="lg:col-span-6">
-            <h2 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight mb-6">
+            <h2 className="text-2xl sm:text-3xl text-[#141414] font-bold tracking-tight mb-6">
               Why Choose PARZIO ?
             </h2>
 

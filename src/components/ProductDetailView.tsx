@@ -239,7 +239,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#9e7144] block mb-1">
                 PARZIO DEMI-FINE • {product.category.toUpperCase()}
               </span>
-              <h1 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight leading-snug">
+              <h1 className="text-2xl sm:text-3xl text-[#141414] font-bold tracking-tight leading-snug">
                 {product.name}
               </h1>
 

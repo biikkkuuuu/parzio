@@ -24,7 +24,7 @@ export const ExchangeView: React.FC<ExchangeViewProps> = ({ orders }) => {
         <span className="text-[10px] font-bold uppercase tracking-wider text-[#9e7144] block mb-1 font-sans">
           Hassle-Free Guarantee
         </span>
-        <h2 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight">
+        <h2 className="text-2xl sm:text-3xl text-[#141414] font-bold tracking-tight">
           7-Day Easy Exchange
         </h2>
         <p className="text-xs text-[#747878] mt-1 font-sans">

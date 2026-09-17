@@ -104,7 +104,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               <span className="text-[#747878] font-normal">({product.reviewsCount} reviews)</span>
             </div>
 
-            <h3 className="font-display text-xl sm:text-2xl font-bold text-[#141414]">
+            <h3 className="text-xl sm:text-2xl font-bold text-[#141414]">
               {product.name}
             </h3>
 
@@ -114,7 +114,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
             {/* Price Row */}
             <div className="flex items-baseline gap-2 mt-3">
-              <span className="font-display text-2xl font-bold text-[#141414]">
+              <span className="text-2xl font-bold text-[#141414]">
                 ₹{product.price}
               </span>
               <span className="text-sm text-[#747878] line-through">

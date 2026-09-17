@@ -102,8 +102,8 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
             {bConfig.badge}
           </span>
           
-          <h1 className="font-display text-2xl sm:text-3xl font-normal tracking-tight text-[#1a1714]">
-            {bConfig.title} <span className="text-[#9e7144] italic">{bConfig.highlightText}</span>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#141414]">
+            {bConfig.title} <span className="text-[#9e7144]">{bConfig.highlightText}</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-[#747878] max-w-lg font-normal leading-relaxed">

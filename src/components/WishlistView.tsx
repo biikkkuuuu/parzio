@@ -105,7 +105,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
         {/* Wishlist Title Bar matching Home page */}
         <div className="flex items-center justify-between pb-4 border-b border-[#eae5dc]">
           <div className="flex items-center gap-2">
-            <h1 className="font-display text-2xl sm:text-3xl text-[#1a1714] font-normal tracking-tight">
+            <h1 className="text-2xl sm:text-3xl text-[#141414] font-bold tracking-tight">
               Wishlist
             </h1>
             <span className="text-xl sm:text-2xl text-[#9e7144] font-light">—</span>
