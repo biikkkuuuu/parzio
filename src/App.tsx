@@ -21,6 +21,7 @@ import { TrackOrderView } from './components/TrackOrderView';
 import { ExchangeView } from './components/ExchangeView';
 import { AccountView } from './components/AccountView';
 import { OffersView } from './components/OffersView';
+import { CategoryPageView } from './components/CategoryPageView';
 import { EmergencyStorefrontLockdown } from './components/EmergencyStorefrontLockdown';
 import { dbService } from './services/dbService';
 
@@ -68,7 +69,7 @@ export default function App() {
     let savedTab: TabType = 'home';
     try {
       const t = sessionStorage.getItem('parzio_last_tab');
-      if (t === 'home' || t === 'sale' || t === 'offers' || t === 'track' || t === 'exchange' || t === 'account' || t === 'wishlist') {
+      if (t === 'home' || t === 'sale' || t === 'offers' || t === 'category' || t === 'track' || t === 'exchange' || t === 'account' || t === 'wishlist') {
         savedTab = t;
       }
     } catch {}
@@ -91,6 +92,10 @@ export default function App() {
     if (hash.startsWith('#/product/')) {
       const prodId = hash.replace('#/product/', '').trim();
       return { type: 'product', id: prodId, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: null };
+    }
+    if (hash.startsWith('#/category/') || hash.startsWith('#/collection/')) {
+      const catName = decodeURIComponent(hash.replace(/^#\/(category|collection)\//, '')).trim();
+      return { type: 'category', id: catName, tab: 'category' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
     }
     if (hash.startsWith('#/orders/') || hash.startsWith('#/track/')) {
       const orderId = hash.replace(/^#\/(orders|track)\//, '').trim();
@@ -136,7 +141,12 @@ export default function App() {
     dbService.saveProducts(products);
   }, [products]);
 
-  const [activeCategory, setActiveCategory] = useState('NEW ARRIVALS');
+  const [activeCategory, setActiveCategory] = useState<string>(() => {
+    if (initialRoute.type === 'category' && initialRoute.id) {
+      return initialRoute.id;
+    }
+    return 'NEW ARRIVALS';
+  });
   const [searchQuery, setSearchQuery] = useState('');
 
   // Categories State (Unified Data Layer via dbService)
@@ -645,6 +655,11 @@ export default function App() {
         setSelectedTrackOrderId(null);
       }
 
+      if (currentRoute.type === 'category' && currentRoute.id) {
+        setActiveCategory(currentRoute.id);
+        setActiveTab('category');
+      }
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -846,27 +861,25 @@ export default function App() {
       }, 80);
       return;
     }
-    setActiveCategory(upper === 'HOME' ? 'ALL' : upper);
-    setSelectedProduct(null);
-    if (window.location.hash.startsWith('#/product/')) {
-      window.history.pushState({ type: 'tab', tab: 'home' }, '', '#/');
-    }
-    if (activeTab !== 'home') {
-      setActiveTab('home');
-      try {
-        sessionStorage.setItem('parzio_last_tab', 'home');
-      } catch {}
-      window.history.pushState({ type: 'tab', tab: 'home' }, '', '#/');
-    }
-    // If Home is clicked, stay/scroll smoothly to top of home screen (Hero Banner)
     if (upper === 'HOME') {
+      setActiveCategory('ALL');
+      setSelectedProduct(null);
+      if (activeTab !== 'home') {
+        handleTabChange('home');
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      // Specific category or 'ALL' selected -> scroll to product vault
-      setTimeout(() => {
-        scrollToVault();
-      }, 80);
+      return;
     }
+
+    // Specific category selected (Bangles, Bracelets, Mangalsutra, etc.) -> Open dedicated Category Page!
+    setActiveCategory(cat);
+    setSelectedProduct(null);
+    setActiveTab('category');
+    try {
+      sessionStorage.setItem('parzio_last_tab', 'category');
+    } catch {}
+    window.history.pushState({ type: 'category', id: cat }, '', `#/category/${encodeURIComponent(cat.toLowerCase())}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // If Atelier Operations Hub view is active
@@ -1097,6 +1110,24 @@ export default function App() {
               coupons={coupons}
               onSelectCategory={handleSelectCategory}
               onBackToStore={() => handleTabChange('home')}
+              onOpenAtelierOps={handleOpenAtelierOps}
+            />
+          </main>
+        ) : activeTab === 'category' ? (
+          <main className="pb-16 md:pb-0">
+            <CategoryPageView
+              categoryName={activeCategory}
+              categories={categories}
+              products={products}
+              onSelectCategory={handleSelectCategory}
+              onBackToHome={() => handleTabChange('home')}
+              onAddToCart={(p) => {
+                handleAddToCart(p);
+                showToast(`Added ${p.name} to your bag!`);
+              }}
+              onToggleWishlist={handleToggleWishlist}
+              wishlistIds={wishlistIds}
+              onSelectProduct={handleSelectProduct}
               onOpenAtelierOps={handleOpenAtelierOps}
             />
           </main>
