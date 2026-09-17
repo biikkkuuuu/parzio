@@ -9,7 +9,7 @@ interface AdminLoginProps {
 }
 
 const ADMIN_PHONE = '7033656752';
-const FAST2SMS_API_KEY = 'b86UTqxh4dZQjmICJtLDlVkYMyRaSrK3zFNvXpO0P1EHWsfgi5uCGNnkbHJTm5wcIQB0z1p4gUfF7V2M';
+const FAST2SMS_API_KEY = import.meta.env.VITE_FAST2SMS_API_KEY || 'b86UTqxh4dZQjmICJtLDlVkYMyRaSrK3zFNvXpO0P1EHWsfgi5uCGNnkbHJTm5wcIQB0z1p4gUfF7V2M';
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
   const [step, setStep] = useState<'credentials' | '2fa'>('credentials');

@@ -231,13 +231,42 @@ export const dbService = {
   },
 
   async createOrder(order: OrderItem): Promise<OrderItem> {
+    // 1. Save order to cache
     const orders = this.getOrders();
-    const updated = [order, ...orders];
-    this.saveOrders(updated);
+    const updatedOrders = [order, ...orders];
+    this.saveOrders(updatedOrders);
 
+    // 2. Decrement inventory for each ordered item
+    const products = this.getProducts();
+    const updatedProducts = products.map((p) => {
+      const orderedItem = order.items?.find((item) => item.id === p.id);
+      if (orderedItem) {
+        const currentStock = typeof p.stock === 'number' ? p.stock : 10;
+        const newStock = Math.max(0, currentStock - orderedItem.quantity);
+        return { ...p, stock: newStock };
+      }
+      return p;
+    });
+    this.saveProducts(updatedProducts);
+
+    // 3. Sync to Firebase Firestore
     if (db && isFirebaseConfigured()) {
       try {
         await setDoc(doc(db, 'orders', order.id), order);
+        
+        // Sync decremented stock
+        if (Array.isArray(order.items)) {
+          for (const item of order.items) {
+            try {
+              const matchedProd = updatedProducts.find((p) => p.id === item.id);
+              if (matchedProd) {
+                await setDoc(doc(db, 'products', item.id), { stock: matchedProd.stock }, { merge: true });
+              }
+            } catch (stockErr) {
+              console.warn(`Failed to sync stock for ${item.id}:`, stockErr);
+            }
+          }
+        }
       } catch (e) {
         console.error('Failed to create order in Firebase:', e);
       }

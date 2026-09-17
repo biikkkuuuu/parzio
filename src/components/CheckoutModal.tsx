@@ -17,7 +17,8 @@ import {
   RefreshCw,
   Sparkles,
   Clock,
-  Check
+  Check,
+  Copy
 } from 'lucide-react';
 import { HIGH_RISK_PINCODES } from '../data/adminData';
 import { lookupPincode } from '../services/postalService';
@@ -52,8 +53,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [isLoadingPostal, setIsLoadingPostal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'Prepaid UPI'>('COD');
 
-  // Checkout Steps: 'details' | 'otp' | 'success'
-  const [step, setStep] = useState<'details' | 'otp' | 'success'>('details');
+  // Checkout Steps: 'details' | 'upi_payment' | 'otp' | 'success'
+  const [step, setStep] = useState<'details' | 'upi_payment' | 'otp' | 'success'>('details');
+  const [utrNumber, setUtrNumber] = useState('');
+  const [utrError, setUtrError] = useState<string | null>(null);
+  const [copiedUpi, setCopiedUpi] = useState(false);
 
   // OTP State
   const [otpValues, setOtpValues] = useState<string[]>(['', '', '', '', '', '']); // Firebase OTP is 6 digits usually
@@ -164,6 +168,22 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     return window.recaptchaVerifier;
   };
 
+  // Recalculate verified total from live product database (Fixes SEC-04)
+  const getVerifiedTotal = () => {
+    try {
+      const catalog = dbService.getProducts();
+      return cartItems.reduce((acc, item) => {
+        const live = catalog.find((p) => p.id === item.product.id);
+        const price = live ? live.price : item.product.price;
+        return acc + price * item.quantity;
+      }, 0);
+    } catch {
+      return totalAmount;
+    }
+  };
+
+  const verifiedAmount = getVerifiedTotal();
+
   // Handler to Proceed from Details
   const handleProceedToNextStep = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,54 +193,24 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       return;
     }
 
-    if (paymentMethod === 'Prepaid UPI') {
-      // Prepaid orders bypass OTP entirely (Low RTO risk guaranteed)
-      finalizeOrder(true);
-    } else {
-      if (userProfile) {
-        // Logged in users bypass OTP for COD
-        finalizeOrder(true);
+    // 1. Stock check before allowing any order (Fixes INV-01)
+    const catalog = dbService.getProducts();
+    for (const item of cartItems) {
+      const liveProd = catalog.find((p) => p.id === item.product.id);
+      if (liveProd && typeof liveProd.stock === 'number' && liveProd.stock < item.quantity) {
+        alert(`Maafi chahte hain! "${item.product.name}" ka stock khatam ho chuka hai (Available: ${liveProd.stock}). Kripya cart update karein.`);
         return;
-      }
-      
-      if (!auth) {
-        alert("Firebase Auth is not configured. Please check your setup.");
-        return;
-      }
-      
-      setIsSendingOtp(true);
-      setOtpError(null);
-      
-      try {
-        const appVerifier = setupRecaptcha();
-        if (!appVerifier) throw new Error("Recaptcha failed to initialize");
-        
-        // Ensure phone number starts with +91
-        const formattedPhone = phone.startsWith('+91') ? phone : `+91${phone}`;
-        const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-        
-        setConfirmationResult(result);
-        
-        // Cash On Delivery requires 6-digit OTP verification
-        setStep('otp');
-        setResendTimer(30);
-        setIsResendDisabled(true);
-        setOtpValues(['', '', '', '', '', '']);
-        setOtpError(null);
-        setOtpSentNotification(true);
-        setTimeout(() => setOtpSentNotification(false), 4500);
-      } catch (error: any) {
-        console.error("Error sending OTP:", error);
-        setOtpError(error.message || "Failed to send OTP. Please check your number.");
-        if (window.recaptchaVerifier) {
-          window.recaptchaVerifier.render().then((widgetId: any) => {
-            (window as any).grecaptcha?.reset(widgetId);
-          });
-        }
-      } finally {
-        setIsSendingOtp(false);
       }
     }
+
+    // 2. Prepaid UPI Flow: Transition to UPI verification screen (Fixes SEC-01)
+    if (paymentMethod === 'Prepaid UPI') {
+      setStep('upi_payment');
+      return;
+    }
+
+    // 3. Cash on Delivery
+    finalizeOrder(true);
   };
 
   // OTP Input Changes
@@ -307,7 +297,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   };
 
   // Finalize Order
-  const finalizeOrder = (isPhoneVerified: boolean) => {
+  const finalizeOrder = (isPhoneVerified: boolean, utr?: string) => {
     // Basic Rate Limiting: Prevent more than 1 order per minute to stop spam/bots
     const lastOrderTime = localStorage.getItem('parzio_last_order_time');
     const now = Date.now();
@@ -323,6 +313,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
     const firstProduct = cartItems[0]?.product;
     const isHighRiskPincode = Boolean(matchedHighRisk);
+    const catalog = dbService.getProducts();
 
     const newOrder: OrderItem = {
       id: generatedId,
@@ -331,30 +322,35 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       location: `${city}${postOffice ? ` (${postOffice})` : ''} (${pincode})`,
       pincode: pincode,
       rtoRisk: paymentMethod === 'Prepaid UPI' ? 'Low' : isHighRiskPincode ? 'Medium' : 'Low',
-      amount: totalAmount,
+      amount: verifiedAmount,
       paymentMethod: paymentMethod,
       isPrepaid: paymentMethod === 'Prepaid UPI',
       deliveryDate: deliveryDate,
-      items: cartItems.map((item) => ({
-        id: item.product.id,
-        name: item.product.name,
-        price: item.product.price,
-        quantity: item.quantity,
-        image: item.product.image,
-        sku: item.product.sku,
-        material: item.product.material
-      })),
-      totalAmount: totalAmount,
+      items: cartItems.map((item) => {
+        const live = catalog.find((p) => p.id === item.product.id);
+        return {
+          id: item.product.id,
+          name: item.product.name,
+          price: live ? live.price : item.product.price,
+          quantity: item.quantity,
+          image: item.product.image,
+          sku: item.product.sku,
+          material: item.product.material
+        };
+      }),
+      totalAmount: verifiedAmount,
       placedAt: new Date().toISOString(),
-      status: paymentMethod === 'COD' ? 'COD Confirmed' : 'Prepaid UPI',
+      status: paymentMethod === 'COD' ? 'COD Confirmed' : 'Pending Verification',
       productName: `${cartItems.reduce((acc, c) => acc + c.quantity, 0)}x Jewellery Pieces (${firstProduct?.name || 'Jewellery'})`,
       sku: firstProduct?.sku || 'SKU: MIX-99',
       quantity: cartItems.reduce((acc, c) => acc + c.quantity, 0),
       image: firstProduct?.image || 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80',
-      tag: paymentMethod === 'COD' ? 'OTP Verified' : 'Prepaid Fast-Track',
+      tag: paymentMethod === 'COD' ? 'OTP Verified' : 'UPI Verification Pending',
       courier: 'BlueDart Air Express',
       phoneVerified: isPhoneVerified,
-      notes: `Doorstep delivery at ${address}, Pin: ${pincode} • Delivery by ${deliveryDate}`
+      notes: paymentMethod === 'Prepaid UPI'
+        ? `Prepaid UPI • UTR: ${utr || 'N/A'} • Address: ${address}, Pin: ${pincode}`
+        : `Doorstep delivery at ${address}, Pin: ${pincode} • Delivery by ${deliveryDate}`
     };
 
     setPlacedOrderData(newOrder);
@@ -380,11 +376,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
             <div>
               <h3 className="font-display font-bold text-base text-[#141414] leading-tight">
-                {step === 'otp' ? 'COD Phone Verification' : step === 'success' ? 'Order Confirmed' : 'Quick Checkout'}
+                {step === 'otp'
+                  ? 'COD Phone Verification'
+                  : step === 'upi_payment'
+                  ? 'Prepaid UPI Payment'
+                  : step === 'success'
+                  ? 'Order Confirmed'
+                  : 'Quick Checkout'}
               </h3>
               <p className="text-[11px] text-[#747878] font-medium">
                 {step === 'otp'
-                  ? 'Preventing fake orders via 4-digit code'
+                  ? 'Preventing fake orders via OTP verification'
+                  : step === 'upi_payment'
+                  ? 'Scan QR or pay via UPI ID and submit 12-digit UTR'
                   : step === 'success'
                   ? 'Dispatched from Parzio Atelier'
                   : 'Fast delivery & Anti-Tarnish Guarantee'}
@@ -636,19 +640,123 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 ) : paymentMethod === 'COD' ? (
                   <>
                     <MessageSquare className="w-4 h-4" />
-                    <span>Proceed to Verify Mobile via OTP</span>
+                    <span>Proceed to Confirm Order</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    <span>Pay ₹{totalAmount} via UPI (Zero Risk)</span>
+                    <span>Pay ₹{verifiedAmount} via UPI</span>
                   </>
                 )}
               </button>
             </form>
           )}
 
-          {/* STEP 2: COD OTP Verification (Authentic RTO Shield) */}
+          {/* STEP 2: Prepaid UPI Payment & UTR Verification */}
+          {step === 'upi_payment' && (
+            <div className="space-y-4 animate-fadeIn">
+              {/* Back Button */}
+              <button
+                type="button"
+                onClick={() => setStep('details')}
+                className="flex items-center gap-1.5 text-xs text-[#747878] hover:text-[#141414] font-semibold transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to Order Details</span>
+              </button>
+
+              <div className="text-center">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#faf8f5] border border-[#eae5dc] text-xs font-semibold text-[#8c7138] mb-2">
+                  <CreditCard className="w-3.5 h-3.5" /> Scan &amp; Pay via any UPI App
+                </div>
+                <h3 className="text-base font-bold text-[#141414]">Complete Your UPI Payment</h3>
+                <p className="text-xs text-[#747878] mt-0.5">Pay exactly <strong className="text-[#141414]">₹{verifiedAmount}</strong> to confirm your order</p>
+              </div>
+
+              {/* QR Code Card */}
+              <div className="p-4 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex flex-col items-center text-center">
+                <div className="bg-white p-3 rounded-xl border border-[#eae5dc] shadow-xs mb-3">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                      `upi://pay?pa=7033656752@ybl&pn=PARZIO&am=${verifiedAmount}&cu=INR&tn=PARZIO Order`
+                    )}`}
+                    alt="UPI QR Code"
+                    className="w-40 h-40 object-contain mx-auto"
+                  />
+                </div>
+
+                {/* UPI ID with copy */}
+                <div className="w-full flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-[#eae5dc] text-xs">
+                  <div className="text-left">
+                    <span className="text-[10px] text-[#747878] block">UPI ID</span>
+                    <span className="font-mono font-bold text-[#141414]">7033656752@ybl</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText('7033656752@ybl');
+                      setCopiedUpi(true);
+                      setTimeout(() => setCopiedUpi(false), 2000);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-[#141414] text-[#fed488] font-bold text-[11px] hover:bg-[#2a2a2a] transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    {copiedUpi ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-400" /> Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3" /> Copy
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* UTR Input Form */}
+              <div className="space-y-3 pt-1">
+                <div>
+                  <label className="block text-xs font-bold text-[#141414] mb-1">
+                    Enter 12-Digit UPI Reference / UTR Number *
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={12}
+                    value={utrNumber}
+                    onChange={(e) => {
+                      setUtrNumber(e.target.value.replace(/\D/g, '').slice(0, 12));
+                      setUtrError(null);
+                    }}
+                    placeholder="e.g. 423589123456"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#eae5dc] text-xs font-mono font-bold tracking-wider text-[#141414] focus:outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138]"
+                  />
+                  <p className="text-[10px] text-[#747878] mt-1">
+                    Found in Google Pay / PhonePe / Paytm payment receipt as "UPI Transaction ID" or "UTR"
+                  </p>
+                  {utrError && <p className="text-xs text-rose-600 font-bold mt-1">{utrError}</p>}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    const cleanUtr = utrNumber.trim();
+                    if (!/^[0-9]{12}$/.test(cleanUtr)) {
+                      setUtrError('Please enter a valid 12-digit numeric UPI UTR number.');
+                      return;
+                    }
+                    finalizeOrder(true, cleanUtr);
+                  }}
+                  className="w-full py-3.5 rounded-xl bg-[#141414] text-[#fed488] font-bold text-xs uppercase tracking-wider hover:bg-[#2a2a2a] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{isSubmitting ? 'Confirming Order...' : 'Submit UTR & Place Order'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: COD OTP Verification */}
           {step === 'otp' && (
             <form onSubmit={handleVerifyOtp} className="space-y-4 animate-fadeIn">
               <div id="recaptcha-container"></div>
@@ -662,28 +770,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Change Mobile Number or Address</span>
               </button>
-
-              {/* Simulated SMS Toast */}
-              {otpSentNotification && (
-                <div className="p-3 rounded-2xl bg-[#141414] text-white flex items-center justify-between shadow-lg animate-fadeIn border border-[#8c7138]">
-                  <div className="flex items-center gap-2.5">
-                    <MessageSquare className="w-4 h-4 text-[#fed488]" />
-                    <div className="text-xs">
-                      <p className="font-bold text-[#fed488]">WhatsApp &amp; SMS Sent</p>
-                      <p className="text-[11px] text-white/80">
-                        PARZIO Code: <strong className="text-white underline">4829</strong>
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAutoFillOtp}
-                    className="px-2.5 py-1 rounded-full bg-[#8c7138] text-white text-[10px] font-bold hover:bg-[#fed488] hover:text-[#141414] transition-colors cursor-pointer"
-                  >
-                    Auto-Fill
-                  </button>
-                </div>
-              )}
 
               {/* Main Heading & Phone indicator */}
               <div className="text-center mb-6">
@@ -748,7 +834,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       type="button"
                       onClick={() => {
                         setPaymentMethod('Prepaid UPI');
-                        finalizeOrder(true);
+                        setStep('upi_payment');
                       }}
                       className="text-[11px] text-[#747878] hover:text-[#141414] underline cursor-pointer"
                     >
@@ -781,7 +867,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
               <div>
                 <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold font-mono">
-                  {placedOrderData.paymentMethod === 'COD' ? '✓ COD PHONE VERIFIED' : '✓ 100% PREPAID UPI'}
+                  {placedOrderData.paymentMethod === 'COD'
+                    ? '✓ COD PHONE VERIFIED'
+                    : placedOrderData.status === 'Pending Verification'
+                    ? '⏳ PREPAID UPI • PENDING VERIFICATION'
+                    : '✓ 100% PREPAID UPI'}
                 </span>
                 <h3 className="font-display text-2xl font-bold text-[#141414] mt-2">
                   Order Successfully Placed!

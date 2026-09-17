@@ -73,7 +73,7 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
       const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
       
       // Fast2SMS API Call (Uses Vercel / Vite proxy to bypass browser CORS)
-      const apiKey = 'b86UTqxh4dZQjmICJtLDlVkYMyRaSrK3zFNvXpO0P1EHWsfgi5uCGNnkbHJTm5wcIQB0z1p4gUfF7V2M';
+      const apiKey = import.meta.env.VITE_FAST2SMS_API_KEY || 'b86UTqxh4dZQjmICJtLDlVkYMyRaSrK3zFNvXpO0P1EHWsfgi5uCGNnkbHJTm5wcIQB0z1p4gUfF7V2M';
       const baseApi = '/api/fast2sms/dev/bulkV2';
       
       let smsSuccess = false;

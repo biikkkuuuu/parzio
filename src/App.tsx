@@ -984,6 +984,9 @@ export default function App() {
             onLogout={() => {
               setActiveScreen('storefront');
               sessionStorage.removeItem('parzio_admin_auth');
+              if (auth) {
+                auth.signOut().catch(() => {});
+              }
               showToast('Admin session logged out successfully.');
             }}
             onUpdateOrderStatus={handleUpdateOrderStatus}
