@@ -1,18 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import {
   ArrowLeft,
-  ChevronRight,
   Heart,
   ShoppingBag,
-  SlidersHorizontal,
-  ArrowUpDown,
-  Search,
-  X,
   Sparkles,
   ShieldCheck,
   Droplets,
-  RotateCcw,
-  Check
+  RotateCcw
 } from 'lucide-react';
 import { Product, CategoryItem } from '../types';
 import { Footer } from './Footer';
@@ -207,166 +201,30 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-[#fbf9f6] text-[#141414] flex flex-col">
-      {/* 1. Breadcrumb & Back Strip */}
-      <div className="bg-white border-b border-[#eae5dc] sticky top-[57px] z-20 py-2.5 px-4 sm:px-8 lg:px-14">
-        <div className="max-w-[1800px] mx-auto flex items-center justify-between">
-          <button
-            onClick={onBackToHome}
-            className="flex items-center gap-2 text-xs font-semibold text-[#141414] hover:text-[#9e7144] transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Home</span>
-          </button>
-
-          <div className="flex items-center gap-2 text-xs text-[#747878] font-medium">
-            <button onClick={onBackToHome} className="hover:text-[#9e7144]">
-              Home
-            </button>
-            <ChevronRight className="w-3 h-3 text-[#c4c4c4]" />
-            <span className="text-[#747878]">Collections</span>
-            <ChevronRight className="w-3 h-3 text-[#c4c4c4]" />
-            <span className="text-[#9e7144] font-semibold capitalize">{categoryName}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Category Title & Summary Bar (Clean, Light & Elegant) */}
-      <section className="bg-white border-b border-[#eae5dc] py-4 sm:py-6 px-4 sm:px-8 lg:px-14">
-        <div className="max-w-[1800px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-          <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-white text-[#141414] flex flex-col">
+      {/* Clean Category Header matching Home page exactly */}
+      <section className="py-6 sm:py-8 bg-white border-b border-[#eae5dc]">
+        <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-14 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl text-[#141414] font-bold tracking-tight capitalize">
               {categoryName}
             </h1>
-            <span className="text-xl text-[#9e7144] font-light">—</span>
-            <span className="text-xs sm:text-sm text-[#747878] font-medium">
-              {filteredAndSortedProducts.length} Designs
+            <span className="text-xl sm:text-2xl text-[#9e7144] font-light">—</span>
+            <span className="text-xs sm:text-sm text-[#777] font-medium ml-1">
+              ({filteredAndSortedProducts.length} items found)
             </span>
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] sm:text-xs text-[#747878]">
-            <span className="inline-flex items-center gap-1 font-semibold text-[#9e7144]">
-              <Sparkles className="w-3.5 h-3.5" />
-              100% Waterproof &amp; Anti-Tarnish
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Horizontal Category Switcher Bar (Quick Navigation) */}
-      <div className="bg-white border-b border-[#eae5dc] sticky top-[98px] z-15 shadow-2xs">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-14 py-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#747878] whitespace-nowrap mr-1 flex items-center gap-1">
-            <span>Categories:</span>
-          </span>
-
-          <button
-            onClick={() => onSelectCategory('ALL')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-              categoryName.toUpperCase() === 'ALL'
-                ? 'bg-[#9e7144] text-white shadow-xs font-bold'
-                : 'bg-[#faf8f5] text-[#555] hover:text-[#141414] hover:bg-[#f0ebe3] border border-[#eae5dc]'
-            }`}
-          >
-            All Products
-          </button>
-
-          {categories.map((cat) => {
-            const isCurrent = cat.name.toLowerCase() === categoryName.toLowerCase();
-            return (
-              <button
-                key={cat.id || cat.name}
-                onClick={() => onSelectCategory(cat.name)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  isCurrent
-                    ? 'bg-[#9e7144] text-white shadow-xs font-bold'
-                    : 'bg-[#faf8f5] text-[#555] hover:text-[#141414] hover:bg-[#f0ebe3] border border-[#eae5dc]'
-                }`}
-              >
-                {cat.name}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 4. Filter & Sort Control Bar */}
-      <div className="max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-14 py-4 w-full">
-        <div className="bg-white rounded-2xl border border-[#eae5dc] p-3 sm:p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Left: Quick Search within Category */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-[#747878] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              placeholder={`Search within ${categoryName}...`}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-full pl-9 pr-8 py-1.5 text-xs text-[#141414] focus:outline-none focus:border-[#9e7144] focus:bg-white transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black p-0.5"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Center / Right: Filter Chips & Sort Selector */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Price Filter Dropdown */}
+          <div className="flex items-center gap-3">
+            {/* Clean Sort Selector */}
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="text-[#747878] font-medium hidden sm:inline">Price:</span>
-              <select
-                value={priceFilter}
-                onChange={(e) => setPriceFilter(e.target.value as PriceFilter)}
-                className="bg-[#faf8f5] border border-[#eae5dc] rounded-full px-3 py-1.5 text-xs font-semibold text-[#141414] focus:outline-none focus:border-[#9e7144] cursor-pointer"
-              >
-                <option value="all">All Prices</option>
-                <option value="under-299">Under ₹299</option>
-                <option value="299-499">₹299 - ₹499</option>
-                <option value="500-999">₹500 - ₹999</option>
-                <option value="above-999">₹999+</option>
-              </select>
-            </div>
-
-            {/* Quick Feature Toggles */}
-            <button
-              onClick={() => setOnlyWaterproof(!onlyWaterproof)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
-                onlyWaterproof
-                  ? 'bg-[#1b1714] text-white border-[#1b1714]'
-                  : 'bg-[#faf8f5] text-[#555] border-[#eae5dc] hover:border-[#9e7144]'
-              }`}
-            >
-              <Droplets className="w-3.5 h-3.5 text-[#fed488]" />
-              <span>Waterproof</span>
-              {onlyWaterproof && <Check className="w-3 h-3 text-[#fed488]" />}
-            </button>
-
-            <button
-              onClick={() => setOnlyAntiTarnish(!onlyAntiTarnish)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
-                onlyAntiTarnish
-                  ? 'bg-[#1b1714] text-white border-[#1b1714]'
-                  : 'bg-[#faf8f5] text-[#555] border-[#eae5dc] hover:border-[#9e7144]'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-[#fed488]" />
-              <span>Anti-Tarnish</span>
-              {onlyAntiTarnish && <Check className="w-3 h-3 text-[#fed488]" />}
-            </button>
-
-            {/* Sort Selector */}
-            <div className="flex items-center gap-1.5 text-xs ml-auto md:ml-0">
-              <ArrowUpDown className="w-3.5 h-3.5 text-[#9e7144]" />
+              <span className="text-[#747878] font-medium hidden sm:inline">Sort:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 className="bg-[#faf8f5] border border-[#eae5dc] rounded-full px-3 py-1.5 text-xs font-semibold text-[#141414] focus:outline-none focus:border-[#9e7144] cursor-pointer"
               >
-                <option value="featured">Sort: Featured</option>
+                <option value="featured">Featured</option>
                 <option value="price-asc">Price: Low to High</option>
                 <option value="price-desc">Price: High to Low</option>
                 <option value="rating">Customer Rating</option>
@@ -375,60 +233,20 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
               </select>
             </div>
 
-            {/* Reset Button if active */}
-            {isAnyFilterActive && (
-              <button
-                onClick={handleResetFilters}
-                className="text-xs font-bold text-rose-600 hover:text-rose-800 underline ml-1 cursor-pointer"
-              >
-                Reset
-              </button>
-            )}
+            {/* Back to Home button */}
+            <button
+              onClick={onBackToHome}
+              className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#9e7144] hover:text-[#805c30] transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Home</span>
+            </button>
           </div>
         </div>
+      </section>
 
-        {/* Active Filter Indicators */}
-        {isAnyFilterActive && (
-          <div className="flex flex-wrap items-center gap-2 mt-3 pt-1 text-xs">
-            <span className="text-[#747878] text-[11px] font-medium">Applied Filters:</span>
-            {priceFilter !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#f0ebe3] text-[#141414] text-[11px] font-semibold">
-                Price: {priceFilter.replace('-', ' ')}
-                <button onClick={() => setPriceFilter('all')} className="hover:text-red-500">
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-            {onlyWaterproof && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#f0ebe3] text-[#141414] text-[11px] font-semibold">
-                Waterproof
-                <button onClick={() => setOnlyWaterproof(false)} className="hover:text-red-500">
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-            {onlyAntiTarnish && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#f0ebe3] text-[#141414] text-[11px] font-semibold">
-                Anti-Tarnish
-                <button onClick={() => setOnlyAntiTarnish(false)} className="hover:text-red-500">
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-            {searchQuery && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#f0ebe3] text-[#141414] text-[11px] font-semibold">
-                "{searchQuery}"
-                <button onClick={() => setSearchQuery('')} className="hover:text-red-500">
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* 5. Product Grid */}
-      <section className="max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-14 pb-16 w-full flex-1">
+      {/* Product Grid directly underneath — exactly identical to Home page! */}
+      <section className="max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-14 py-6 sm:py-8 w-full flex-1 bg-white">
         {filteredAndSortedProducts.length === 0 ? (
           <div className="bg-white rounded-3xl p-12 text-center border border-[#eae5dc] shadow-sm max-w-md mx-auto my-12">
             <div className="w-14 h-14 rounded-2xl bg-[#faf8f5] text-[#9e7144] flex items-center justify-center mx-auto mb-4 border border-[#eae5dc]">

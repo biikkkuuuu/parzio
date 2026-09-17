@@ -6,12 +6,8 @@ import {
   Check,
   ArrowRight,
   Gift,
-  Percent,
-  ShieldCheck,
   Clock,
   ShoppingBag,
-  ArrowLeft,
-  ChevronRight,
   Flame
 } from 'lucide-react';
 import { Coupon } from '../types';
@@ -57,27 +53,6 @@ export const OffersView: React.FC<OffersViewProps> = ({
 
   return (
     <div className="min-h-screen bg-[#fbf9f6] text-[#141414] flex flex-col">
-      {/* Top Breadcrumb & Back Bar */}
-      <div className="bg-white border-b border-[#eae5dc] sticky top-[57px] z-20 py-2.5 px-4 sm:px-8 lg:px-14">
-        <div className="max-w-[1800px] mx-auto flex items-center justify-between">
-          <button
-            onClick={onBackToStore}
-            className="flex items-center gap-2 text-xs font-semibold text-[#141414] hover:text-[#9e7144] transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Home</span>
-          </button>
-
-          <div className="hidden sm:flex items-center gap-2 text-xs text-[#747878] font-medium">
-            <button onClick={onBackToStore} className="hover:text-[#9e7144]">
-              Home
-            </button>
-            <ChevronRight className="w-3 h-3 text-[#c4c4c4]" />
-            <span className="text-[#9e7144] font-semibold">Offers &amp; Privileges</span>
-          </div>
-        </div>
-      </div>
-
       {/* Clean, Light & Luxury Header */}
       <section className="bg-white border-b border-[#eae5dc] py-6 sm:py-8 px-4 sm:px-8 lg:px-14">
         <div className="max-w-[1800px] mx-auto text-center">
