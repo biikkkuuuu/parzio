@@ -38,15 +38,16 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
 
   const setupRecaptcha = () => {
     if (!auth) return null;
+    if ((window as any).recaptchaVerifier) {
+      return (window as any).recaptchaVerifier;
+    }
+
+    const container = document.getElementById('login-recaptcha');
+    if (container) {
+      container.innerHTML = '';
+    }
+
     try {
-      if ((window as any).recaptchaVerifier) {
-        try {
-          (window as any).recaptchaVerifier.clear();
-        } catch (e) {
-          // ignore clear error
-        }
-        (window as any).recaptchaVerifier = null;
-      }
       (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha', {
         size: 'invisible',
         callback: () => {
