@@ -23,6 +23,8 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
   
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isFallbackMode, setIsFallbackMode] = useState(false);
+  const [infoNotice, setInfoNotice] = useState<string | null>(null);
 
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -33,8 +35,6 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
     }
     return () => clearInterval(interval);
   }, [step, resendTimer]);
-
-  if (!isOpen) return null;
 
   const setupRecaptcha = () => {
     if (!auth) return null;
@@ -60,9 +60,6 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
       return null;
     }
   };
-
-  const [isFallbackMode, setIsFallbackMode] = useState(false);
-  const [infoNotice, setInfoNotice] = useState<string | null>(null);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,6 +170,8 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
     setIsLoading(false);
     onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
