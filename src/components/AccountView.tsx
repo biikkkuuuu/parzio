@@ -1,20 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   Phone,
   MapPin,
   Package,
   Heart,
-  Sparkles,
-  LayoutDashboard,
-  ChevronRight,
-  Award,
-  Coins,
-  CreditCard,
   Tag,
   Headphones,
-  Gift,
-  Share2,
   LogOut,
   Bell,
   FileText,
@@ -22,7 +14,11 @@ import {
   Check,
   X,
   Edit2,
-  Globe
+  Globe,
+  Plus,
+  Trash2,
+  ChevronRight,
+  LayoutDashboard
 } from 'lucide-react';
 import { OrderItem } from '../types';
 
@@ -33,6 +29,43 @@ interface AccountViewProps {
   onTrackOrder: () => void;
 }
 
+interface AddressItem {
+  id: string;
+  name: string;
+  type: 'HOME' | 'WORK' | 'OTHER';
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  isDefault: boolean;
+}
+
+const DEFAULT_ADDRESSES: AddressItem[] = [
+  {
+    id: 'addr-1',
+    name: 'Pooja Sharma',
+    type: 'HOME',
+    phone: '+91 98765 43210',
+    address: 'Flat 402, Lotus Towers, Andheri West',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    pincode: '400053',
+    isDefault: true
+  },
+  {
+    id: 'addr-2',
+    name: 'Pooja Sharma',
+    type: 'WORK',
+    phone: '+91 98765 43210',
+    address: 'Mindspace IT Park, Building 4, Malad West',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    pincode: '400064',
+    isDefault: false
+  }
+];
+
 export const AccountView: React.FC<AccountViewProps> = ({
   orders,
   onOpenWishlist,
@@ -40,44 +73,86 @@ export const AccountView: React.FC<AccountViewProps> = ({
   onTrackOrder
 }) => {
   const [activeModal, setActiveModal] = useState<
-    'profile' | 'coupons' | 'coins' | 'address' | 'help' | 'refer' | 'privacy' | null
+    'profile' | 'coupons' | 'address' | 'help' | 'privacy' | null
   >(null);
 
   const [userName, setUserName] = useState('Pooja Sharma');
   const [userPhone, setUserPhone] = useState('+91 98765 43210');
   const [userEmail, setUserEmail] = useState('pooja.sharma@parzio.in');
-  const [copiedReferral, setCopiedReferral] = useState(false);
   const [showLogoutToast, setShowLogoutToast] = useState(false);
 
-  const [addresses, setAddresses] = useState([
-    {
-      id: 'addr-1',
-      name: 'Pooja Sharma',
-      type: 'HOME',
-      phone: '+91 98765 43210',
-      address: 'Flat 402, Lotus Towers, Andheri West',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400053',
-      isDefault: true
-    },
-    {
-      id: 'addr-2',
-      name: 'Pooja Sharma',
-      type: 'WORK',
-      phone: '+91 98765 43210',
-      address: 'Mindspace IT Park, Building 4, Malad West',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400064',
-      isDefault: false
-    }
-  ]);
+  // Addresses State with LocalStorage Persistence
+  const [addresses, setAddresses] = useState<AddressItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('parzio_saved_addresses');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return DEFAULT_ADDRESSES;
+  });
 
-  const handleCopyReferral = () => {
-    navigator.clipboard?.writeText('https://parzio.vercel.app/?ref=POOJA100');
-    setCopiedReferral(true);
-    setTimeout(() => setCopiedReferral(false), 2000);
+  useEffect(() => {
+    try {
+      localStorage.setItem('parzio_saved_addresses', JSON.stringify(addresses));
+    } catch {}
+  }, [addresses]);
+
+  // Add Address Form State
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [newAddrName, setNewAddrName] = useState('');
+  const [newAddrPhone, setNewAddrPhone] = useState('');
+  const [newAddrPincode, setNewAddrPincode] = useState('');
+  const [newAddrCity, setNewAddrCity] = useState('');
+  const [newAddrState, setNewAddrState] = useState('');
+  const [newAddrStreet, setNewAddrStreet] = useState('');
+  const [newAddrType, setNewAddrType] = useState<'HOME' | 'WORK' | 'OTHER'>('HOME');
+  const [newAddrIsDefault, setNewAddrIsDefault] = useState(false);
+
+  const handleSaveNewAddress = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAddrName.trim() || !newAddrStreet.trim() || !newAddrPhone.trim()) return;
+
+    const newAddress: AddressItem = {
+      id: `addr-${Date.now()}`,
+      name: newAddrName.trim(),
+      phone: newAddrPhone.trim(),
+      pincode: newAddrPincode.trim() || '400001',
+      city: newAddrCity.trim() || 'Mumbai',
+      state: newAddrState.trim() || 'Maharashtra',
+      address: newAddrStreet.trim(),
+      type: newAddrType,
+      isDefault: newAddrIsDefault || addresses.length === 0
+    };
+
+    setAddresses((prev) => {
+      const updated = newAddress.isDefault
+        ? prev.map((a) => ({ ...a, isDefault: false }))
+        : [...prev];
+      return [newAddress, ...updated];
+    });
+
+    // Reset Form
+    setNewAddrName('');
+    setNewAddrPhone('');
+    setNewAddrPincode('');
+    setNewAddrCity('');
+    setNewAddrState('');
+    setNewAddrStreet('');
+    setNewAddrType('HOME');
+    setNewAddrIsDefault(false);
+    setIsAddingAddress(false);
+  };
+
+  const handleSetDefaultAddress = (id: string) => {
+    setAddresses((prev) =>
+      prev.map((a) => ({
+        ...a,
+        isDefault: a.id === id
+      }))
+    );
+  };
+
+  const handleDeleteAddress = (id: string) => {
+    setAddresses((prev) => prev.filter((a) => a.id !== id));
   };
 
   const handleLogout = () => {
@@ -122,28 +197,9 @@ export const AccountView: React.FC<AccountViewProps> = ({
               <Edit2 className="w-4 h-4" />
             </button>
           </div>
-
-          {/* Flipkart Plus / SuperCoins Strip */}
-          <div
-            onClick={() => setActiveModal('coins')}
-            className="mt-3.5 pt-3 border-t border-[#f0f1f3] flex items-center justify-between gap-2 cursor-pointer group"
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-[#fed488] text-[#8c7138] flex items-center justify-center font-black text-xs">
-                🪙
-              </div>
-              <div className="text-left">
-                <span className="text-xs font-bold text-[#141414] group-hover:text-[#8c7138] transition-colors">
-                  1,240 PARZIO SuperCoins
-                </span>
-                <span className="text-[10px] text-[#717478] block">Use coins to save ₹124 on ₹99 Mega Sale</span>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138] transition-colors" />
-          </div>
         </div>
 
-        {/* 2. Flipkart Top 4 Quick Tiles (2x2 Grid) */}
+        {/* 2. Top 4 Core Quick Action Tiles (2x2 Grid) */}
         <div className="grid grid-cols-2 gap-2.5">
           {/* Orders */}
           <button
@@ -204,45 +260,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
           </button>
         </div>
 
-        {/* 3. Credit Options & Rewards (Flipkart SuperCoins / Pay Later) */}
-        <div className="bg-white rounded-2xl p-4 border border-[#e4e6eb] shadow-2xs space-y-2.5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[#717478] px-1">
-            Credit &amp; Rewards
-          </h3>
-
-          <div className="divide-y divide-[#f0f1f3]">
-            {/* Pay Later / COD Privilege */}
-            <div className="py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <CreditCard className="w-4 h-4 text-[#8c7138]" />
-                <div>
-                  <h4 className="text-xs font-semibold text-[#141414]">Cash On Delivery &amp; UPI</h4>
-                  <p className="text-[10px] text-[#717478]">Pre-approved instant delivery across India</p>
-                </div>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Active</span>
-            </div>
-
-            {/* Gift Card */}
-            <div
-              onClick={() => setActiveModal('coins')}
-              className="py-2.5 flex items-center justify-between cursor-pointer group"
-            >
-              <div className="flex items-center gap-3">
-                <Gift className="w-4 h-4 text-[#8c7138]" />
-                <div>
-                  <h4 className="text-xs font-semibold text-[#141414] group-hover:text-[#8c7138] transition-colors">
-                    PARZIO Gift Cards
-                  </h4>
-                  <p className="text-[10px] text-[#717478]">Add or claim promotional gift vouchers</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138]" />
-            </div>
-          </div>
-        </div>
-
-        {/* 4. Account Settings (Flipkart List Menu) */}
+        {/* 3. Account Settings (Flipkart List Menu) */}
         <div className="bg-white rounded-2xl p-4 border border-[#e4e6eb] shadow-2xs space-y-2.5">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#717478] px-1">
             Account Settings
@@ -309,36 +327,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
           </div>
         </div>
 
-        {/* 5. Earn & Refer (Flipkart Refer & Earn Banner) */}
-        <div className="bg-gradient-to-r from-[#8c7138] to-[#b38f4d] rounded-2xl p-4 text-white shadow-xs">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <span className="px-2 py-0.5 rounded bg-white/20 text-[9px] font-extrabold uppercase tracking-wider">
-                Special Privilege
-              </span>
-              <h3 className="text-sm font-bold mt-1.5">Refer Friends &amp; Earn ₹100 Each!</h3>
-              <p className="text-[11px] text-neutral-100 mt-0.5 max-w-xs">
-                Share Parzio with your friends. They get 10% off &amp; you get ₹100 voucher!
-              </p>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-              <Gift className="w-5 h-5 text-white" />
-            </div>
-          </div>
-
-          <div className="mt-3 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleCopyReferral}
-              className="px-3.5 py-1.5 rounded-full bg-white text-[#141414] text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>{copiedReferral ? 'Link Copied!' : 'Share Referral'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* 6. Feedback & Legal Information */}
+        {/* 4. Feedback & Legal Information */}
         <div className="bg-white rounded-2xl p-4 border border-[#e4e6eb] shadow-2xs space-y-2.5">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#717478] px-1">
             Feedback &amp; Policies
@@ -373,7 +362,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
           </div>
         </div>
 
-        {/* 7. Atelier Ops / Enterprise Portal */}
+        {/* 5. Atelier Ops / Enterprise Portal */}
         <div className="pt-1">
           <button
             onClick={onOpenAtelierOps}
@@ -387,7 +376,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
           </button>
         </div>
 
-        {/* 8. Flipkart-Style Log Out Button */}
+        {/* 6. Flipkart-Style Log Out Button */}
         <div className="pt-1">
           <button
             onClick={handleLogout}
@@ -510,82 +499,224 @@ export const AccountView: React.FC<AccountViewProps> = ({
         </div>
       )}
 
-      {/* 3. SuperCoins Modal */}
-      {activeModal === 'coins' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-          <div className="w-full max-w-sm bg-white rounded-2xl p-5 border border-[#eae5dc] shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#f0f1f3]">
-              <h3 className="text-sm font-bold text-[#141414]">PARZIO SuperCoins Balance</h3>
-              <button
-                onClick={() => setActiveModal(null)}
-                className="p-1 rounded-full hover:bg-neutral-100 text-neutral-500"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="text-center py-3 bg-[#faf7f2] rounded-xl border border-[#eae5dc]">
-              <span className="text-3xl font-black text-[#8c7138]">🪙 1,240</span>
-              <p className="text-xs font-bold text-[#141414] mt-1">Total Available Balance</p>
-              <p className="text-[10px] text-[#717478]">Worth ₹124 discount on checkout</p>
-            </div>
-
-            <div className="space-y-1.5 text-xs text-[#444748]">
-              <p className="font-bold text-[#141414]">How to earn more coins:</p>
-              <p>• Earn 20 Coins on every ₹100 spent</p>
-              <p>• Earn 100 Coins for reviewing your purchases</p>
-              <p>• Earn 200 Coins for every friend you refer</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Saved Addresses Modal */}
+      {/* 3. Saved Addresses Modal with "Add Address" Option */}
       {activeModal === 'address' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-          <div className="w-full max-w-md bg-white rounded-2xl p-5 border border-[#eae5dc] shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-2 border-b border-[#f0f1f3]">
-              <h3 className="text-sm font-bold text-[#141414]">Saved Delivery Addresses</h3>
+          <div className="w-full max-w-md bg-white rounded-2xl p-5 border border-[#eae5dc] shadow-2xl space-y-4 max-h-[88vh] flex flex-col">
+            <div className="flex items-center justify-between pb-2 border-b border-[#f0f1f3] shrink-0">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[#8c7138]" />
+                <h3 className="text-sm font-bold text-[#141414]">Saved Delivery Addresses</h3>
+              </div>
               <button
-                onClick={() => setActiveModal(null)}
+                onClick={() => {
+                  setActiveModal(null);
+                  setIsAddingAddress(false);
+                }}
                 className="p-1 rounded-full hover:bg-neutral-100 text-neutral-500"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3">
-              {addresses.map((addr) => (
-                <div
-                  key={addr.id}
-                  className={`p-3.5 rounded-xl border text-xs space-y-1.5 ${
-                    addr.isDefault ? 'border-[#8c7138] bg-[#faf7f2]' : 'border-[#e4e6eb] bg-white'
-                  }`}
+            {/* Address Content */}
+            <div className="flex-1 overflow-y-auto space-y-3 pr-0.5">
+              {!isAddingAddress && (
+                <button
+                  type="button"
+                  onClick={() => setIsAddingAddress(true)}
+                  className="w-full py-2.5 px-3 rounded-xl border border-dashed border-[#8c7138] text-[#8c7138] hover:bg-[#faf7f2] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-[#141414] flex items-center gap-1.5">
-                      {addr.name}
-                      <span className="px-1.5 py-0.2 rounded bg-neutral-200 text-[9px] font-bold uppercase text-neutral-700">
-                        {addr.type}
-                      </span>
-                    </span>
-                    {addr.isDefault && (
-                      <span className="text-[10px] font-bold text-[#8c7138] uppercase">Default</span>
-                    )}
+                  <Plus className="w-4 h-4" />
+                  <span>+ Add New Address</span>
+                </button>
+              )}
+
+              {/* Add New Address Form */}
+              {isAddingAddress && (
+                <form
+                  onSubmit={handleSaveNewAddress}
+                  className="p-3.5 rounded-xl border border-[#8c7138] bg-[#faf8f5] space-y-2.5 animate-fadeIn"
+                >
+                  <div className="flex items-center justify-between border-b border-[#eae5dc] pb-1.5">
+                    <span className="text-xs font-bold text-[#141414]">Add New Address</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingAddress(false)}
+                      className="text-[11px] text-[#717478] hover:text-[#141414]"
+                    >
+                      Cancel
+                    </button>
                   </div>
-                  <p className="text-[#444748] leading-relaxed">{addr.address}</p>
-                  <p className="text-[#717478]">
-                    {addr.city}, {addr.state} — {addr.pincode}
-                  </p>
-                  <p className="text-[#717478] font-medium">Contact: {addr.phone}</p>
-                </div>
-              ))}
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <label className="text-[9px] font-bold uppercase text-[#717478] block mb-0.5">Full Name *</label>
+                      <input
+                        type="text"
+                        placeholder="Recipient Name"
+                        value={newAddrName}
+                        onChange={(e) => setNewAddrName(e.target.value)}
+                        required
+                        className="w-full px-2.5 py-1.5 rounded-md bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[9px] font-bold uppercase text-[#717478] block mb-0.5">Phone Number *</label>
+                      <input
+                        type="tel"
+                        placeholder="+91 10-digit number"
+                        value={newAddrPhone}
+                        onChange={(e) => setNewAddrPhone(e.target.value)}
+                        required
+                        className="w-full px-2.5 py-1.5 rounded-md bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-bold uppercase text-[#717478] block mb-0.5">Flat, House no., Building, Street *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Flat 302, Royal Residency, Station Road"
+                      value={newAddrStreet}
+                      onChange={(e) => setNewAddrStreet(e.target.value)}
+                      required
+                      className="w-full px-2.5 py-1.5 rounded-md bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <label className="text-[9px] font-bold uppercase text-[#717478] block mb-0.5">City</label>
+                      <input
+                        type="text"
+                        placeholder="City"
+                        value={newAddrCity}
+                        onChange={(e) => setNewAddrCity(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-md bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[9px] font-bold uppercase text-[#717478] block mb-0.5">State</label>
+                      <input
+                        type="text"
+                        placeholder="State"
+                        value={newAddrState}
+                        onChange={(e) => setNewAddrState(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-md bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[9px] font-bold uppercase text-[#717478] block mb-0.5">Pincode</label>
+                      <input
+                        type="text"
+                        placeholder="6 digits"
+                        value={newAddrPincode}
+                        onChange={(e) => setNewAddrPincode(e.target.value)}
+                        maxLength={6}
+                        className="w-full px-2.5 py-1.5 rounded-md bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      {(['HOME', 'WORK', 'OTHER'] as const).map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setNewAddrType(t)}
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase transition-colors ${
+                            newAddrType === t
+                              ? 'bg-[#8c7138] text-white'
+                              : 'bg-white border border-[#eae5dc] text-[#717478]'
+                          }`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+
+                    <label className="flex items-center gap-1 text-[11px] text-[#444748] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newAddrIsDefault}
+                        onChange={(e) => setNewAddrIsDefault(e.target.checked)}
+                        className="rounded accent-[#8c7138]"
+                      />
+                      <span>Make Default</span>
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full mt-1.5 py-2 rounded-lg bg-[#8c7138] hover:bg-[#6e582a] text-white text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    Save Address
+                  </button>
+                </form>
+              )}
+
+              {/* Saved Address List */}
+              <div className="space-y-2.5 pt-1">
+                {addresses.map((addr) => (
+                  <div
+                    key={addr.id}
+                    className={`p-3.5 rounded-xl border text-xs space-y-1.5 relative transition-all ${
+                      addr.isDefault ? 'border-[#8c7138] bg-[#faf7f2]' : 'border-[#e4e6eb] bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#141414] flex items-center gap-1.5">
+                        {addr.name}
+                        <span className="px-1.5 py-0.2 rounded bg-neutral-200 text-[9px] font-bold uppercase text-neutral-700">
+                          {addr.type}
+                        </span>
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        {addr.isDefault ? (
+                          <span className="text-[10px] font-bold text-[#8c7138] uppercase">Default</span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSetDefaultAddress(addr.id)}
+                            className="text-[10px] font-bold text-neutral-500 hover:text-[#8c7138] underline cursor-pointer"
+                          >
+                            Set Default
+                          </button>
+                        )}
+                        {addresses.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAddress(addr.id)}
+                            className="text-neutral-400 hover:text-rose-600 cursor-pointer"
+                            title="Delete address"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <p className="text-[#444748] leading-relaxed">{addr.address}</p>
+                    <p className="text-[#717478]">
+                      {addr.city}, {addr.state} — {addr.pincode}
+                    </p>
+                    <p className="text-[#717478] font-medium">Phone: {addr.phone}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* 5. Help Center Modal */}
+      {/* 4. Help Center Modal */}
       {activeModal === 'help' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div className="w-full max-w-sm bg-white rounded-2xl p-5 border border-[#eae5dc] shadow-2xl space-y-4">
@@ -625,7 +756,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
         </div>
       )}
 
-      {/* 6. Privacy & Policy Modal */}
+      {/* 5. Privacy & Policy Modal */}
       {activeModal === 'privacy' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div className="w-full max-w-sm bg-white rounded-2xl p-5 border border-[#eae5dc] shadow-2xl space-y-3">
