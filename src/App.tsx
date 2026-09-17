@@ -1271,17 +1271,17 @@ export default function App() {
               handleTabChange('track');
             }}
           />
-          {!selectedProduct && (
-            <BottomNav
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              cartCount={cartCount}
-              onOpenCart={handleOpenCart}
-              onOpenProducts={() => {
-                handleTabChange('sale');
-              }}
-            />
-          )}
+          <BottomNav
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            cartCount={cartCount}
+            onOpenCart={handleOpenCart}
+            onCloseCart={handleCloseCart}
+            isCartOpen={isCartOpen}
+            onOpenProducts={() => {
+              handleTabChange('sale');
+            }}
+          />
         </>
       )}
     </div>

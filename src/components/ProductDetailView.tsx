@@ -105,7 +105,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#fbf9f6] text-[#141414] pb-16 md:pb-8 font-sans">
+    <div className="min-h-screen bg-[#fbf9f6] text-[#141414] pb-32 md:pb-8 font-sans">
       {/* Top Compact Breadcrumb Bar */}
       <div className="bg-white border-b border-[#eae5dc] sticky top-0 z-30">
         <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-3">
@@ -478,8 +478,8 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
         </div>
       </div>
 
-      {/* Clean Mobile Sticky Action Bar at Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#eae5dc] px-3.5 py-2 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-2.5">
+      {/* Clean Mobile Sticky Action Bar at Bottom (Positioned above BottomNav) */}
+      <div className="fixed bottom-12 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#eae5dc] px-3.5 py-2 md:hidden shadow-[0_-2px_10px_rgba(0,0,0,0.06)] flex items-center justify-between gap-2.5">
         <div>
           <span className="text-[8px] text-[#747878] font-bold uppercase block leading-none">TOTAL</span>
           <span className="font-sans text-sm font-extrabold text-[#141414] leading-none">
