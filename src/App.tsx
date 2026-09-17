@@ -1,5 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, CategoryItem, CartItem, OrderItem, ActiveScreen, OrderStatus, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon } from './types';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth } from './lib/firebase';
+import { userService, UserProfile } from './services/userService';
 import { HERO_PRODUCT, VAULT_PRODUCTS, CATEGORIES_DATA } from './data/products';
 import { INITIAL_ORDERS } from './data/orders';
 import { INITIAL_BANNERS, INITIAL_TOP_MARQUEE, INITIAL_BANNER_MARQUEE, INITIAL_SALE_POSTERS } from './data/bannerData';
@@ -34,6 +37,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { ProductModal } from './components/ProductModal';
 import { ProductDetailView } from './components/ProductDetailView';
 import { CheckoutModal } from './components/CheckoutModal';
+import { UserLoginModal } from './components/UserLoginModal';
 import { WishlistView } from './components/WishlistView';
 import { SearchModal } from './components/SearchModal';
 import { SalesSection } from './components/SalesSection';
@@ -44,6 +48,25 @@ import { Smartphone, Monitor, ShieldCheck, AlertOctagon } from 'lucide-react';
 export default function App() {
   // Screen mode: 'auto' | 'phone' | 'pc'
   const [viewMode, setViewMode] = useState<'auto' | 'phone' | 'pc'>('auto');
+
+  // Auth State
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+      if (user) {
+        const profile = await userService.getUserProfile(user.uid);
+        setUserProfile(profile);
+      } else {
+        setUserProfile(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Screen width detection for responsive auto-switching
   const [isMobileScreen, setIsMobileScreen] = useState<boolean>(() => {
@@ -996,6 +1019,16 @@ export default function App() {
         </div>
       )}
 
+      {/* User Login Modal */}
+      <UserLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onSuccess={(profile) => {
+          setUserProfile(profile);
+          showToast(`Welcome back, ${profile.name}!`);
+        }}
+      />
+
       {/* Emergency Broadcast Banner when active in checkout-paused mode */}
       {emergencyConfig.isActive && (
         <div className="bg-rose-950 text-rose-200 border-b border-rose-800 px-4 py-2 text-xs font-semibold flex items-center justify-between gap-3 sticky top-0 z-50 shadow-md">
@@ -1044,6 +1077,8 @@ export default function App() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           topMarqueeItems={topMarqueeItems}
+          userProfile={userProfile}
+          onLoginClick={() => setIsLoginModalOpen(true)}
         />
 
         {selectedProduct ? (
@@ -1291,6 +1326,11 @@ export default function App() {
         cartItems={cartItems}
         totalAmount={cartTotal}
         onOrderPlaced={handleOrderPlaced}
+        userProfile={userProfile}
+        onLoginClick={() => {
+          handleCloseCheckout();
+          setIsLoginModalOpen(true);
+        }}
       />
 
       {/* Storefront Enhancements: WhatsApp Concierge (Draggable) */}

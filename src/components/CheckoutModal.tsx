@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CartItem, OrderItem } from '../types';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { auth } from '../lib/firebase';
+import { UserProfile } from '../services/userService';
 import {
   X,
   CheckCircle2,
@@ -25,6 +28,8 @@ interface CheckoutModalProps {
   cartItems: CartItem[];
   totalAmount: number;
   onOrderPlaced: (newOrder: OrderItem) => void;
+  userProfile?: UserProfile | null;
+  onLoginClick?: () => void;
 }
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({
@@ -32,11 +37,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onClose,
   cartItems,
   totalAmount,
-  onOrderPlaced
+  onOrderPlaced,
+  userProfile,
+  onLoginClick
 }) => {
   // Form Fields
-  const [name, setName] = useState('Pooja Sharma');
-  const [phone, setPhone] = useState('9876543210');
+  const [name, setName] = useState(userProfile?.name || '');
+  const [phone, setPhone] = useState(userProfile?.phone?.replace('+91', '') || '');
   const [address, setAddress] = useState('Flat 402, Lotus Towers, Andheri West');
   const [city, setCity] = useState('Mumbai');
   const [pincode, setPincode] = useState('400053');
@@ -49,13 +56,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [step, setStep] = useState<'details' | 'otp' | 'success'>('details');
 
   // OTP State
-  const DEMO_OTP = '4829';
-  const [otpValues, setOtpValues] = useState<string[]>(['', '', '', '']);
+  const [otpValues, setOtpValues] = useState<string[]>(['', '', '', '', '', '']); // Firebase OTP is 6 digits usually
   const [otpError, setOtpError] = useState<string | null>(null);
   const [resendTimer, setResendTimer] = useState<number>(30);
   const [isResendDisabled, setIsResendDisabled] = useState<boolean>(true);
   const [otpSentNotification, setOtpSentNotification] = useState<boolean>(false);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Firebase Phone Auth State
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   // Submission State
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,22 +146,80 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   if (!isOpen) return null;
 
+  // Setup Recaptcha
+  const setupRecaptcha = () => {
+    if (!auth) return null;
+    if (!window.recaptchaVerifier) {
+      try {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'invisible',
+          callback: () => {
+            // reCAPTCHA solved
+          }
+        });
+      } catch (err) {
+        console.error("Recaptcha init error", err);
+      }
+    }
+    return window.recaptchaVerifier;
+  };
+
   // Handler to Proceed from Details
-  const handleProceedToNextStep = (e: React.FormEvent) => {
+  const handleProceedToNextStep = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!userProfile && onLoginClick) {
+      onLoginClick();
+      return;
+    }
 
     if (paymentMethod === 'Prepaid UPI') {
       // Prepaid orders bypass OTP entirely (Low RTO risk guaranteed)
       finalizeOrder(true);
     } else {
-      // Cash On Delivery requires 4-digit OTP verification
-      setStep('otp');
-      setResendTimer(30);
-      setIsResendDisabled(true);
-      setOtpValues(['', '', '', '']);
+      if (userProfile) {
+        // Logged in users bypass OTP for COD
+        finalizeOrder(true);
+        return;
+      }
+      
+      if (!auth) {
+        alert("Firebase Auth is not configured. Please check your setup.");
+        return;
+      }
+      
+      setIsSendingOtp(true);
       setOtpError(null);
-      setOtpSentNotification(true);
-      setTimeout(() => setOtpSentNotification(false), 4500);
+      
+      try {
+        const appVerifier = setupRecaptcha();
+        if (!appVerifier) throw new Error("Recaptcha failed to initialize");
+        
+        // Ensure phone number starts with +91
+        const formattedPhone = phone.startsWith('+91') ? phone : `+91${phone}`;
+        const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+        
+        setConfirmationResult(result);
+        
+        // Cash On Delivery requires 6-digit OTP verification
+        setStep('otp');
+        setResendTimer(30);
+        setIsResendDisabled(true);
+        setOtpValues(['', '', '', '', '', '']);
+        setOtpError(null);
+        setOtpSentNotification(true);
+        setTimeout(() => setOtpSentNotification(false), 4500);
+      } catch (error: any) {
+        console.error("Error sending OTP:", error);
+        setOtpError(error.message || "Failed to send OTP. Please check your number.");
+        if (window.recaptchaVerifier) {
+          window.recaptchaVerifier.render().then((widgetId: any) => {
+            grecaptcha.reset(widgetId);
+          });
+        }
+      } finally {
+        setIsSendingOtp(false);
+      }
     }
   };
 
@@ -164,7 +232,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     setOtpError(null);
 
     // Auto-focus next input
-    if (char && index < 3) {
+    if (char && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
   };
@@ -176,38 +244,66 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     }
   };
 
-  // Auto-fill Demo OTP
+  // Auto-fill Demo OTP (Removed for Real OTP, but keep handler empty to avoid errors if called)
   const handleAutoFillOtp = () => {
-    setOtpValues(['4', '8', '2', '9']);
-    setOtpError(null);
+    // Demo auto-fill disabled
   };
 
   // Verify OTP and Place Order
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const entered = otpValues.join('');
-    if (entered.length < 4) {
-      setOtpError('Please enter all 4 digits of the OTP.');
+    if (entered.length < 6) {
+      setOtpError('Please enter all 6 digits of the OTP.');
       return;
     }
 
-    if (entered !== DEMO_OTP) {
-      setOtpError(`Invalid code. For this demo, please enter ${DEMO_OTP}.`);
+    if (!confirmationResult) {
+      setOtpError('OTP session expired. Please resend.');
       return;
     }
 
-    finalizeOrder(true);
+    setIsSubmitting(true);
+    setOtpError(null);
+
+    try {
+      await confirmationResult.confirm(entered);
+      // Phone is verified!
+      finalizeOrder(true);
+    } catch (error: any) {
+      console.error("OTP Verification Error:", error);
+      setOtpError('Invalid OTP code. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   // Resend OTP
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     if (isResendDisabled) return;
-    setResendTimer(30);
-    setIsResendDisabled(true);
-    setOtpValues(['', '', '', '']);
+    
+    setIsSendingOtp(true);
     setOtpError(null);
-    setOtpSentNotification(true);
-    setTimeout(() => setOtpSentNotification(false), 4500);
+    
+    try {
+      const appVerifier = setupRecaptcha();
+      if (!appVerifier) throw new Error("Recaptcha failed");
+      
+      const formattedPhone = phone.startsWith('+91') ? phone : `+91${phone}`;
+      const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+      
+      setConfirmationResult(result);
+      setResendTimer(30);
+      setIsResendDisabled(true);
+      setOtpValues(['', '', '', '', '', '']);
+      setOtpError(null);
+      setOtpSentNotification(true);
+      setTimeout(() => setOtpSentNotification(false), 4500);
+    } catch (error: any) {
+      console.error("Resend OTP error", error);
+      setOtpError(error.message || "Failed to resend OTP.");
+    } finally {
+      setIsSendingOtp(false);
+    }
   };
 
   // Finalize Order
@@ -333,8 +429,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  readOnly={!!userProfile}
                   placeholder="e.g. Pooja Sharma"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138]"
+                  className={`w-full px-3.5 py-2.5 rounded-xl border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138] ${userProfile ? 'bg-neutral-100 cursor-not-allowed' : 'bg-white'}`}
                 />
               </div>
 
@@ -352,8 +449,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       maxLength={10}
                       value={phone}
                       onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      readOnly={!!userProfile}
                       placeholder="9876543210"
-                      className="w-full pl-11 pr-3 py-2.5 rounded-xl bg-white border border-[#eae5dc] text-xs font-mono text-[#141414] focus:outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138]"
+                      className={`w-full pl-11 pr-3 py-2.5 rounded-xl border border-[#eae5dc] text-xs font-mono text-[#141414] focus:outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138] ${userProfile ? 'bg-neutral-100 cursor-not-allowed' : 'bg-white'}`}
                     />
                   </div>
                 </div>
@@ -524,11 +622,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
               {/* Submit CTA Button */}
               <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-3.5 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+                type={!userProfile ? "button" : "submit"}
+                onClick={!userProfile ? onLoginClick : undefined}
+                disabled={isSendingOtp}
+                className="w-full py-4 rounded-xl bg-[#141414] text-[#fed488] font-bold text-sm shadow-[0_4px_12px_rgba(20,20,20,0.15)] flex items-center justify-center gap-2 hover:bg-[#2a2a2a] transition-all disabled:opacity-70"
               >
-                {paymentMethod === 'COD' ? (
+                {isSendingOtp ? (
+                  <span className="flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4 animate-spin text-white" /> Sending OTP...
+                  </span>
+                ) : !userProfile ? (
+                  'Login to Continue'
+                ) : paymentMethod === 'COD' ? (
                   <>
                     <MessageSquare className="w-4 h-4" />
                     <span>Proceed to Verify Mobile via OTP</span>
@@ -545,7 +650,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
           {/* STEP 2: COD OTP Verification (Authentic RTO Shield) */}
           {step === 'otp' && (
-            <div className="space-y-5 animate-fadeIn">
+            <form onSubmit={handleVerifyOtp} className="space-y-4 animate-fadeIn">
+              <div id="recaptcha-container"></div>
               
               {/* Back Button */}
               <button
@@ -580,40 +686,21 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               )}
 
               {/* Main Heading & Phone indicator */}
-              <div className="text-center space-y-1">
-                <div className="w-12 h-12 rounded-2xl bg-[#8c7138]/10 text-[#8c7138] mx-auto flex items-center justify-center mb-2">
+              <div className="text-center mb-6">
+                <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 border border-emerald-100">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
-                <h4 className="font-display text-lg font-bold text-[#141414]">
-                  Confirm Cash on Delivery Order
-                </h4>
-                <p className="text-xs text-[#747878] max-w-sm mx-auto">
-                  To protect our courier delivery partners from fake orders, enter the 4-digit code sent to:
+                <h3 className="text-lg font-bold text-[#141414]">Verify your Number</h3>
+                <p className="text-xs text-[#747878] mt-1.5">
+                  We've sent a 6-digit code to <strong>+91 {phone}</strong>
                 </p>
-                <p className="text-sm font-mono font-bold text-[#141414] pt-0.5">
-                  +91 {phone}
-                </p>
-              </div>
-
-              {/* Demo Helper Banner */}
-              <div className="p-3 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs text-[#141414]">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Demo Test OTP: <strong className="font-mono text-[#8c7138] font-bold">4829</strong></span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleAutoFillOtp}
-                  className="text-xs font-bold text-[#8c7138] hover:underline cursor-pointer"
-                >
-                  Click to Fill
-                </button>
               </div>
 
               {/* OTP Form */}
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <div className="space-y-4">
                 <div>
-                  <div className="flex justify-center gap-3">
+                  {/* OTP Inputs */}
+                  <div className="flex justify-center gap-2 mb-6">
                     {otpValues.map((digit, idx) => (
                       <input
                         key={idx}
@@ -626,11 +713,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         value={digit}
                         onChange={(e) => handleOtpChange(idx, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                        className={`w-12 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-mono font-bold rounded-2xl border transition-all ${
-                          digit
-                            ? 'border-[#141414] bg-white text-[#141414] shadow-sm ring-2 ring-[#8c7138]/20'
-                            : 'border-[#eae5dc] bg-[#faf8f5] text-[#141414] focus:bg-white focus:border-[#8c7138]'
-                        }`}
+                        className="w-10 h-12 text-center text-lg font-bold bg-white border border-[#eae5dc] rounded-xl focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138] outline-none transition-colors"
                       />
                     ))}
                   </div>
@@ -655,7 +738,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         className="font-bold text-[#8c7138] hover:underline flex items-center gap-1 cursor-pointer"
                       >
                         <RefreshCw className="w-3 h-3" />
-                        <span>Resend 4-digit code now</span>
+                        <span>Resend 6-digit code now</span>
                       </button>
                     )}
                   </div>
@@ -674,17 +757,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   </div>
                 </div>
 
-                {/* Submit Verification */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>{isSubmitting ? 'Verifying Phone...' : 'Verify OTP & Confirm Order'}</span>
-                </button>
-              </form>
-            </div>
+                {/* Action Button */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3.5 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{isSubmitting ? 'Verifying Phone...' : 'Verify OTP & Confirm Order'}</span>
+                  </button>
+                </div>
+              </div>
+            </form>
           )}
 
           {/* STEP 3: Order Success Screen */}

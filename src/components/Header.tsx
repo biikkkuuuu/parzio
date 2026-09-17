@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, ShoppingBag, Heart, User } from 'lucide-react';
 import { Logo } from './Logo';
 import { ActiveScreen } from '../types';
+import { UserProfile } from '../services/userService';
 
 interface HeaderProps {
   cartCount: number;
@@ -10,6 +11,8 @@ interface HeaderProps {
   onOpenCart: () => void;
   onOpenWishlist?: () => void;
   onOpenAccount?: () => void;
+  onLoginClick?: () => void;
+  userProfile?: UserProfile | null;
   activeCategory: string;
   onSelectCategory: (cat: string) => void;
   activeTab?: string;
@@ -38,9 +41,10 @@ const NAV_ITEMS = [
 export const Header: React.FC<HeaderProps> = ({
   cartCount,
   onOpenCart,
-  wishlistCount = 0,
   onOpenWishlist,
   onOpenAccount,
+  onLoginClick,
+  userProfile,
   activeCategory,
   onSelectCategory,
   activeTab = 'home',
@@ -148,17 +152,23 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Dedicated Account Button (Icon only - Sabse last me) */}
           <button
             onClick={() => {
-              if (onOpenAccount) {
-                onOpenAccount();
-              } else if (onNavigateTab) {
-                onNavigateTab('account');
+              if (userProfile) {
+                if (onOpenAccount) onOpenAccount();
+                else if (onNavigateTab) onNavigateTab('account');
+              } else {
+                if (onLoginClick) onLoginClick();
               }
             }}
-            className={`text-[#2a2a2a] hover:text-[#9e7144] transition-colors relative cursor-pointer ${
+            className={`flex items-center gap-1 text-[#2a2a2a] hover:text-[#9e7144] transition-colors relative cursor-pointer ${
               activeTab === 'account' ? 'text-[#9e7144]' : ''
             }`}
             title="Account"
           >
+            {userProfile ? (
+              <span className="hidden sm:inline-block text-xs font-bold mr-1 truncate max-w-[80px]">
+                {userProfile.name.split(' ')[0]}
+              </span>
+            ) : null}
             <User className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
           </button>
         </div>
