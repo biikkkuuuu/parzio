@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Product, SaleBannerConfig, SalePoster } from '../types';
-import { ArrowUp, Sparkles, Tag, ShieldCheck, Zap, ArrowRight, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
+import { ArrowUp, Tag, ShieldCheck, Zap, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 
 interface SalesSectionProps {
   products: Product[];
@@ -95,22 +95,18 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
   return (
     <div className="relative bg-[#f4eee6] min-h-screen pb-16">
       {/* Sales Header Banner (Clean, Light & Luxury) */}
-      <div className="bg-white text-[#141414] py-6 px-4 sm:px-8 border-b border-[#eae5dc] relative overflow-hidden">
-        <div className="max-w-4xl mx-auto flex flex-col items-center text-center gap-2 relative z-10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#faf7f2] border border-[#e5decb] text-[#9e7144] text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+      <div className="bg-white text-[#141414] py-3.5 sm:py-5 px-4 sm:px-8 border-b border-[#eae5dc] relative overflow-hidden">
+        <div className="max-w-4xl mx-auto flex flex-col items-center text-center gap-1.5 relative z-10">
+          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#faf7f2] border border-[#e5decb] text-[#9e7144] text-[10px] sm:text-xs font-bold uppercase tracking-wider">
             <Zap className="w-3 h-3 text-[#9e7144]" />
             {bConfig.badge}
           </span>
           
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#141414]">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#141414]">
             {bConfig.title} <span className="text-[#9e7144]">{bConfig.highlightText}</span>
           </h1>
 
-          <p className="text-xs sm:text-sm text-[#747878] max-w-lg font-normal leading-relaxed">
-            {bConfig.subtitle}
-          </p>
-
-          <div className="flex items-center gap-4 text-[11px] text-[#9e7144] font-semibold pt-1">
+          <div className="flex items-center gap-4 text-[11px] text-[#9e7144] font-semibold pt-0.5">
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5" />
               100% Waterproof
@@ -142,58 +138,6 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
           ))}
         </div>
       </div>
-
-      {/* Active Sale Posters & Promo Graphics Section */}
-      {salePosters.filter((p) => p.active).length > 0 && (
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            {salePosters
-              .filter((poster) => poster.active)
-              .map((poster) => (
-                <div
-                  key={poster.id}
-                  className="relative rounded-2xl overflow-hidden shadow-md border border-[#eae5dc] group aspect-[16/8] sm:aspect-[21/9] bg-[#141414] flex flex-col justify-end"
-                >
-                  <img
-                    src={poster.image}
-                    alt={poster.title}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-
-                  <div className="relative p-4 sm:p-5 z-10 flex flex-col justify-end h-full">
-                    <span className="inline-self-start px-2.5 py-0.5 rounded-full bg-[#8c7138] text-white text-[10px] font-extrabold uppercase tracking-wider mb-2 w-max">
-                      {poster.badge}
-                    </span>
-                    <h3 className="font-display font-bold text-white text-base sm:text-xl leading-tight">
-                      {poster.title}
-                    </h3>
-                    {poster.subtitle && (
-                      <p className="text-neutral-200 text-xs mt-1 line-clamp-2 max-w-lg">
-                        {poster.subtitle}
-                      </p>
-                    )}
-
-                    <div className="mt-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (poster.linkCategory) {
-                            setSelectedCategory(poster.linkCategory.toUpperCase());
-                          }
-                        }}
-                        className="px-4 py-2 rounded-full bg-[#fed488] text-[#141414] hover:bg-white text-xs font-bold uppercase tracking-wider transition-all shadow-xs inline-flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <span>{poster.buttonText || 'SHOP OFFER'}</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
 
       {/* 2-Column to 4-Column Product Grid */}
       <div id="sales-product-grid" className="max-w-6xl mx-auto pt-4">
