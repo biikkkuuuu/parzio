@@ -111,7 +111,14 @@ export default function App() {
     if (typeof window === 'undefined') {
       return { type: 'tab', tab: 'home' as TabType, screen: 'storefront' as ActiveScreen, id: null as string | null, modal: null as string | null };
     }
-    const hash = window.location.hash || '';
+    let hash = window.location.hash || '';
+    const path = window.location.pathname;
+    
+    // SEO Routing Support: Treat real URLs like /product/123 as hashes so the custom router handles them
+    if ((!hash || hash === '#/') && path && path !== '/') {
+      hash = '#' + path;
+    }
+
     let savedTab: TabType = 'home';
     try {
       const t = sessionStorage.getItem('parzio_last_tab');

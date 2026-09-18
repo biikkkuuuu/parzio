@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
   ArrowLeft,
   Star,
@@ -104,8 +105,53 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     setOpenAccordion((prev) => (prev === id ? null : id));
   };
 
+  const structuredData = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": product.images || [product.image],
+    "description": product.description || product.name,
+    "sku": product.id,
+    "offers": {
+      "@type": "Offer",
+      "url": `https://parzio.in/product/${product.id}`,
+      "priceCurrency": "INR",
+      "price": product.price,
+      "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": (product.stock ?? 1) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "Parzio"
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#fbf9f6] text-[#141414] pb-32 md:pb-8 font-sans">
+      <Helmet>
+        <title>{`${product.name} - Parzio`}</title>
+        <meta name="description" content={`Buy ${product.name} at ₹${product.price}. ${product.description || product.name}`} />
+        <link rel="canonical" href={`https://parzio.in/product/${product.id}`} />
+        
+        {/* OpenGraph Tags for Social Sharing */}
+        <meta property="og:title" content={`${product.name} - Parzio`} />
+        <meta property="og:description" content={`Buy ${product.name} at ₹${product.price}.`} />
+        <meta property="og:image" content={(product.images || [product.image])[0]} />
+        <meta property="og:url" content={`https://parzio.in/product/${product.id}`} />
+        <meta property="og:type" content="product" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${product.name} - Parzio`} />
+        <meta name="twitter:description" content={`Buy ${product.name} at ₹${product.price}.`} />
+        <meta name="twitter:image" content={(product.images || [product.image])[0]} />
+        
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+      </Helmet>
+
       {/* Top Compact Breadcrumb Bar */}
       <div className="bg-white border-b border-[#eae5dc] sticky top-0 z-30">
         <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-3">

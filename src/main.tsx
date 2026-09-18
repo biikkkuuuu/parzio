@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import * as Sentry from '@sentry/react';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import './index.css';
 
 Sentry.init({
@@ -19,7 +21,11 @@ Sentry.init({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <HelmetProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </HelmetProvider>
     </ErrorBoundary>
   </StrictMode>,
 );

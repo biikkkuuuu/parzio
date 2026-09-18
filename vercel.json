@@ -1,12 +1,7 @@
 {
   "rewrites": [
-    {
-      "source": "/api/fast2sms/:match*",
-      "destination": "https://www.fast2sms.com/:match*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/(.*)", "destination": "/" }
   ]
 }
