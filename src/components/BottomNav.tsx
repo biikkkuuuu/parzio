@@ -1,7 +1,7 @@
 import React from 'react';
 import { Home, Sparkles, ShoppingBag, Truck, User } from 'lucide-react';
 
-export type TabType = 'home' | 'sale' | 'offers' | 'category' | 'all-categories' | 'track' | 'exchange' | 'account' | 'wishlist' | 'checkout';
+export type TabType = 'home' | 'sale' | 'offers' | 'category' | 'all-categories' | 'track' | 'exchange' | 'account' | 'wishlist' | 'checkout' | 'bag';
 
 interface BottomNavProps {
   activeTab: TabType;
@@ -66,25 +66,22 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         {/* Cart Bag */}
         <button
           onClick={() => {
-            if (isCartOpen) {
-              if (onCloseCart) onCloseCart();
-            } else {
-              if (onOpenCart) onOpenCart();
-            }
+            onTabChange('bag');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           className={`flex-1 flex flex-col items-center justify-center py-1 relative transition-colors active:scale-95 cursor-pointer ${
-            isCartOpen ? 'text-[#9e7144] font-bold' : 'text-[#747878]'
+            activeTab === 'bag' ? 'text-[#9e7144] font-bold' : 'text-[#747878]'
           }`}
         >
           <div className="relative">
-            <ShoppingBag className={`w-4 h-4 ${isCartOpen ? 'text-[#9e7144]' : 'text-[#747878]'}`} />
+            <ShoppingBag className={`w-4 h-4 ${activeTab === 'bag' ? 'text-[#9e7144]' : 'text-[#747878]'}`} />
             {cartCount > 0 && (
               <span className="absolute -top-1.5 -right-2 min-w-3.5 h-3.5 px-1 rounded-full bg-[#9e7144] text-white text-[8px] font-bold flex items-center justify-center">
                 {cartCount}
               </span>
             )}
           </div>
-          <span className={`text-[10px] mt-0.5 leading-none font-medium ${isCartOpen ? 'text-[#9e7144] font-bold' : 'text-[#141414]'}`}>Bag</span>
+          <span className={`text-[10px] mt-0.5 leading-none font-medium ${activeTab === 'bag' ? 'text-[#9e7144] font-bold' : 'text-[#141414]'}`}>Bag</span>
         </button>
 
         {/* Orders / Track */}

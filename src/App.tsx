@@ -39,6 +39,7 @@ const CartDrawer = React.lazy(() => import('./components/CartDrawer').then(m => 
 const ProductModal = React.lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
 const ProductDetailView = React.lazy(() => import('./components/ProductDetailView').then(m => ({ default: m.ProductDetailView })));
 const CheckoutView = React.lazy(() => import('./components/CheckoutView').then(m => ({ default: m.CheckoutView })));
+const CartView = React.lazy(() => import('./components/CartView').then(m => ({ default: m.CartView })));
 const UserLoginModal = React.lazy(() => import('./components/UserLoginModal').then(m => ({ default: m.UserLoginModal })));
 const WishlistView = React.lazy(() => import('./components/WishlistView').then(m => ({ default: m.WishlistView })));
 const SearchModal = React.lazy(() => import('./components/SearchModal').then(m => ({ default: m.SearchModal })));
@@ -131,7 +132,7 @@ export default function App() {
     } catch {}
 
     if (hash === '#/bag' || hash === '#/cart' || hash === '#bag' || hash === '#cart') {
-      return { type: 'tab', id: null, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: 'cart' };
+      return { type: 'tab', id: null, tab: 'bag' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
     }
     if (hash === '#/checkout' || hash === '#checkout') {
       return { type: 'tab', id: null, tab: 'checkout' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
@@ -606,10 +607,7 @@ export default function App() {
   };
 
   const handleOpenCart = () => {
-    if (window.location.hash !== '#/bag' && window.location.hash !== '#/cart') {
-      window.history.pushState({ modal: 'cart' }, '', '#/bag');
-    }
-    setIsCartOpen(true);
+    handleTabChange('bag');
   };
 
   const handleCloseCart = () => {
@@ -1283,6 +1281,22 @@ export default function App() {
               onTrackOrder={() => {
                 handleTabChange('track');
               }}
+            />
+          </main>
+        ) : activeTab === 'bag' ? (
+          <main className="pb-16 md:pb-0">
+            <CartView
+              cartItems={cartItems}
+              onUpdateQuantity={handleUpdateQuantity}
+              onRemoveItem={handleRemoveFromCart}
+              onCheckout={() => {
+                if (emergencyConfig.isActive) {
+                  showToast('🚨 Storefront is under Emergency Shutdown. Checkout is temporarily paused.');
+                  return;
+                }
+                handleTabChange('checkout');
+              }}
+              onBackToStore={() => handleTabChange('home')}
             />
           </main>
         ) : activeTab === 'checkout' ? (
