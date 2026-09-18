@@ -20,26 +20,29 @@ import { WhyChooseParzio } from './components/WhyChooseParzio';
 import { InstagramGrid } from './components/InstagramGrid';
 import { BrandPromise } from './components/BrandPromise';
 import { Footer } from './components/Footer';
-import { TrackOrderView } from './components/TrackOrderView';
-import { ExchangeView } from './components/ExchangeView';
-import { AccountView } from './components/AccountView';
-import { OffersView } from './components/OffersView';
-import { CategoryPageView } from './components/CategoryPageView';
-import { AllCategoriesView } from './components/AllCategoriesView';
 import { EmergencyStorefrontLockdown } from './components/EmergencyStorefrontLockdown';
 import { dbService } from './services/dbService';
 
-const AtelierOpsHub = React.lazy(() =>
-  import('./components/AtelierOpsHub').then((m) => ({ default: m.AtelierOpsHub }))
-);
-import { AdminProtected } from './components/admin/AdminProtected';
-import { CartDrawer } from './components/CartDrawer';
-import { ProductModal } from './components/ProductModal';
-import { ProductDetailView } from './components/ProductDetailView';
-import { CheckoutModal } from './components/CheckoutModal';
-import { UserLoginModal } from './components/UserLoginModal';
-import { WishlistView } from './components/WishlistView';
-import { SearchModal } from './components/SearchModal';
+import { useCartStore } from './store/useCartStore';
+import { useUIStore } from './store/useUIStore';
+
+// Lazy load non-critical full screens and modals to improve bundle size and initial load performance
+const AtelierOpsHub = React.lazy(() => import('./components/AtelierOpsHub').then(m => ({ default: m.AtelierOpsHub })));
+const AdminProtected = React.lazy(() => import('./components/admin/AdminProtected').then(m => ({ default: m.AdminProtected })));
+const TrackOrderView = React.lazy(() => import('./components/TrackOrderView').then(m => ({ default: m.TrackOrderView })));
+const ExchangeView = React.lazy(() => import('./components/ExchangeView').then(m => ({ default: m.ExchangeView })));
+const AccountView = React.lazy(() => import('./components/AccountView').then(m => ({ default: m.AccountView })));
+const OffersView = React.lazy(() => import('./components/OffersView').then(m => ({ default: m.OffersView })));
+const CategoryPageView = React.lazy(() => import('./components/CategoryPageView').then(m => ({ default: m.CategoryPageView })));
+const AllCategoriesView = React.lazy(() => import('./components/AllCategoriesView').then(m => ({ default: m.AllCategoriesView })));
+const CartDrawer = React.lazy(() => import('./components/CartDrawer').then(m => ({ default: m.CartDrawer })));
+const ProductModal = React.lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
+const ProductDetailView = React.lazy(() => import('./components/ProductDetailView').then(m => ({ default: m.ProductDetailView })));
+const CheckoutModal = React.lazy(() => import('./components/CheckoutModal').then(m => ({ default: m.CheckoutModal })));
+const UserLoginModal = React.lazy(() => import('./components/UserLoginModal').then(m => ({ default: m.UserLoginModal })));
+const WishlistView = React.lazy(() => import('./components/WishlistView').then(m => ({ default: m.WishlistView })));
+const SearchModal = React.lazy(() => import('./components/SearchModal').then(m => ({ default: m.SearchModal })));
+
 import { SalesSection } from './components/SalesSection';
 import { WhatsAppSupport } from './components/WhatsAppSupport';
 import { LivePurchaseToast } from './components/LivePurchaseToast';
@@ -185,7 +188,15 @@ export default function App() {
   const initialRoute = parseRoute();
 
   // Screen Routing: Customer Storefront vs Atelier Operations Hub (Persistent on refresh)
-  const [activeScreen, setActiveScreen] = useState<ActiveScreen>(initialRoute.screen || 'storefront');
+  const activeScreen = useUIStore(state => state.activeScreen);
+  const setActiveScreen = useUIStore(state => state.setActiveScreen);
+
+  // Initialize activeScreen from route on first load only
+  useEffect(() => {
+    if (initialRoute.screen) {
+      setActiveScreen(initialRoute.screen);
+    }
+  }, []);
 
   // Mobile Bottom Tab Navigation (Persistent on refresh)
   const [activeTab, setActiveTab] = useState<TabType>(initialRoute.tab || 'home');
@@ -278,12 +289,27 @@ export default function App() {
     return null;
   });
 
-  // Drawers & Modals (Persistent on refresh)
-  const [isDrawerOpen, setIsDrawerOpen] = useState(() => initialRoute.modal === 'drawer');
-  const [isSearchOpen, setIsSearchOpen] = useState(() => initialRoute.modal === 'search');
-  const [isCartOpen, setIsCartOpen] = useState(() => initialRoute.modal === 'cart');
-  const [isWishlistOpen, setIsWishlistOpen] = useState(() => initialRoute.modal === 'wishlist');
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(() => initialRoute.modal === 'checkout');
+  // Drawers & Modals (Zustand Global State)
+  const isDrawerOpen = useUIStore(state => state.isDrawerOpen);
+  const setIsDrawerOpen = useUIStore(state => state.setIsDrawerOpen);
+  const isSearchOpen = useUIStore(state => state.isSearchOpen);
+  const setIsSearchOpen = useUIStore(state => state.setIsSearchOpen);
+  const isCartOpen = useUIStore(state => state.isCartOpen);
+  const setIsCartOpen = useUIStore(state => state.setIsCartOpen);
+  const isWishlistOpen = useUIStore(state => state.isWishlistOpen);
+  const setIsWishlistOpen = useUIStore(state => state.setIsWishlistOpen);
+  const isCheckoutOpen = useUIStore(state => state.isCheckoutOpen);
+  const setIsCheckoutOpen = useUIStore(state => state.setIsCheckoutOpen);
+
+  // Sync initial route with UI Store
+  useEffect(() => {
+    if (initialRoute.modal === 'drawer') setIsDrawerOpen(true);
+    if (initialRoute.modal === 'search') setIsSearchOpen(true);
+    if (initialRoute.modal === 'cart') setIsCartOpen(true);
+    if (initialRoute.modal === 'wishlist') setIsWishlistOpen(true);
+    if (initialRoute.modal === 'checkout') setIsCheckoutOpen(true);
+  }, []);
+
   const [selectedTrackOrderId, setSelectedTrackOrderId] = useState<string | null>(() => {
     if (initialRoute.type === 'order' && initialRoute.id) {
       return initialRoute.id;
@@ -291,23 +317,22 @@ export default function App() {
     return null;
   });
 
-  // Cart & Wishlist (Persisted across sessions & refresh)
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('parzio_cart_items');
-      return saved ? JSON.parse(saved) : [{ product: HERO_PRODUCT, quantity: 1 }];
-    } catch {
-      return [{ product: HERO_PRODUCT, quantity: 1 }];
-    }
-  });
+  // Cart (Zustand Global State)
+  const cartItems = useCartStore(state => state.cartItems);
+  const addToCartAction = useCartStore(state => state.addToCart);
+  const removeFromCart = useCartStore(state => state.removeFromCart);
+  const updateQuantity = useCartStore(state => state.updateQuantity);
+  const clearCart = useCartStore(state => state.clearCart);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('parzio_cart_items', JSON.stringify(cartItems));
-    } catch (e) {
-      console.error(e);
+  // We keep the old setCartItems wrapper for compatibility with older components passing it as a prop
+  const setCartItems = (items: CartItem[] | ((prev: CartItem[]) => CartItem[])) => {
+    if (typeof items === 'function') {
+      const result = items(cartItems);
+      useCartStore.setState({ cartItems: result });
+    } else {
+      useCartStore.setState({ cartItems: items });
     }
-  }, [cartItems]);
+  };
 
   const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
     try {
@@ -805,7 +830,7 @@ export default function App() {
       if (targetCat === 'MANGALSUTRA' && (prodCat.includes('NECKLACE') || prodName.includes('MANGALSUTRA'))) return true;
       if (targetCat === 'JEWELLERY SETS' && (prodCat.includes('SET') || prodName.includes('SET'))) return true;
       if (targetCat === 'PERFUME' && (prodCat.includes('PERFUME') || prodCat.includes('FRAGRANCE') || prodName.includes('PERFUME'))) return true;
-      if (targetCat === 'BEAUTY' && (prodCat.includes('BEAUTY') || prodCat.includes('CARE') || prodName.includes('FACEWASH') || prodName.includes('GLOW'))) return true;
+      if (targetCat === 'BEAUTY' && (prodCat.includes('BEAUTY') || prodCat.includes('CARE') || prodCat.includes('FACEWASH') || prodName.includes('GLOW'))) return true;
       return false;
     });
     return matched.length > 0 ? matched : prods;
@@ -1057,24 +1082,15 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f3efe9] selection:bg-[#141414] selection:text-white text-[#141414] flex flex-col">
-      {/* Toast Alert */}
+    <React.Suspense fallback={<div className="h-screen w-full bg-[#f8f6f0] flex items-center justify-center animate-pulse"><div className="w-10 h-10 border-4 border-[#141414] border-t-transparent rounded-full animate-spin"></div></div>}>
+      <div className="min-h-screen bg-[#f8f6f0] flex flex-col font-sans transition-colors duration-300">
+        {/* Toast Alert */}
       {toastMessage && (
         <div className="fixed top-14 left-1/2 -translate-x-1/2 z-[100] bg-[#141414] text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-[#8c7138] text-xs font-semibold animate-fadeIn whitespace-nowrap">
           <span className="w-2 h-2 rounded-full bg-[#fed488]" />
           <span>{toastMessage}</span>
         </div>
       )}
-
-      {/* User Login Modal */}
-      <UserLoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onSuccess={(profile) => {
-          setUserProfile(profile);
-          showToast(`Welcome back, ${profile.name}!`);
-        }}
-      />
 
       {/* Emergency Broadcast Banner when active in checkout-paused mode */}
       {emergencyConfig.isActive && (
@@ -1352,13 +1368,26 @@ export default function App() {
         }}
       />
 
-      <SearchModal
-        isOpen={isSearchOpen}
-        onClose={handleCloseSearch}
-        products={products}
-        onSelectProduct={handleSelectProduct}
-        onAddToCart={handleAddToCart}
-      />
+      {isSearchOpen && (
+        <SearchModal
+          isOpen={isSearchOpen}
+          onClose={handleCloseSearch}
+          products={products}
+          onSelectProduct={handleSelectProduct}
+          onAddToCart={handleAddToCart}
+        />
+      )}
+
+      {isLoginModalOpen && (
+        <UserLoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          onSuccess={(profile) => {
+            setUserProfile(profile);
+            showToast(`Welcome back, ${profile.name}!`);
+          }}
+        />
+      )}
 
       <CartDrawer
         isOpen={isCartOpen}
@@ -1410,6 +1439,7 @@ export default function App() {
           />
         </>
       )}
-    </div>
+      </div>
+    </React.Suspense>
   );
 }
