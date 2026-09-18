@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { dbAdmin, authAdmin } from './_firebase';
+import { Sentry } from './_sentry';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -35,6 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     resolvedUserId = decodedToken.uid;
   } catch (error) {
     console.error('Firebase token verification failed:', error);
+    Sentry.captureException(error);
     return res.status(401).json({ error: 'Unauthorized: Invalid ID token' });
   }
 
@@ -133,7 +135,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ success: true, order: orderData });
     
   } catch (error: any) {
-    console.error('Transaction failure:', error);
-    return res.status(400).json({ success: false, error: error.message || 'Checkout failed' });
+    console.error('Checkout error:', error);
+    Sentry.captureException(error);
+    return res.status(500).json({ error: error.message || 'Internal server error during checkout' });
   }
 }

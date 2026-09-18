@@ -3,6 +3,7 @@ import { Lock, ArrowRight, ShieldAlert, Mail, ShieldCheck, RefreshCw, Smartphone
 import { Logo } from '../Logo';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 interface AdminLoginProps {
   onSuccess: () => void;
@@ -21,6 +22,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
   const [expectedOtp, setExpectedOtp] = useState<string | null>(null);
   const [otpValues, setOtpValues] = useState<string[]>(['', '', '', '', '', '']);
   const [resendTimer, setResendTimer] = useState(60);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
       const response = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: ADMIN_PHONE })
+        body: JSON.stringify({ phone: ADMIN_PHONE, turnstileToken })
       });
       
       const data = await response.json();
@@ -71,6 +73,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
       // Credentials validated! Now trigger 2FA SMS
+      if (!turnstileToken) {
+        throw new Error('Please complete the security check first.');
+      }
       await send2faOtp();
       setStep('2fa');
     } catch (err: any) {
@@ -171,21 +176,31 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
             <div>
               <label className="block text-xs font-semibold mb-2 text-gray-700">Admin Password</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                <span className="absolute left-4 top-4 text-[#8a857b]">
+                  <Lock className="w-6 h-6" strokeWidth={1.5} />
+                </span>
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-[#f9f8f6] border border-[#e4ded5] rounded-xl outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138] transition-all text-sm"
-                  placeholder="••••••••"
+                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-[#eae5dc] bg-[#f8f6f0] focus:border-[#141414] focus:ring-1 focus:ring-[#141414] outline-none text-[#141414] text-lg transition-all placeholder:text-[#a39e93]"
+                  placeholder="PASSWORD"
                 />
               </div>
             </div>
 
+            <div className="flex justify-center mt-4">
+              <Turnstile 
+                siteKey="1x00000000000000000000AA"
+                onSuccess={(token) => setTurnstileToken(token)}
+                options={{ theme: 'light' }}
+              />
+            </div>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !turnstileToken}
               className="w-full py-4 mt-2 bg-[#141414] text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-[#2a2a2a] transition-colors disabled:opacity-70 cursor-pointer"
             >
               {loading ? (

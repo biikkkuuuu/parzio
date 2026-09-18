@@ -1,14 +1,19 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { dbAdmin } from './_firebase';
+import { Sentry } from './_sentry';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { phone } = req.body;
+  const { phone, turnstileToken } = req.body;
   if (!phone || phone.length !== 10) {
     return res.status(400).json({ error: 'Valid 10-digit phone number required' });
+  }
+
+  if (!turnstileToken) {
+    return res.status(403).json({ error: 'Security verification (Turnstile) missing' });
   }
 
   const apiKey = process.env.FAST2SMS_API_KEY;
@@ -23,6 +28,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
   const ipStr = Array.isArray(clientIp) ? clientIp[0] : clientIp.split(',')[0].trim();
+
+  // Verify Turnstile Token
+  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA'; // Dummy key for testing
+  try {
+    const tsFormData = new URLSearchParams();
+    tsFormData.append('secret', turnstileSecret);
+    tsFormData.append('response', turnstileToken);
+    tsFormData.append('remoteip', ipStr);
+
+    const tsRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: tsFormData,
+    });
+    const tsData = await tsRes.json();
+    if (!tsData.success) {
+      console.warn('Turnstile verification failed:', tsData);
+      return res.status(403).json({ error: 'Bot verification failed. Please try again.' });
+    }
+  } catch (err) {
+    console.error('Turnstile verification error:', err);
+    Sentry.captureException(err);
+    return res.status(500).json({ error: 'Error verifying security token' });
+  }
 
   let generatedOtp = '';
 
@@ -100,6 +128,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     generatedOtp = rateLimitResult.generatedOtp!;
   } catch (error) {
     console.error('Rate limit/Firestore error:', error);
+    Sentry.captureException(error);
     return res.status(500).json({ success: false, error: 'Internal Server Error' });
   }
 
@@ -130,6 +159,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   } catch (err: any) {
     errorReason = err.message || 'Network error';
+    Sentry.captureException(err);
   }
 
   if (smsSuccess) {

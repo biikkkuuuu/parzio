@@ -12,6 +12,10 @@
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
+    "@marsidev/react-turnstile": "^1.6.1",
+    "@sentry/node": "^10.75.0",
+    "@sentry/react": "^10.75.0",
+    "@sentry/tracing": "^7.120.4",
     "@supabase/supabase-js": "^2.116.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vercel/node": "^13.0.1",

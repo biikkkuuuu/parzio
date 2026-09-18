@@ -3,6 +3,7 @@ import { X, ShieldCheck, ArrowRight, RefreshCw, Clock } from 'lucide-react';
 import { RecaptchaVerifier, signInWithPhoneNumber, signInAnonymously, ConfirmationResult } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { userService, UserProfile } from '../services/userService';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 interface UserLoginModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [infoNotice, setInfoNotice] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -39,6 +41,7 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
       setExpectedOtp(null);
       setUserId(null);
       setIsLoading(false);
+      setTurnstileToken(null);
     }
   }, [isOpen]);
 
@@ -63,6 +66,10 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
       setError('Please enter a valid 10-digit mobile number');
       return;
     }
+    if (!turnstileToken) {
+      setError('Please complete the security check');
+      return;
+    }
     
     setError(null);
     setInfoNotice(null);
@@ -72,7 +79,7 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
       const response = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
+        body: JSON.stringify({ phone, turnstileToken })
       });
       
       const data = await response.json();
@@ -212,23 +219,34 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
               </div>
 
               <div>
-                <div className="relative">
-                  <span className="absolute left-3 top-3.5 text-sm font-bold text-[#747878]">+91</span>
+                <div className="relative mb-6">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-[#8a857b] font-mono text-lg font-medium tracking-wide">
+                    +91
+                  </span>
                   <input
                     type="tel"
-                    required
-                    maxLength={10}
                     value={phone}
                     onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-[#eae5dc] bg-white font-mono font-bold focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138] outline-none"
-                    placeholder="98765 43210"
+                    placeholder="MOBILE NUMBER"
+                    maxLength={10}
+                    className="w-full pl-16 pr-4 py-4 bg-[#f8f6f0] border border-[#eae5dc] rounded-2xl text-lg tracking-widest font-mono text-[#141414] focus:outline-none focus:ring-2 focus:ring-[#141414] focus:border-transparent transition-all shadow-sm placeholder:text-[#a39e93]"
+                    autoFocus
+                    disabled={isLoading}
+                  />
+                </div>
+                
+                <div className="mb-6 flex justify-center">
+                  <Turnstile 
+                    siteKey="1x00000000000000000000AA" // Cloudflare testing key
+                    onSuccess={(token) => setTurnstileToken(token)}
+                    options={{ theme: 'light' }}
                   />
                 </div>
               </div>
               
               <button
                 type="submit"
-                disabled={isLoading || phone.length < 10}
+                disabled={isLoading || phone.length !== 10 || !turnstileToken}
                 className="w-full py-3.5 rounded-xl bg-[#141414] text-[#fed488] font-bold shadow-md hover:bg-[#2a2a2a] disabled:opacity-70 flex justify-center items-center gap-2 transition-all"
               >
                 {isLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Get OTP'}
