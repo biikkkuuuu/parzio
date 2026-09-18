@@ -357,12 +357,12 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#f8f6f0] flex flex-col font-sans pb-24 animate-fadeIn">
+    <div className="min-h-screen w-full bg-white flex flex-col font-sans pb-24 animate-fadeIn">
       {/* Hidden element for Firebase Recaptcha */}
       <div id="recaptcha-container" className="hidden"></div>
 
       {/* Main Content Area */}
-      <div className="flex-1 w-full max-w-2xl mx-auto bg-white min-h-screen sm:min-h-0 sm:mt-8 sm:mb-16 sm:rounded-2xl sm:shadow-sm sm:border sm:border-[#eae5dc] flex flex-col overflow-hidden relative">
+      <div className="flex-1 w-full max-w-3xl mx-auto bg-white flex flex-col relative">
         
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b border-[#eae5dc] flex items-center justify-between bg-white sticky top-0 z-10">
