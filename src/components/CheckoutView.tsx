@@ -389,10 +389,10 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
       {/* Two-Column Layout Body */}
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 pb-32">
-        <div className="flex flex-col lg:flex-row gap-10 xl:gap-16">
+        <div className="flex flex-col lg:flex-row items-start gap-10 xl:gap-16">
           
           {/* Left Column: Checkout Steps */}
-          <div className="flex-1 max-w-2xl">
+          <div className="flex-1 w-full max-w-2xl min-w-0">
 
           {/* STEP 1: Details & Address */}
           {step === 'details' && (
@@ -926,11 +926,11 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
           </div>
 
           {/* Right Column: Order Summary (Visible on Desktop) */}
-          <div className="hidden lg:block w-[420px] flex-shrink-0">
-            <div className="sticky top-28 bg-[#faf8f5] p-6 rounded-3xl border border-[#eae5dc]">
+          <div className="hidden lg:block w-[420px] flex-shrink-0 self-start sticky top-28">
+            <div className="bg-[#faf8f5] p-6 rounded-3xl border border-[#eae5dc] shadow-xs">
               <h3 className="font-bold text-[#141414] text-lg mb-6">Order Summary</h3>
               
-              <div className="space-y-4 mb-6 max-h-[40vh] overflow-y-auto no-scrollbar pr-2">
+              <div className="space-y-4 mb-6">
                 {cartItems.map((item) => (
                   <div key={`${item.product.id}-${item.size}`} className="flex gap-4">
                     <div className="w-16 h-16 bg-white rounded-xl border border-[#eae5dc] overflow-hidden flex-shrink-0 relative">
