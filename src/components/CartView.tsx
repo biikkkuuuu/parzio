@@ -57,33 +57,38 @@ export const CartView: React.FC<CartViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#fbf9f6] text-[#141414] font-sans pb-24">
+    <div className="min-h-screen w-full bg-white flex flex-col font-sans animate-fadeIn">
       {/* Top Header / Breadcrumb */}
-      <div className="bg-white border-b border-[#eae5dc] relative z-20 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={onBackToStore}
-            className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Continue Shopping</span>
-          </button>
-
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-[#8c7138]" />
-            <span className="font-bold text-sm sm:text-base text-[#141414]">
-              Shopping Bag ({totalCount} {totalCount === 1 ? 'Item' : 'Items'})
-            </span>
+      <div className="w-full border-b border-[#eae5dc] bg-white relative z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={onBackToStore}
+              className="p-2 -ml-2 rounded-full hover:bg-neutral-100 text-[#141414] transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-[#141414] text-[#fed488]">
+              <span className="font-serif font-black text-sm tracking-tighter">P</span>
+            </div>
+            <div>
+              <h2 className="text-lg font-black text-[#141414] tracking-tight leading-none">
+                Shopping Bag
+              </h2>
+            </div>
+          </div>
+          <div className="text-xs font-bold text-[#8c7138] uppercase tracking-wider">
+            {totalCount} {totalCount === 1 ? 'Item' : 'Items'}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 pb-32">
         {cartItems.length === 0 ? (
           /* Empty Bag State */
-          <div className="max-w-md mx-auto py-20 text-center space-y-5 bg-white p-8 rounded-3xl border border-[#eae5dc] shadow-xs">
-            <div className="w-20 h-20 mx-auto rounded-full bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center">
+          <div className="max-w-md mx-auto py-20 text-center space-y-5 bg-[#faf8f5] p-8 rounded-3xl border border-[#eae5dc] shadow-xs">
+            <div className="w-20 h-20 mx-auto rounded-full bg-white border border-[#eae5dc] flex items-center justify-center">
               <ShoppingBag className="w-10 h-10 text-[#8c7138]" />
             </div>
             <div>
@@ -102,10 +107,10 @@ export const CartView: React.FC<CartViewProps> = ({
           </div>
         ) : (
           /* 2-Column Desktop Grid */
-          <div className="flex flex-col lg:flex-row items-start gap-8 xl:gap-12">
+          <div className="flex flex-col lg:flex-row items-start gap-10 xl:gap-16">
             
             {/* Left Column: Items List & Delivery Threshold */}
-            <div className="flex-1 w-full min-w-0 space-y-6">
+            <div className="flex-1 w-full max-w-2xl min-w-0 space-y-6">
               
               {/* Minimum Cart Value Banner & Progress Bar */}
               <div className="p-4 sm:p-5 bg-[#faf8f5] rounded-2xl border border-[#dfd7ca] shadow-xs">
@@ -231,9 +236,9 @@ export const CartView: React.FC<CartViewProps> = ({
               </div>
             </div>
 
-            {/* Right Column: Order Summary & Checkout Card (Desktop Sticky) */}
+            {/* Right Column: Order Summary & Checkout Card */}
             <div className="w-full lg:w-[420px] flex-shrink-0 self-start lg:sticky lg:top-6">
-              <div className="bg-white p-6 rounded-3xl border border-[#eae5dc] shadow-xs space-y-5">
+              <div className="bg-[#faf8f5] p-6 rounded-3xl border border-[#eae5dc] shadow-xs space-y-5">
                 <h3 className="font-bold text-[#141414] text-lg">Order Summary</h3>
 
                 {/* Promo Code Form */}
