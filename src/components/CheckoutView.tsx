@@ -362,43 +362,43 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       <div id="recaptcha-container" className="hidden"></div>
 
       {/* Main Content Area */}
-      <div className="flex-1 w-full max-w-md mx-auto bg-white min-h-screen sm:min-h-0 sm:mt-6 sm:mb-12 sm:rounded-[2rem] sm:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden relative">
+      <div className="flex-1 w-full max-w-2xl mx-auto bg-white min-h-screen sm:min-h-0 sm:mt-8 sm:mb-16 sm:rounded-2xl sm:shadow-sm sm:border sm:border-[#eae5dc] flex flex-col overflow-hidden relative">
         
         {/* Header */}
-        <div className="px-4 py-4 border-b border-[#eae5dc] flex items-center justify-between bg-white sticky top-0 z-10">
-          <div className="flex items-center gap-3">
+        <div className="px-4 sm:px-6 py-4 border-b border-[#eae5dc] flex items-center justify-between bg-white sticky top-0 z-10">
+          <div className="flex items-center gap-4">
             <button
               onClick={handleBack}
-              className="p-1.5 -ml-1.5 rounded-full hover:bg-neutral-100 text-[#141414] transition-colors"
+              className="p-2 -ml-2 rounded-full hover:bg-neutral-100 text-[#141414] transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#141414] text-[#fed488]">
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-[#141414] text-[#fed488]">
               <span className="font-serif font-black text-sm tracking-tighter">P</span>
             </div>
             <div>
-              <h2 className="text-base font-black text-[#141414] tracking-tight leading-none">
+              <h2 className="text-lg font-black text-[#141414] tracking-tight leading-none">
                 {step === 'otp' 
                   ? 'Verify Identity' 
                   : step === 'upi_payment'
-                  ? 'Payment'
-                  : 'Quick Checkout'}
+                  ? 'Secure Payment'
+                  : 'Checkout'}
               </h2>
-              <p className="text-[10px] font-bold text-[#8c7138] uppercase tracking-wider mt-0.5">
+              <p className="text-[11px] font-bold text-[#8c7138] uppercase tracking-wider mt-1">
                 {step === 'otp' 
                   ? 'Secure Login' 
                   : step === 'upi_payment'
-                  ? 'Scan QR or pay via UPI ID and submit 12-digit UTR'
+                  ? 'Scan QR or Pay via UPI ID'
                   : step === 'success'
-                  ? 'Dispatched from Parzio Atelier'
-                  : 'Fast delivery & Anti-Tarnish Guarantee'}
+                  ? 'Order Confirmed'
+                  : 'Complete your purchase'}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Modal Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar">
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 no-scrollbar">
 
           {/* STEP 1: Details & Address */}
           {step === 'details' && (
