@@ -17,8 +17,7 @@ import {
   Globe,
   Plus,
   Trash2,
-  ChevronRight,
-  LayoutDashboard
+  ChevronRight
 } from 'lucide-react';
 import { OrderItem } from '../types';
 import { lookupPincode } from '../services/postalService';
@@ -30,7 +29,7 @@ interface AccountViewProps {
   onLogout?: () => void;
   onLoginClick?: () => void;
   onOpenWishlist: () => void;
-  onOpenAtelierOps: () => void;
+  onOpenAtelierOps?: () => void;
   onTrackOrder: () => void;
   onUpdateProfile?: (updated: UserProfile) => void;
 }
@@ -472,21 +471,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
               </div>
             </div>
 
-            {/* 5. Atelier Ops / Enterprise Portal */}
-            <div className="pt-1">
-              <button
-                onClick={onOpenAtelierOps}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#141414] text-white hover:bg-[#8c7138] transition-colors text-xs font-bold cursor-pointer shadow-2xs"
-              >
-                <div className="flex items-center gap-2.5">
-                  <LayoutDashboard className="w-4 h-4 text-[#fed488]" />
-                  <span>Admin Atelier Ops Hub (Inventory &amp; Orders)</span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-neutral-400" />
-              </button>
-            </div>
-
-            {/* 6. Flipkart-Style Log Out / Log In Button */}
+            {/* 5. Flipkart-Style Log Out / Log In Button */}
             <div className="pt-1">
               {userProfile ? (
                 <button
