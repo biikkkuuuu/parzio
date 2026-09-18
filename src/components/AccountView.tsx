@@ -32,6 +32,7 @@ interface AccountViewProps {
   onOpenWishlist: () => void;
   onOpenAtelierOps: () => void;
   onTrackOrder: () => void;
+  onUpdateProfile?: (updated: UserProfile) => void;
 }
 
 interface AddressItem {
@@ -79,15 +80,24 @@ export const AccountView: React.FC<AccountViewProps> = ({
   onLoginClick,
   onOpenWishlist,
   onOpenAtelierOps,
-  onTrackOrder
+  onTrackOrder,
+  onUpdateProfile
 }) => {
   const [activeModal, setActiveModal] = useState<
     'profile' | 'coupons' | 'address' | 'help' | 'privacy' | null
   >(null);
 
-  const userName = userProfile?.name || 'Guest User';
+  const [editName, setEditName] = useState(userProfile?.name || 'Guest User');
+
+  useEffect(() => {
+    if (userProfile?.name) {
+      setEditName(userProfile.name);
+    }
+  }, [userProfile?.name]);
+
+  const userName = userProfile?.name || editName || 'Guest User';
   const userPhone = userProfile?.phone || '';
-  const userEmail = userProfile ? `${userProfile.name.toLowerCase().replace(/\s+/g, '')}@parzio.in` : '';
+  const userEmail = userProfile ? `${userName.toLowerCase().replace(/\s+/g, '')}@parzio.in` : '';
   const [showLogoutToast, setShowLogoutToast] = useState(false);
 
   // Addresses State with LocalStorage Persistence
@@ -773,20 +783,30 @@ export const AccountView: React.FC<AccountViewProps> = ({
                 <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">Full Name</label>
                 <input
                   type="text"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Enter your name"
                   className="w-full px-3 py-2 rounded-lg bg-[#faf8f5] border border-[#eae5dc] font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">Mobile Number</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] font-bold text-[#717478] uppercase">Registered Mobile Number</label>
+                  <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded flex items-center gap-1">
+                    🔒 Permanent ID
+                  </span>
+                </div>
                 <input
                   type="text"
                   value={userPhone}
-                  onChange={(e) => setUserPhone(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-[#faf8f5] border border-[#eae5dc] font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                  readOnly
+                  disabled
+                  className="w-full px-3 py-2 rounded-lg bg-neutral-100 border border-[#eae5dc] font-mono font-semibold text-neutral-500 cursor-not-allowed select-none"
                 />
+                <p className="text-[10px] text-[#8c7138] mt-1">
+                  Registered phone number is your verified login identity and cannot be changed.
+                </p>
               </div>
 
               <div>
@@ -794,15 +814,34 @@ export const AccountView: React.FC<AccountViewProps> = ({
                 <input
                   type="email"
                   value={userEmail}
-                  onChange={(e) => setUserEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-[#faf8f5] border border-[#eae5dc] font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                  readOnly
+                  disabled
+                  className="w-full px-3 py-2 rounded-lg bg-neutral-100 border border-[#eae5dc] font-semibold text-neutral-500 cursor-not-allowed select-none"
                 />
               </div>
             </div>
 
             <button
-              onClick={() => setActiveModal(null)}
-              className="w-full py-2.5 rounded-xl bg-[#8c7138] text-white font-bold text-xs shadow-xs hover:bg-[#6e582a] transition-colors"
+              onClick={async () => {
+                if (!editName.trim()) return;
+                if (userProfile) {
+                  const updated: UserProfile = {
+                    ...userProfile,
+                    name: editName.trim()
+                  };
+                  try {
+                    localStorage.setItem('parzio_user_profile', JSON.stringify(updated));
+                    await userService.saveUserProfile(updated);
+                  } catch (err) {
+                    console.error('Failed to update profile', err);
+                  }
+                  if (onUpdateProfile) {
+                    onUpdateProfile(updated);
+                  }
+                }
+                setActiveModal(null);
+              }}
+              className="w-full py-2.5 rounded-xl bg-[#8c7138] text-white font-bold text-xs shadow-xs hover:bg-[#6e582a] transition-colors cursor-pointer"
             >
               Save Details
             </button>

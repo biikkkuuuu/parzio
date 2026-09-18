@@ -1281,6 +1281,10 @@ export default function App() {
               onTrackOrder={() => {
                 handleTabChange('track');
               }}
+              onUpdateProfile={(updated) => {
+                setUserProfile(updated);
+                showToast('Profile updated successfully!');
+              }}
             />
           </main>
         ) : activeTab === 'bag' ? (
