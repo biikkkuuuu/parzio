@@ -23,24 +23,20 @@ import {
 import { HIGH_RISK_PINCODES } from '../data/adminData';
 import { lookupPincode } from '../services/postalService';
 
-interface CheckoutModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface CheckoutViewProps {
   cartItems: CartItem[];
   totalAmount: number;
   onOrderPlaced: (newOrder: OrderItem) => void;
   userProfile?: UserProfile | null;
-  onLoginClick?: () => void;
+  onBack?: () => void;
 }
 
-export const CheckoutModal: React.FC<CheckoutModalProps> = ({
-  isOpen,
-  onClose,
+export const CheckoutView: React.FC<CheckoutViewProps> = ({
   cartItems,
   totalAmount,
   onOrderPlaced,
   userProfile,
-  onLoginClick
+  onBack
 }) => {
   // Form Fields
   const [name, setName] = useState(userProfile?.name || '');
@@ -148,7 +144,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     return () => clearInterval(interval);
   }, [step, resendTimer]);
 
-  if (!isOpen) return null;
+
 
   // Setup Recaptcha
   const setupRecaptcha = () => {
@@ -351,31 +347,46 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     }
   };
 
+  // Handle "Back" navigation
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      window.location.hash = '#/';
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-      <div
-        className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl border border-[#eae5dc] max-h-[92vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header Bar */}
-        <div className="p-4 sm:p-5 border-b border-[#eae5dc] bg-[#faf8f5] flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#141414] text-[#fed488] flex items-center justify-center font-bold text-xs shadow-xs">
-              P
+    <div className="min-h-screen w-full bg-[#f8f6f0] flex flex-col font-sans pb-24 animate-fadeIn">
+      {/* Hidden element for Firebase Recaptcha */}
+      <div id="recaptcha-container" className="hidden"></div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 w-full max-w-md mx-auto bg-white min-h-screen sm:min-h-0 sm:mt-6 sm:mb-12 sm:rounded-[2rem] sm:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden relative">
+        
+        {/* Header */}
+        <div className="px-4 py-4 border-b border-[#eae5dc] flex items-center justify-between bg-white sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleBack}
+              className="p-1.5 -ml-1.5 rounded-full hover:bg-neutral-100 text-[#141414] transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#141414] text-[#fed488]">
+              <span className="font-serif font-black text-sm tracking-tighter">P</span>
             </div>
             <div>
-              <h3 className="font-display font-bold text-base text-[#141414] leading-tight">
-                {step === 'otp'
-                  ? 'COD Phone Verification'
+              <h2 className="text-base font-black text-[#141414] tracking-tight leading-none">
+                {step === 'otp' 
+                  ? 'Verify Identity' 
                   : step === 'upi_payment'
-                  ? 'Prepaid UPI Payment'
-                  : step === 'success'
-                  ? 'Order Confirmed'
+                  ? 'Payment'
                   : 'Quick Checkout'}
-              </h3>
-              <p className="text-[11px] text-[#747878] font-medium">
-                {step === 'otp'
-                  ? 'Preventing fake orders via OTP verification'
+              </h2>
+              <p className="text-[10px] font-bold text-[#8c7138] uppercase tracking-wider mt-0.5">
+                {step === 'otp' 
+                  ? 'Secure Login' 
                   : step === 'upi_payment'
                   ? 'Scan QR or pay via UPI ID and submit 12-digit UTR'
                   : step === 'success'
@@ -384,14 +395,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </p>
             </div>
           </div>
-
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-neutral-200 text-[#747878] hover:text-[#141414] transition-colors cursor-pointer"
-            title="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Modal Scrollable Body */}

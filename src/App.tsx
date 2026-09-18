@@ -38,7 +38,7 @@ const AllCategoriesView = React.lazy(() => import('./components/AllCategoriesVie
 const CartDrawer = React.lazy(() => import('./components/CartDrawer').then(m => ({ default: m.CartDrawer })));
 const ProductModal = React.lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
 const ProductDetailView = React.lazy(() => import('./components/ProductDetailView').then(m => ({ default: m.ProductDetailView })));
-const CheckoutModal = React.lazy(() => import('./components/CheckoutModal').then(m => ({ default: m.CheckoutModal })));
+const CheckoutView = React.lazy(() => import('./components/CheckoutView').then(m => ({ default: m.CheckoutView })));
 const UserLoginModal = React.lazy(() => import('./components/UserLoginModal').then(m => ({ default: m.UserLoginModal })));
 const WishlistView = React.lazy(() => import('./components/WishlistView').then(m => ({ default: m.WishlistView })));
 const SearchModal = React.lazy(() => import('./components/SearchModal').then(m => ({ default: m.SearchModal })));
@@ -134,7 +134,7 @@ export default function App() {
       return { type: 'tab', id: null, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: 'cart' };
     }
     if (hash === '#/checkout' || hash === '#checkout') {
-      return { type: 'tab', id: null, tab: savedTab, screen: 'storefront' as ActiveScreen, modal: 'checkout' };
+      return { type: 'tab', id: null, tab: 'checkout' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
     }
     if (hash === '#/wishlist' || hash === '#wishlist') {
       return { type: 'tab', id: null, tab: 'wishlist' as TabType, screen: 'storefront' as ActiveScreen, modal: null };
@@ -199,7 +199,7 @@ export default function App() {
   }, []);
 
   // Mobile Bottom Tab Navigation (Persistent on refresh)
-  const [activeTab, setActiveTab] = useState<TabType>(initialRoute.tab || 'home');
+  const [activeTab, setActiveTab] = useState<TabType | 'checkout'>(initialRoute.tab || 'home');
 
   // Products and Filtering (Unified Data Layer via dbService)
   const [products, setProducts] = useState<Product[]>(() => dbService.getProducts());
@@ -298,8 +298,6 @@ export default function App() {
   const setIsCartOpen = useUIStore(state => state.setIsCartOpen);
   const isWishlistOpen = useUIStore(state => state.isWishlistOpen);
   const setIsWishlistOpen = useUIStore(state => state.setIsWishlistOpen);
-  const isCheckoutOpen = useUIStore(state => state.isCheckoutOpen);
-  const setIsCheckoutOpen = useUIStore(state => state.setIsCheckoutOpen);
 
   // Sync initial route with UI Store
   useEffect(() => {
@@ -307,7 +305,6 @@ export default function App() {
     if (initialRoute.modal === 'search') setIsSearchOpen(true);
     if (initialRoute.modal === 'cart') setIsCartOpen(true);
     if (initialRoute.modal === 'wishlist') setIsWishlistOpen(true);
-    if (initialRoute.modal === 'checkout') setIsCheckoutOpen(true);
   }, []);
 
   const [selectedTrackOrderId, setSelectedTrackOrderId] = useState<string | null>(() => {
@@ -570,15 +567,19 @@ export default function App() {
     }
   };
 
-  const handleTabChange = (newTab: TabType) => {
-    try {
-      sessionStorage.setItem('parzio_last_tab', newTab);
-    } catch {}
+  const handleTabChange = (newTab: TabType | 'checkout') => {
+    if (newTab !== 'checkout') {
+      try {
+        sessionStorage.setItem('parzio_last_tab', newTab);
+      } catch {}
+    }
     const hash =
       newTab === 'home'
         ? '#/'
         : newTab === 'all-categories'
         ? '#/categories'
+        : newTab === 'checkout'
+        ? '#/checkout'
         : `#/${newTab === 'track' ? 'orders' : newTab}`;
     window.history.pushState({ type: 'tab', tab: newTab }, '', hash);
     setActiveTab(newTab);
@@ -586,7 +587,6 @@ export default function App() {
     setSelectedTrackOrderId(null);
     setIsCartOpen(false);
     setIsWishlistOpen(false);
-    setIsCheckoutOpen(false);
     setIsSearchOpen(false);
     setIsDrawerOpen(false);
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -646,22 +646,11 @@ export default function App() {
   };
 
   const handleOpenCheckout = () => {
-    if (window.location.hash !== '#/checkout' && window.location.hash !== '#checkout') {
-      window.history.pushState({ modal: 'checkout' }, '', '#/checkout');
-    }
-    setIsCheckoutOpen(true);
+    handleTabChange('checkout');
   };
 
   const handleCloseCheckout = () => {
-    setIsCheckoutOpen(false);
-    if (window.location.hash === '#/checkout' || window.location.hash === '#checkout') {
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        const savedTab = (sessionStorage.getItem('parzio_last_tab') as TabType) || 'home';
-        window.location.hash = savedTab === 'home' ? '#/' : `#/${savedTab === 'track' ? 'orders' : savedTab}`;
-      }
-    }
+    handleTabChange('home');
   };
 
   const handleOpenSearch = () => {
@@ -736,7 +725,6 @@ export default function App() {
       setActiveTab(currentRoute.tab || 'home');
 
       setIsCartOpen(currentRoute.modal === 'cart');
-      setIsCheckoutOpen(currentRoute.modal === 'checkout');
       setIsWishlistOpen(currentRoute.modal === 'wishlist');
       setIsSearchOpen(currentRoute.modal === 'search');
       setIsDrawerOpen(currentRoute.modal === 'drawer');
@@ -1115,34 +1103,36 @@ export default function App() {
 
       {/* Full Responsive Storefront */}
       <div className="flex-1 w-full bg-[#fbf9f6]">
-        {/* Full Storefront Header */}
-        <Header
-          cartCount={cartCount}
-          cartTotal={cartTotal}
-          wishlistCount={wishlistIds.length}
-          onOpenCart={handleOpenCart}
-          onOpenWishlist={handleOpenWishlist}
-          onOpenAccount={() => handleTabChange('account')}
-          activeCategory={activeCategory}
-          onSelectCategory={handleSelectCategory}
-          activeTab={activeTab}
-          onNavigateTab={handleTabChange}
-          activeScreen={activeScreen}
-          onToggleScreen={(screen) => {
-            if (screen === 'atelier-ops') {
-              handleOpenAtelierOps();
-            } else {
-              setActiveScreen('storefront');
-            }
-          }}
-          deviceMode="desktop"
-          onToggleDeviceMode={() => {}}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          topMarqueeItems={topMarqueeItems}
-          userProfile={userProfile}
-          onLoginClick={() => setIsLoginModalOpen(true)}
-        />
+        {/* Full Storefront Header - Hidden during checkout */}
+        {activeTab !== 'checkout' && (
+          <Header
+            cartCount={cartCount}
+            cartTotal={cartTotal}
+            wishlistCount={wishlistIds.length}
+            onOpenCart={handleOpenCart}
+            onOpenWishlist={handleOpenWishlist}
+            onOpenAccount={() => handleTabChange('account')}
+            activeCategory={activeCategory}
+            onSelectCategory={handleSelectCategory}
+            activeTab={activeTab}
+            onNavigateTab={handleTabChange}
+            activeScreen={activeScreen}
+            onToggleScreen={(screen) => {
+              if (screen === 'atelier-ops') {
+                handleOpenAtelierOps();
+              } else {
+                setActiveScreen('storefront');
+              }
+            }}
+            deviceMode="desktop"
+            onToggleDeviceMode={() => {}}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            topMarqueeItems={topMarqueeItems}
+            userProfile={userProfile}
+            onLoginClick={() => setIsLoginModalOpen(true)}
+          />
+        )}
 
         {selectedProduct ? (
           <ProductDetailView
@@ -1295,6 +1285,19 @@ export default function App() {
               }}
             />
           </main>
+        ) : activeTab === 'checkout' ? (
+          <main className="pb-16 md:pb-0">
+            <CheckoutView
+              cartItems={cartItems}
+              totalAmount={cartTotal}
+              onOrderPlaced={(order) => {
+                handleOrderPlaced(order);
+                handleTabChange('track');
+              }}
+              userProfile={userProfile}
+              onBack={() => handleTabChange('home')}
+            />
+          </main>
         ) : (
           <main className="pb-16 md:pb-0">
             {/* Hero Section */}
@@ -1401,22 +1404,11 @@ export default function App() {
             return;
           }
           setIsCartOpen(false);
-          handleOpenCheckout();
+          handleTabChange('checkout');
         }}
       />
 
-      <CheckoutModal
-        isOpen={isCheckoutOpen}
-        onClose={handleCloseCheckout}
-        cartItems={cartItems}
-        totalAmount={cartTotal}
-        onOrderPlaced={handleOrderPlaced}
-        userProfile={userProfile}
-        onLoginClick={() => {
-          handleCloseCheckout();
-          setIsLoginModalOpen(true);
-        }}
-      />
+
 
       {/* Storefront Enhancements: WhatsApp Concierge (Draggable) */}
       {activeScreen === 'storefront' && !emergencyConfig.isActive && (
@@ -1426,17 +1418,19 @@ export default function App() {
               handleTabChange('track');
             }}
           />
-          <BottomNav
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            cartCount={cartCount}
-            onOpenCart={handleOpenCart}
-            onCloseCart={handleCloseCart}
-            isCartOpen={isCartOpen}
-            onOpenProducts={() => {
-              handleTabChange('sale');
-            }}
-          />
+          {activeTab !== 'checkout' && (
+            <BottomNav
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              cartCount={cartCount}
+              onOpenCart={handleOpenCart}
+              onCloseCart={handleCloseCart}
+              isCartOpen={isCartOpen}
+              onOpenProducts={() => {
+                handleTabChange('sale');
+              }}
+            />
+          )}
         </>
       )}
       </div>

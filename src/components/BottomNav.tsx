@@ -1,7 +1,7 @@
 import React from 'react';
 import { Home, Sparkles, ShoppingBag, Truck, User } from 'lucide-react';
 
-export type TabType = 'home' | 'sale' | 'offers' | 'category' | 'all-categories' | 'track' | 'exchange' | 'account' | 'wishlist';
+export type TabType = 'home' | 'sale' | 'offers' | 'category' | 'all-categories' | 'track' | 'exchange' | 'account' | 'wishlist' | 'checkout';
 
 interface BottomNavProps {
   activeTab: TabType;
