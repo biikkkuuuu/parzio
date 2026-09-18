@@ -363,7 +363,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
       {/* Full-Width Header */}
       <div className="w-full border-b border-[#eae5dc] bg-white sticky top-0 z-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={handleBack}
@@ -382,22 +382,17 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                   ? 'Secure Payment'
                   : 'Checkout'}
               </h2>
-              <p className="text-[11px] font-bold text-[#8c7138] uppercase tracking-wider mt-1">
-                {step === 'otp' 
-                  ? 'Secure Login' 
-                  : step === 'upi_payment'
-                  ? 'Scan QR or Pay via UPI ID'
-                  : step === 'success'
-                  ? 'Order Confirmed'
-                  : 'Complete your purchase'}
-              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Scrollable Body */}
-      <div className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-8 pb-32">
+      {/* Two-Column Layout Body */}
+      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 pb-32">
+        <div className="flex flex-col lg:flex-row gap-10 xl:gap-16">
+          
+          {/* Left Column: Checkout Steps */}
+          <div className="flex-1 max-w-2xl">
 
           {/* STEP 1: Details & Address */}
           {step === 'details' && (
@@ -928,7 +923,66 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
             </div>
           )}
 
+          </div>
+
+          {/* Right Column: Order Summary (Visible on Desktop) */}
+          <div className="hidden lg:block w-[420px] flex-shrink-0">
+            <div className="sticky top-28 bg-[#faf8f5] p-6 rounded-3xl border border-[#eae5dc]">
+              <h3 className="font-bold text-[#141414] text-lg mb-6">Order Summary</h3>
+              
+              <div className="space-y-4 mb-6 max-h-[40vh] overflow-y-auto no-scrollbar pr-2">
+                {cartItems.map((item) => (
+                  <div key={`${item.product.id}-${item.size}`} className="flex gap-4">
+                    <div className="w-16 h-16 bg-white rounded-xl border border-[#eae5dc] overflow-hidden flex-shrink-0 relative">
+                      <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                      <span className="absolute -top-1.5 -right-1.5 bg-[#141414] text-[#fed488] text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm">
+                        {item.quantity}
+                      </span>
+                    </div>
+                    <div className="flex-1 text-sm pt-1">
+                      <p className="font-bold text-[#141414] line-clamp-2 leading-snug">{item.product.name}</p>
+                      <p className="text-[11px] text-[#747878] mt-1 font-semibold uppercase tracking-wider">Size: {item.size}</p>
+                    </div>
+                    <div className="font-bold text-[#141414] pt-1">₹{item.product.price * item.quantity}</div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="border-t border-[#eae5dc] pt-5 space-y-3 text-sm">
+                <div className="flex justify-between text-[#747878] font-medium">
+                  <span>Subtotal</span>
+                  <span>₹{totalAmount}</span>
+                </div>
+                <div className="flex justify-between text-[#747878] font-medium">
+                  <span>Shipping</span>
+                  <span className="text-emerald-600 font-bold">FREE</span>
+                </div>
+              </div>
+              
+              <div className="border-t border-[#eae5dc] mt-5 pt-5 flex justify-between items-end">
+                <div>
+                  <span className="font-bold text-[#141414] block">Total</span>
+                  <span className="text-[10px] text-[#747878] font-medium">Includes all taxes</span>
+                </div>
+                <span className="text-3xl font-black text-[#141414]">₹{totalAmount}</span>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="mt-6 p-4 rounded-2xl bg-white border border-[#eae5dc] grid grid-cols-2 gap-4">
+                 <div className="flex flex-col items-center text-center gap-1.5">
+                   <ShieldCheck className="w-5 h-5 text-[#8c7138]" />
+                   <span className="text-[10px] font-bold text-[#747878] leading-tight">Secure Payment</span>
+                 </div>
+                 <div className="flex flex-col items-center text-center gap-1.5">
+                   <Truck className="w-5 h-5 text-[#8c7138]" />
+                   <span className="text-[10px] font-bold text-[#747878] leading-tight">Express Delivery</span>
+                 </div>
+              </div>
+            </div>
+          </div>
+          
         </div>
+      </div>
     </div>
   );
 };
