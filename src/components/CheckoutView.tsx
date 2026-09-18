@@ -357,15 +357,13 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen w-full bg-white flex flex-col font-sans pb-24 animate-fadeIn">
+    <div className="min-h-screen w-full bg-white flex flex-col font-sans animate-fadeIn">
       {/* Hidden element for Firebase Recaptcha */}
       <div id="recaptcha-container" className="hidden"></div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 w-full max-w-3xl mx-auto bg-white flex flex-col relative">
-        
-        {/* Header */}
-        <div className="px-4 sm:px-6 py-4 border-b border-[#eae5dc] flex items-center justify-between bg-white sticky top-0 z-10">
+      {/* Full-Width Header */}
+      <div className="w-full border-b border-[#eae5dc] bg-white sticky top-0 z-20">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={handleBack}
@@ -396,9 +394,10 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-8 no-scrollbar">
+      {/* Scrollable Body */}
+      <div className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-8 pb-32">
 
           {/* STEP 1: Details & Address */}
           {step === 'details' && (
