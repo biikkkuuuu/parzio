@@ -120,7 +120,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
     const trackingUrl = getTrackingUrl(selectedOrder.courier, selectedOrder.trackingNumber);
 
     return (
-      <div className="min-h-screen bg-[#fbf9f6] pb-28 pt-4 px-4 max-w-lg mx-auto animate-fadeIn">
+      <div className="min-h-screen bg-[#fbf9f6] pb-28 pt-6 px-4 sm:px-6 max-w-4xl mx-auto animate-fadeIn">
         {/* Top Navigation */}
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#eae5dc]">
           <button
@@ -381,21 +381,23 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
   /* SCREEN 2: CLEAN ALL ORDERS LIST VIEW (Real E-Commerce Standard)          */
   /* ========================================================================= */
   return (
-    <div className="min-h-[85vh] bg-[#fbf9f6] pb-28 px-4 pt-4 max-w-lg mx-auto animate-fadeIn">
-      {/* Clean E-Commerce Header matching Home page */}
-      <div className="mb-4 px-1 flex items-center gap-2">
-        <h2 className="text-2xl sm:text-3xl text-[#141414] font-bold tracking-tight">
-          My Orders
-        </h2>
-        <span className="text-xl sm:text-2xl text-[#9e7144] font-light">—</span>
-        <span className="text-xs sm:text-sm text-[#747878] font-medium">
-          {orders.length} Shipments
-        </span>
+    <div className="min-h-[85vh] bg-[#fbf9f6] pb-28 px-4 sm:px-6 pt-6 sm:pt-8 max-w-6xl mx-auto animate-fadeIn">
+      {/* Clean E-Commerce Header matching Home / Wishlist page */}
+      <div className="mb-6 flex items-center justify-between pb-4 border-b border-[#eae5dc]">
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl sm:text-3xl text-[#141414] font-bold tracking-tight">
+            My Orders
+          </h2>
+          <span className="text-xl sm:text-2xl text-[#9e7144] font-light">—</span>
+          <span className="text-xs sm:text-sm text-[#747878] font-medium">
+            {orders.length} {orders.length === 1 ? 'Shipment' : 'Shipments'}
+          </span>
+        </div>
       </div>
 
-      {/* Clean Orders List Cards */}
+      {/* Responsive Orders Grid: 2 columns on desktop, 1 on mobile */}
       {orders.length > 0 ? (
-        <div className="space-y-3.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {orders.map((order) => (
             <div
               key={order.id}
