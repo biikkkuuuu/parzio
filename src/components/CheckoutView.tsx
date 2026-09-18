@@ -934,7 +934,11 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                 {cartItems.map((item) => (
                   <div key={`${item.product.id}-${item.size}`} className="flex gap-4">
                     <div className="w-16 h-16 bg-white rounded-xl border border-[#eae5dc] overflow-hidden flex-shrink-0 relative">
-                      <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                      <img 
+                        src={item.product.image || (item.product as any).images?.[0] || ''} 
+                        alt={item.product.name} 
+                        className="w-full h-full object-cover" 
+                      />
                       <span className="absolute -top-1.5 -right-1.5 bg-[#141414] text-[#fed488] text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm">
                         {item.quantity}
                       </span>
