@@ -1101,8 +1101,8 @@ export default function App() {
 
       {/* Full Responsive Storefront */}
       <div className="flex-1 w-full bg-[#fbf9f6]">
-        {/* Full Storefront Header - Hidden during checkout */}
-        {activeTab !== 'checkout' && (
+        {/* Full Storefront Header - Hidden during checkout and bag */}
+        {activeTab !== 'checkout' && activeTab !== 'bag' && (
           <Header
             cartCount={cartCount}
             cartTotal={cartTotal}

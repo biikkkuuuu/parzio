@@ -362,7 +362,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       <div id="recaptcha-container" className="hidden"></div>
 
       {/* Full-Width Header */}
-      <div className="w-full border-b border-[#eae5dc] bg-white sticky top-0 z-20">
+      <div className="w-full border-b border-[#eae5dc] bg-white relative z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -926,7 +926,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
           </div>
 
           {/* Right Column: Order Summary (Visible on Desktop) */}
-          <div className="hidden lg:block w-[420px] flex-shrink-0 self-start sticky top-28">
+          <div className="hidden lg:block w-[420px] flex-shrink-0 self-start sticky top-6">
             <div className="bg-[#faf8f5] p-6 rounded-3xl border border-[#eae5dc] shadow-xs">
               <h3 className="font-bold text-[#141414] text-lg mb-6">Order Summary</h3>
               

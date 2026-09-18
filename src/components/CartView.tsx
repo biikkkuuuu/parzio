@@ -59,7 +59,7 @@ export const CartView: React.FC<CartViewProps> = ({
   return (
     <div className="min-h-screen bg-[#fbf9f6] text-[#141414] font-sans pb-24">
       {/* Top Header / Breadcrumb */}
-      <div className="bg-white border-b border-[#eae5dc] sticky top-0 z-20 shadow-xs">
+      <div className="bg-white border-b border-[#eae5dc] relative z-20 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <button
             type="button"
@@ -232,7 +232,7 @@ export const CartView: React.FC<CartViewProps> = ({
             </div>
 
             {/* Right Column: Order Summary & Checkout Card (Desktop Sticky) */}
-            <div className="w-full lg:w-[420px] flex-shrink-0 self-start lg:sticky lg:top-24">
+            <div className="w-full lg:w-[420px] flex-shrink-0 self-start lg:sticky lg:top-6">
               <div className="bg-white p-6 rounded-3xl border border-[#eae5dc] shadow-xs space-y-5">
                 <h3 className="font-bold text-[#141414] text-lg">Order Summary</h3>
 
