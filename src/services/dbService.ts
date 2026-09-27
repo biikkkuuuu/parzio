@@ -4,14 +4,15 @@ import {
   OrderItem,
   StoreBanner,
   MarqueeItem,
-  Coupon
+  Coupon,
+  InstagramPostItem
 } from '../types';
 import {
   VAULT_PRODUCTS,
   CATEGORIES_DATA
 } from '../data/products';
 import { INITIAL_ORDERS } from '../data/orders';
-import { INITIAL_BANNERS, INITIAL_TOP_MARQUEE, INITIAL_BANNER_MARQUEE } from '../data/bannerData';
+import { INITIAL_BANNERS, INITIAL_TOP_MARQUEE, INITIAL_BANNER_MARQUEE, INITIAL_INSTAGRAM_POSTS } from '../data/bannerData';
 import { INITIAL_COUPONS } from '../data/adminData';
 import { db, isFirebaseConfigured } from '../lib/firebase';
 import {
@@ -35,6 +36,7 @@ const KEYS = {
   TOP_MARQUEE: 'parzio_top_marquee',
   BANNER_MARQUEE: 'parzio_banner_marquee',
   COUPONS: 'parzio_coupons',
+  INSTAGRAM_POSTS: 'parzio_instagram_posts',
 };
 
 /**
@@ -52,7 +54,12 @@ export const dbService = {
       const saved = localStorage.getItem(KEYS.PRODUCTS);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          if (!parsed.some(p => p.id === 'prod-test-one-rupee')) {
+            return [VAULT_PRODUCTS[0], ...parsed];
+          }
+          return parsed;
+        }
       }
     } catch {}
     return VAULT_PRODUCTS;
@@ -405,5 +412,25 @@ export const dbService = {
     try {
       localStorage.setItem(KEYS.COUPONS, JSON.stringify(coupons));
     } catch {}
+  },
+
+  // ================= INSTAGRAM POSTS =================
+  getInstagramPosts(): InstagramPostItem[] {
+    try {
+      const saved = localStorage.getItem(KEYS.INSTAGRAM_POSTS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return INITIAL_INSTAGRAM_POSTS;
+  },
+
+  saveInstagramPosts(posts: InstagramPostItem[]): void {
+    try {
+      localStorage.setItem(KEYS.INSTAGRAM_POSTS, JSON.stringify(posts));
+    } catch (e) {
+      console.error('Failed to cache instagram posts', e);
+    }
   },
 };

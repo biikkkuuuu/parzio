@@ -49,7 +49,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   const [postOffice, setPostOffice] = useState('');
   const [postOfficeList, setPostOfficeList] = useState<string[]>([]);
   const [isLoadingPostal, setIsLoadingPostal] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'Prepaid UPI'>('COD');
+  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'Prepaid UPI'>('Prepaid UPI');
 
   // Checkout Steps: 'details' | 'upi_payment' | 'otp' | 'success'
   const [step, setStep] = useState<'details' | 'upi_payment' | 'otp' | 'success'>('details');
@@ -186,8 +186,13 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   const handleProceedToNextStep = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!userProfile && onLoginClick) {
-      onLoginClick();
+    if (!phone || phone.replace(/\D/g, '').length !== 10) {
+      alert('Please enter a valid 10-digit mobile number for order delivery.');
+      return;
+    }
+
+    if (!name.trim()) {
+      alert('Please enter your full name.');
       return;
     }
 
@@ -678,8 +683,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
               {/* Submit CTA Button */}
               <button
-                type={!userProfile ? "button" : "submit"}
-                onClick={!userProfile ? onLoginClick : undefined}
+                type="submit"
                 disabled={isSendingOtp || isSubmitting}
                 className="w-full py-4 rounded-xl bg-[#141414] text-[#fed488] font-bold text-sm shadow-[0_4px_12px_rgba(20,20,20,0.15)] flex items-center justify-center gap-2 hover:bg-[#2a2a2a] transition-all disabled:opacity-70 cursor-pointer"
               >
@@ -691,8 +695,6 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                   <span className="flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin text-[#fed488]" /> Processing Payment...
                   </span>
-                ) : !userProfile ? (
-                  'Login to Continue'
                 ) : paymentMethod === 'COD' ? (
                   <>
                     <MessageSquare className="w-4 h-4" />
