@@ -82,7 +82,13 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
         body: JSON.stringify({ phone, turnstileToken })
       });
       
-      const data = await response.json();
+      const text = await response.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('Server connection error. Please try again.');
+      }
       
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Failed to send OTP');
@@ -117,7 +123,13 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
         body: JSON.stringify({ phone, otp: entered })
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('Server connection error. Please try again.');
+      }
       
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Invalid OTP');
