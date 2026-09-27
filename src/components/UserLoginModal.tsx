@@ -56,8 +56,20 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
   const [expectedOtp, setExpectedOtp] = useState<string | null>(null);
 
   const setupRecaptcha = () => {
-    // Recaptcha is no longer needed since we are not using Firebase phone auth
-    return true;
+    if (!auth) return null;
+    if (!window.recaptchaVerifier) {
+      try {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha', {
+          size: 'invisible',
+          callback: () => {
+            // reCAPTCHA solved
+          }
+        });
+      } catch (err) {
+        console.error("Recaptcha init error", err);
+      }
+    }
+    return window.recaptchaVerifier;
   };
 
   const handleSendOtp = async (e: React.FormEvent) => {
@@ -66,15 +78,33 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
       setError('Please enter a valid 10-digit mobile number');
       return;
     }
-    if (!turnstileToken) {
-      setError('Please complete the security check');
-      return;
-    }
     
     setError(null);
     setInfoNotice(null);
     setIsLoading(true);
     
+    // 1. Try Firebase 100% Free Google Phone Auth first (Zero Cost)
+    try {
+      const appVerifier = setupRecaptcha();
+      if (auth && appVerifier) {
+        const formattedPhone = `+91${phone}`;
+        const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+        setConfirmationResult(result);
+        setStep('otp');
+        setResendTimer(60);
+        setInfoNotice(`📱 6-digit OTP sent to +91 ${phone}`);
+        setIsLoading(false);
+        return;
+      }
+    } catch (fbErr: any) {
+      console.warn("Firebase phone auth fallback to gateway:", fbErr);
+      if (window.recaptchaVerifier) {
+        try { window.recaptchaVerifier.clear(); } catch {}
+        window.recaptchaVerifier = undefined;
+      }
+    }
+
+    // 2. Gateway Fallback
     try {
       const response = await fetch('/api/send-otp', {
         method: 'POST',
@@ -96,8 +126,6 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
 
       setStep('otp');
       setResendTimer(60);
-
-      // Customer-facing clean message (NO third-party vendor name shown)
       setInfoNotice(`📱 6-digit OTP sent to +91 ${phone}`);
     } catch (err: any) {
       console.error("Send OTP error:", err);
@@ -116,6 +144,36 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
     setError(null);
     setIsLoading(true);
 
+    // 1. If Firebase confirmation result is active
+    if (confirmationResult) {
+      try {
+        const authResult = await confirmationResult.confirm(entered);
+        const uid = authResult.user.uid;
+        if (uid) {
+          setUserId(uid);
+          let profile = await userService.getUserProfile(phone);
+          if (profile && profile.name) {
+            profile.uid = uid;
+            await userService.saveUserProfile(uid, `+91${phone}`, profile.name);
+            await userService.updateLastLogin(uid);
+            localStorage.setItem('parzio_user_profile', JSON.stringify(profile));
+            onSuccess(profile);
+            onClose();
+          } else {
+            setInfoNotice(null);
+            setStep('name');
+          }
+        }
+        return;
+      } catch (confirmErr: any) {
+        console.error("Firebase OTP confirmation error:", confirmErr);
+        setError('Galat OTP code hai. Kripya phone par aaya sahi 6-digit OTP enter karein.');
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // 2. Gateway fallback verification
     try {
       const response = await fetch('/api/verify-otp', {
         method: 'POST',
@@ -135,7 +193,6 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
         throw new Error(data.error || 'Invalid OTP');
       }
 
-      // OTP verified successfully. Authenticate anonymously to secure Firestore rules.
       let authResult;
       try {
         authResult = await signInAnonymously(auth);
@@ -148,18 +205,15 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
       
       if (uid) {
         setUserId(uid);
-        // Look up by clean phone number across Firestore and local registry
         let profile = await userService.getUserProfile(phone);
         if (profile && profile.name) {
-          // Returning user: verify OTP first, then login directly without asking name
-          profile.uid = uid; // Update with secure anonymous UID
+          profile.uid = uid;
           await userService.saveUserProfile(uid, `+91${phone}`, profile.name);
           await userService.updateLastLogin(uid);
           localStorage.setItem('parzio_user_profile', JSON.stringify(profile));
           onSuccess(profile);
           onClose();
         } else {
-          // New user: ask for name
           setInfoNotice(null);
           setStep('name');
         }
@@ -258,8 +312,8 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
               
               <button
                 type="submit"
-                disabled={isLoading || phone.length !== 10 || !turnstileToken}
-                className="w-full py-3.5 rounded-xl bg-[#141414] text-[#fed488] font-bold shadow-md hover:bg-[#2a2a2a] disabled:opacity-70 flex justify-center items-center gap-2 transition-all"
+                disabled={isLoading || phone.length !== 10}
+                className="w-full py-3.5 rounded-xl bg-[#141414] text-[#fed488] font-bold shadow-md hover:bg-[#2a2a2a] disabled:opacity-70 flex justify-center items-center gap-2 transition-all cursor-pointer"
               >
                 {isLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Get OTP'}
               </button>
