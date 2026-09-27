@@ -11,7 +11,7 @@ interface CartDrawerProps {
   onCheckout: () => void;
 }
 
-const MINIMUM_CART_VALUE = 500;
+const MINIMUM_CART_VALUE = 1;
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
   isOpen,
@@ -56,9 +56,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     0
   );
   const totalCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-  const isMinMet = totalAmount >= MINIMUM_CART_VALUE;
-  const progressPercent = Math.min(100, Math.round((totalAmount / MINIMUM_CART_VALUE) * 100));
-  const remainingAmount = Math.max(0, MINIMUM_CART_VALUE - totalAmount);
+  const isMinMet = totalAmount >= 1;
+  const progressPercent = 100;
+  const remainingAmount = 0;
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,35 +94,21 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             </button>
           </div>
 
-          {/* Minimum Cart Value Banner & Progress Bar */}
-          <div className="p-4 bg-[#f2ece1] border-b border-[#dfd7ca]">
-            <div className="flex items-start gap-2.5">
-              <div className="w-6 h-6 rounded-full bg-[#8c7138] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">
-                !
+          {/* Express Delivery Banner */}
+          <div className="p-3 sm:p-4 bg-[#f2ece1] border-b border-[#dfd7ca]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                ✓
               </div>
               <div className="text-xs">
-                <p className="font-bold text-[#141414]">
-                  Minimum Cart Value: ₹{MINIMUM_CART_VALUE}
+                <p className="font-bold text-emerald-800 flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Free Express Delivery Unlocked!
                 </p>
-                <p className="text-[#747878] mt-0.5">
-                  {isMinMet ? (
-                    <span className="text-emerald-700 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Free Express Courier Unlocked!
-                    </span>
-                  ) : (
-                    `Add ₹${remainingAmount} more (${Math.ceil(remainingAmount / 99)} more ₹99 items) to checkout`
-                  )}
+                <p className="text-[#747878] text-[11px] mt-0.5">
+                  100% Waterproof &amp; Anti-Tarnish Demi-Fine Guarantee
                 </p>
               </div>
-            </div>
-
-            {/* Progress line */}
-            <div className="mt-3 w-full h-1.5 rounded-full bg-[#dfd7ca] overflow-hidden">
-              <div
-                className="h-full rounded-full bg-[#8c7138] transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
             </div>
           </div>
 
@@ -241,7 +227,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <div className="flex justify-between">
                   <span>Shipping</span>
                   <span className="font-bold text-emerald-700">
-                    {isMinMet ? 'FREE' : '₹99'}
+                    FREE
                   </span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-[#141414] pt-1 border-t border-[#eae5dc]">
@@ -252,15 +238,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
               {/* Checkout Button */}
               <button
-                disabled={!isMinMet}
+                disabled={cartItems.length === 0}
                 onClick={onCheckout}
-                className={`w-full py-3 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all ${
-                  isMinMet
-                    ? 'bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white active:scale-98 cursor-pointer shadow-md'
-                    : 'bg-[#e5e0d8] text-[#a3a3a3] cursor-not-allowed'
-                }`}
+                className="w-full py-3 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white active:scale-98 cursor-pointer shadow-md"
               >
-                <span>{isMinMet ? 'Proceed to Checkout / COD' : `Add ₹${remainingAmount} More To Order`}</span>
+                <span>Proceed to Checkout</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 

@@ -21,7 +21,7 @@ interface CartViewProps {
   onBackToStore: () => void;
 }
 
-const MINIMUM_CART_VALUE = 500;
+const MINIMUM_CART_VALUE = 1;
 
 export const CartView: React.FC<CartViewProps> = ({
   cartItems,
@@ -45,9 +45,9 @@ export const CartView: React.FC<CartViewProps> = ({
   const totalCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const savings = Math.max(0, originalTotalAmount - totalAmount);
 
-  const isMinMet = totalAmount >= MINIMUM_CART_VALUE;
-  const progressPercent = Math.min(100, Math.round((totalAmount / MINIMUM_CART_VALUE) * 100));
-  const remainingAmount = Math.max(0, MINIMUM_CART_VALUE - totalAmount);
+  const isMinMet = totalAmount >= 1;
+  const progressPercent = 100;
+  const remainingAmount = 0;
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,35 +112,21 @@ export const CartView: React.FC<CartViewProps> = ({
             {/* Left Column: Items List & Delivery Threshold */}
             <div className="flex-1 w-full max-w-2xl min-w-0 space-y-6">
               
-              {/* Minimum Cart Value Banner & Progress Bar */}
+              {/* Special Guarantee & Shipping Banner */}
               <div className="p-4 sm:p-5 bg-[#faf8f5] rounded-2xl border border-[#dfd7ca] shadow-xs">
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-[#8c7138] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">
-                    !
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    ✓
                   </div>
                   <div className="flex-1 text-xs sm:text-sm">
                     <p className="font-bold text-[#141414]">
-                      Minimum Cart Value: ₹{MINIMUM_CART_VALUE}
+                      Free Express Shipping &amp; Insured Delivery
                     </p>
-                    <p className="text-[#747878] mt-1 text-xs leading-relaxed">
-                      {isMinMet ? (
-                        <span className="text-emerald-700 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-4 h-4" />
-                          Free Express Courier Unlocked for this order!
-                        </span>
-                      ) : (
-                        `Add ₹${remainingAmount} more to checkout (${Math.ceil(remainingAmount / 99)} more ₹99 items)`
-                      )}
+                    <p className="text-emerald-700 font-semibold mt-0.5 text-xs flex items-center gap-1">
+                      <CheckCircle2 className="w-4 h-4" />
+                      100% Anti-Tarnish &amp; Waterproof Demi-Fine Jewellery
                     </p>
                   </div>
-                </div>
-
-                {/* Progress bar */}
-                <div className="mt-3.5 w-full h-2 rounded-full bg-[#dfd7ca] overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[#8c7138] transition-all duration-500"
-                    style={{ width: `${progressPercent}%` }}
-                  />
                 </div>
               </div>
 
@@ -285,7 +271,7 @@ export const CartView: React.FC<CartViewProps> = ({
                   <div className="flex justify-between">
                     <span>Express Shipping</span>
                     <span className="font-bold text-emerald-700">
-                      {isMinMet ? 'FREE' : '₹99'}
+                      FREE
                     </span>
                   </div>
 
@@ -302,22 +288,12 @@ export const CartView: React.FC<CartViewProps> = ({
 
                 {/* Checkout CTA Button */}
                 <button
-                  disabled={!isMinMet}
+                  disabled={cartItems.length === 0}
                   onClick={onCheckout}
-                  className={`w-full py-4 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md ${
-                    isMinMet
-                      ? 'bg-[#141414] text-[#fed488] hover:bg-[#2a2a2a] active:scale-98 cursor-pointer'
-                      : 'bg-[#e5e0d8] text-[#a3a3a3] cursor-not-allowed'
-                  }`}
+                  className="w-full py-4 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md bg-[#141414] text-[#fed488] hover:bg-[#2a2a2a] active:scale-98 cursor-pointer"
                 >
-                  {isMinMet ? (
-                    <>
-                      <span>Proceed to Checkout</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  ) : (
-                    <span>Add ₹{remainingAmount} More to Checkout</span>
-                  )}
+                  <span>Proceed to Checkout</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
 
                 {/* Trust Badges */}
