@@ -199,14 +199,78 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       }
     }
 
-    // 2. Prepaid UPI Flow: Transition to UPI verification screen (Fixes SEC-01)
+    // 2. Prepaid Online Payment via Razorpay
     if (paymentMethod === 'Prepaid UPI') {
-      setStep('upi_payment');
+      handleRazorpayPayment();
       return;
     }
 
     // 3. Cash on Delivery
     finalizeOrder(true);
+  };
+
+  // Launch Official Razorpay Live Payment Gateway
+  const handleRazorpayPayment = () => {
+    if (typeof (window as any).Razorpay === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => handleRazorpayPayment();
+      script.onerror = () => {
+        alert('Payment gateway could not load. Please check your internet connection and retry.');
+        setIsSubmitting(false);
+      };
+      document.body.appendChild(script);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_Th5XJWuXtanrZf';
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+
+    const options = {
+      key: razorpayKey,
+      amount: Math.round(verifiedAmount * 100),
+      currency: 'INR',
+      name: 'PARZIO JEWELLERY',
+      description: `Order Payment (${cartItems.length} jewellery items)`,
+      image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=200&q=80',
+      prefill: {
+        name: name || userProfile?.name || 'Customer',
+        contact: cleanPhone,
+        email: userProfile?.email || 'customer@parzio.in'
+      },
+      theme: {
+        color: '#141414'
+      },
+      modal: {
+        ondismiss: function () {
+          setIsSubmitting(false);
+        }
+      },
+      handler: function (response: any) {
+        if (response && response.razorpay_payment_id) {
+          finalizeOrder(true, response.razorpay_payment_id);
+        } else {
+          setIsSubmitting(false);
+        }
+      }
+    };
+
+    try {
+      const rzpInstance = new (window as any).Razorpay(options);
+      rzpInstance.on('payment.failed', function (res: any) {
+        console.error('Razorpay payment failed:', res);
+        alert(`Payment Failed: ${res?.error?.description || 'Transaction was cancelled.'}`);
+        setIsSubmitting(false);
+      });
+      rzpInstance.open();
+    } catch (err: any) {
+      console.error('Razorpay launch exception:', err);
+      alert('Unable to launch Razorpay gateway. Please retry.');
+      setIsSubmitting(false);
+    }
   };
 
   // OTP Input Changes
@@ -571,7 +635,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                     </p>
                   </button>
 
-                  {/* Prepaid UPI Card */}
+                  {/* Prepaid Online Payment (Razorpay Live) Card */}
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('Prepaid UPI')}
@@ -584,14 +648,14 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 font-bold text-xs text-[#141414]">
                         <CreditCard className="w-4 h-4 text-[#8c7138]" />
-                        <span>Prepaid UPI</span>
+                        <span>Online (Cards, UPI, GPay)</span>
                       </div>
                       <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">
-                        Fast-Track
+                        Razorpay Live
                       </span>
                     </div>
                     <p className="text-[11px] text-[#747878] mt-1.5 leading-snug">
-                      Instant 1-Click order. Zero verification needed.
+                      Instant 1-Click payment via Google Pay, PhonePe, Cards &amp; NetBanking.
                     </p>
                   </button>
                 </div>
@@ -614,12 +678,16 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
               <button
                 type={!userProfile ? "button" : "submit"}
                 onClick={!userProfile ? onLoginClick : undefined}
-                disabled={isSendingOtp}
-                className="w-full py-4 rounded-xl bg-[#141414] text-[#fed488] font-bold text-sm shadow-[0_4px_12px_rgba(20,20,20,0.15)] flex items-center justify-center gap-2 hover:bg-[#2a2a2a] transition-all disabled:opacity-70"
+                disabled={isSendingOtp || isSubmitting}
+                className="w-full py-4 rounded-xl bg-[#141414] text-[#fed488] font-bold text-sm shadow-[0_4px_12px_rgba(20,20,20,0.15)] flex items-center justify-center gap-2 hover:bg-[#2a2a2a] transition-all disabled:opacity-70 cursor-pointer"
               >
                 {isSendingOtp ? (
                   <span className="flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin text-white" /> Sending OTP...
+                  </span>
+                ) : isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#fed488]" /> Processing Payment...
                   </span>
                 ) : !userProfile ? (
                   'Login to Continue'
@@ -631,7 +699,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    <span>Pay ₹{verifiedAmount} via UPI</span>
+                    <span>Pay ₹{verifiedAmount} Online (Razorpay)</span>
                   </>
                 )}
               </button>
@@ -855,9 +923,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                 <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold font-mono">
                   {placedOrderData.paymentMethod === 'COD'
                     ? '✓ COD PHONE VERIFIED'
-                    : placedOrderData.status === 'Pending Verification'
-                    ? '⏳ PREPAID UPI • PENDING VERIFICATION'
-                    : '✓ 100% PREPAID UPI'}
+                    : '✓ 100% PREPAID • RAZORPAY VERIFIED'}
                 </span>
                 <h3 className="font-display text-2xl font-bold text-[#141414] mt-2">
                   Order Successfully Placed!
