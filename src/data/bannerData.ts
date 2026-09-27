@@ -1,4 +1,4 @@
-import { MarqueeItem, StoreBanner } from '../types';
+import { MarqueeItem, StoreBanner, InstagramPostItem } from '../types';
 
 export const INITIAL_TOP_MARQUEE: MarqueeItem[] = [
   {
@@ -151,6 +151,65 @@ export const INITIAL_SALE_POSTERS = [
     image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1200&q=80',
     linkCategory: 'NECKLACES',
     buttonText: 'EXPLORE NECKLACE POSTER',
+    active: true
+  }
+];
+
+export const INITIAL_INSTAGRAM_POSTS: InstagramPostItem[] = [
+  {
+    id: 'insta-1',
+    imageUrl: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=400&q=80',
+    postUrl: 'https://instagram.com/parzio.in',
+    caption: 'Classic Anti-Tarnish Necklace',
+    active: true
+  },
+  {
+    id: 'insta-2',
+    imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=400&q=80',
+    postUrl: 'https://instagram.com/parzio.in',
+    caption: '18K Gold Plated Studs',
+    active: true
+  },
+  {
+    id: 'insta-3',
+    imageUrl: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=400&q=80',
+    postUrl: 'https://instagram.com/parzio.in',
+    caption: 'Waterproof Everyday Ring',
+    active: true
+  },
+  {
+    id: 'insta-4',
+    imageUrl: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=400&q=80',
+    postUrl: 'https://instagram.com/parzio.in',
+    caption: 'Chunky Gold Link Bracelet',
+    active: true
+  },
+  {
+    id: 'insta-5',
+    imageUrl: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80',
+    postUrl: 'https://instagram.com/parzio.in',
+    caption: 'Minimal Layering Chain',
+    active: true
+  },
+  {
+    id: 'insta-6',
+    imageUrl: 'https://images.unsplash.com/photo-1611591475816-43b664d4b121?auto=format&fit=crop&w=400&q=80',
+    postUrl: 'https://instagram.com/parzio.in',
+    caption: 'Pearl Drop Earrings',
+    active: true
+  },
+  {
+    id: 'insta-7',
+    imageUrl: 'https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=400&q=80',
+    postUrl: 'https://instagram.com/parzio.in',
+    caption: '316L Stainless Steel Bangle',
+    active: true
+  },
+  {
+    id: 'insta-8',
+    imageUrl: 'https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?auto=format&fit=crop&w=400&q=80',
+    postUrl: 'https://instagram.com/parzio.in',
+    caption: 'Daily Luxe Essentials',
     active: true
   }
 ];

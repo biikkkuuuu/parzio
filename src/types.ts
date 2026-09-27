@@ -65,6 +65,14 @@ export interface MarqueeItem {
   active: boolean;
 }
 
+export interface InstagramPostItem {
+  id: string;
+  imageUrl: string;
+  postUrl: string;
+  caption?: string;
+  active: boolean;
+}
+
 export interface StoreBanner {
   id: string;
   title: string;
