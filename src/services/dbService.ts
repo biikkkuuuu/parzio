@@ -55,8 +55,8 @@ export const dbService = {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const rest = parsed.filter(p => p.id !== 'prod-test-one-rupee');
-          return [VAULT_PRODUCTS[0], ...rest];
+          const cleaned = parsed.filter((p: Product) => p.id !== 'prod-test-one-rupee');
+          return cleaned.length > 0 ? cleaned : VAULT_PRODUCTS;
         }
       }
     } catch {}

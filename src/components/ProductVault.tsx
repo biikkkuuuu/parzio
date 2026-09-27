@@ -14,15 +14,6 @@ interface ProductVaultProps {
 
 const FEATURED_NEW_ARRIVALS = [
   {
-    id: 'prod-test-one-rupee',
-    title: '18K Gold Plated Live Test Ring',
-    price: 1,
-    originalPrice: 999,
-    discount: '99% OFF',
-    image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=500&q=80',
-    category: 'RINGS'
-  },
-  {
     id: 'feat-bangles-1',
     title: 'Traditional Red Bangles Set',
     price: 299,
@@ -190,13 +181,6 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                         e.currentTarget.src = 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=500&q=80';
                       }}
                     />
-
-                    {/* Live Test ₹1 Badge */}
-                    {product.price === 1 && (
-                      <span className="absolute top-1.5 left-1.5 bg-[#059669] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow-sm tracking-wide uppercase animate-pulse z-10">
-                        LIVE TEST • ₹1
-                      </span>
-                    )}
 
                     {/* Wishlist Icon Top Right matching screenshot */}
                     <button

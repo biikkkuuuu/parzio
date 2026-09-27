@@ -21,26 +21,6 @@ export const HERO_PRODUCT: Product = {
 };
 
 export const VAULT_PRODUCTS: Product[] = [
-  // ==================== LIVE RAZORPAY ₹1 TESTING PRODUCT ====================
-  {
-    id: 'prod-test-one-rupee',
-    name: '18K Gold Plated Live Test Ring',
-    category: 'Rings',
-    price: 1,
-    originalPrice: 999,
-    savePercent: 99,
-    rating: 5.0,
-    reviewsCount: 100,
-    colorways: 1,
-    sku: 'TEST-RZP-1RS',
-    material: '316L Surgical Stainless Steel',
-    isWaterproof: true,
-    isAntiTarnish: true,
-    badge: 'LIVE TEST • ₹1 ONLY',
-    stock: 999,
-    image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80',
-    description: 'Special ₹1 product to test live Razorpay online payment.'
-  },
   // ==================== CLIENT FEATURED NEW ARRIVALS ====================
   {
     id: 'prod-red-bangles',

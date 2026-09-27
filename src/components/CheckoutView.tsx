@@ -40,12 +40,12 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   onBack,
   onLoginClick
 }) => {
-  // Form Fields (Pre-populated for 1-click seamless checkout & live test)
-  const [name, setName] = useState(userProfile?.name || 'Customer');
-  const [phone, setPhone] = useState(userProfile?.phone?.replace('+91', '') || '9876543210');
-  const [address, setAddress] = useState('Flat 402, Lotus Towers, Andheri West');
-  const [city, setCity] = useState('Mumbai');
-  const [pincode, setPincode] = useState('400053');
+  // Form Fields
+  const [name, setName] = useState(userProfile?.name || '');
+  const [phone, setPhone] = useState(userProfile?.phone?.replace('+91', '') || '');
+  const [address, setAddress] = useState(userProfile?.address || '');
+  const [city, setCity] = useState(userProfile?.city || '');
+  const [pincode, setPincode] = useState(userProfile?.pincode || '');
   const [postOffice, setPostOffice] = useState('');
   const [postOfficeList, setPostOfficeList] = useState<string[]>([]);
   const [isLoadingPostal, setIsLoadingPostal] = useState(false);
@@ -186,14 +186,31 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   const handleProceedToNextStep = async (e?: React.FormEvent) => {
     if (e && e.preventDefault) e.preventDefault();
 
-    // 1. Prepaid Online Payment via Razorpay
-    if (paymentMethod === 'Prepaid UPI') {
-      handleRazorpayPayment();
+    if (!name.trim()) {
+      alert('Please enter your full name.');
       return;
     }
 
-    if (!phone || phone.replace(/\D/g, '').length !== 10) {
-      alert('Please enter a valid 10-digit mobile number for order delivery.');
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      alert('Please enter a valid 10-digit mobile number for delivery updates.');
+      return;
+    }
+
+    if (!address.trim()) {
+      alert('Please enter your complete delivery address.');
+      return;
+    }
+
+    const cleanPincode = pincode.replace(/\D/g, '');
+    if (!cleanPincode || cleanPincode.length !== 6) {
+      alert('Please enter a valid 6-digit delivery pincode.');
+      return;
+    }
+
+    // 1. Prepaid Online Payment via Razorpay
+    if (paymentMethod === 'Prepaid UPI') {
+      handleRazorpayPayment();
       return;
     }
 

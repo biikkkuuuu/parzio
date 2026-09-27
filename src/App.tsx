@@ -1132,30 +1132,6 @@ export default function App() {
           />
         )}
 
-        {/* Live ₹1 Razorpay Testing Announcement Bar */}
-        {activeTab !== 'checkout' && activeTab !== 'bag' && (
-          <div className="bg-gradient-to-r from-[#9e7144] via-[#7d5630] to-[#5d3f20] text-white px-3 py-2 text-xs font-semibold shadow-sm z-30">
-            <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping flex-shrink-0" />
-                <span className="text-[12px] sm:text-xs">
-                  ⚡ <b>LIVE PAYMENT TEST:</b> 18K Gold Plated Test Ring is live for <b>₹1 ONLY</b>.
-                </span>
-              </div>
-              <button
-                onClick={() => {
-                  const testItem = products.find(p => p.id === 'prod-test-one-rupee') || VAULT_PRODUCTS[0];
-                  handleAddToCart(testItem);
-                  handleTabChange('checkout');
-                }}
-                className="bg-white text-[#5d3f20] hover:bg-neutral-100 font-bold px-3 py-1 rounded-full text-[11px] shadow transition-transform active:scale-95 cursor-pointer whitespace-nowrap"
-              >
-                ⚡ Buy for ₹1 Now →
-              </button>
-            </div>
-          </div>
-        )}
-
         {selectedProduct ? (
           <ProductDetailView
             product={selectedProduct}
