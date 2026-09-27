@@ -83,56 +83,38 @@ export const UserLoginModal: React.FC<UserLoginModalProps> = ({ isOpen, onClose,
     setInfoNotice(null);
     setIsLoading(true);
     
-    // 1. Try Firebase 100% Free Google Phone Auth first (Zero Cost)
+    // 1. Firebase 100% Free Google Phone Auth
     try {
       const appVerifier = setupRecaptcha();
-      if (auth && appVerifier) {
-        const formattedPhone = `+91${phone}`;
-        const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-        setConfirmationResult(result);
-        setStep('otp');
-        setResendTimer(60);
-        setInfoNotice(`📱 6-digit OTP sent to +91 ${phone}`);
-        setIsLoading(false);
-        return;
+      if (!appVerifier) {
+        throw new Error('reCAPTCHA initialization failed. Please refresh page.');
       }
+      const formattedPhone = `+91${phone}`;
+      const result = await signInWithPhoneNumber(auth!, formattedPhone, appVerifier);
+      setConfirmationResult(result);
+      setStep('otp');
+      setResendTimer(60);
+      setInfoNotice(`📱 6-digit OTP sent to +91 ${phone}`);
+      setIsLoading(false);
+      return;
     } catch (fbErr: any) {
-      console.warn("Firebase phone auth fallback to gateway:", fbErr);
+      console.error("Firebase phone auth error:", fbErr);
       if (window.recaptchaVerifier) {
         try { window.recaptchaVerifier.clear(); } catch {}
         window.recaptchaVerifier = undefined;
       }
-    }
-
-    // 2. Gateway Fallback
-    try {
-      const response = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, turnstileToken })
-      });
-      
-      const text = await response.text();
-      let data: any = {};
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error('Server connection error. Please try again.');
+      const code = fbErr?.code || '';
+      if (code.includes('quota-exceeded')) {
+        setError('Daily free SMS limit reached (10/day). Add billing in Firebase for 10,000/month.');
+      } else if (code.includes('invalid-phone-number')) {
+        setError('Kripya sahi 10-digit mobile number enter karein.');
+      } else if (code.includes('too-many-requests')) {
+        setError('Bohot saare requests aa gaye hain. Kripya 2 minute baad try karein.');
+      } else {
+        setError(fbErr?.message || 'OTP send nahi ho saka. Kripya page refresh karke try karein.');
       }
-      
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to send OTP');
-      }
-
-      setStep('otp');
-      setResendTimer(60);
-      setInfoNotice(`📱 6-digit OTP sent to +91 ${phone}`);
-    } catch (err: any) {
-      console.error("Send OTP error:", err);
-      let msg = err?.message || 'Failed to send SMS OTP. Try again.';
-      setError(msg);
-    } finally {
       setIsLoading(false);
+      return;
     }
   };
 
