@@ -1314,6 +1314,7 @@ export default function App() {
               }}
               userProfile={userProfile}
               onBack={() => handleTabChange('home')}
+              onLoginClick={() => setIsLoginModalOpen(true)}
             />
           </main>
         ) : (

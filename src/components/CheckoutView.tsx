@@ -29,6 +29,7 @@ interface CheckoutViewProps {
   onOrderPlaced: (newOrder: OrderItem) => void;
   userProfile?: UserProfile | null;
   onBack?: () => void;
+  onLoginClick?: () => void;
 }
 
 export const CheckoutView: React.FC<CheckoutViewProps> = ({
@@ -36,7 +37,8 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   totalAmount,
   onOrderPlaced,
   userProfile,
-  onBack
+  onBack,
+  onLoginClick
 }) => {
   // Form Fields
   const [name, setName] = useState(userProfile?.name || '');
