@@ -484,7 +484,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                   <div className="text-xs">
                     <p className="font-bold">Notice for Pincode {matchedHighRisk.pincode}:</p>
                     <p className="text-[11px] text-amber-800 mt-0.5 leading-snug">
-                      High delivery return rate in this area. Cash on Delivery requires quick 4-digit OTP verification. You can also select <strong>Prepaid UPI</strong> for priority dispatch.
+                      High delivery demand in this area. Cash on Delivery is supported. You can also select <strong>Prepaid UPI</strong> for priority dispatch.
                     </p>
                   </div>
                 </div>
@@ -636,8 +636,8 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                         <Truck className="w-4 h-4 text-[#8c7138]" />
                         <span>Cash on Delivery</span>
                       </div>
-                      <span className="text-[10px] font-semibold text-[#8c7138] bg-[#fed488]/30 px-1.5 py-0.2 rounded">
-                        Requires OTP
+                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded">
+                        Pay on Delivery
                       </span>
                     </div>
                     <p className="text-[11px] text-[#747878] mt-1.5 leading-snug">
