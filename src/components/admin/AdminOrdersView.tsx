@@ -327,8 +327,8 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
           {filteredOrders.length === 0 ? (
             <div className="p-12 text-center text-[#747878] space-y-2">
               <Package className="w-8 h-8 text-[#8c7138] mx-auto opacity-50" />
-              <p className="font-bold text-sm text-[#141414]">No orders match your filter</p>
-              <p className="text-xs">Try searching another term or click "Create Manual Order".</p>
+              <p className="font-bold text-sm text-[#141414]">{orders.length === 0 ? 'No orders yet' : 'No orders match your filter'}</p>
+              <p className="text-xs">{orders.length === 0 ? 'Customer orders will appear here live when placed.' : 'Try searching another term or click "Create Manual Order".'}</p>
             </div>
           ) : (
             filteredOrders.map((order) => {

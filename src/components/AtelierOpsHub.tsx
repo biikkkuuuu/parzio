@@ -247,7 +247,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
         <div className="w-full max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-3 text-[11px] font-medium">
           <div className="flex items-center gap-2 text-[#8c7138] font-bold">
             <Clock className="w-3.5 h-3.5 text-[#8c7138]" />
-            <span>LIVE SALES SPEED: 241 ORDERS/HOUR</span>
+            <span>LIVE SALES SPEED: {orders.length > 0 ? `${orders.length} ORDERS/HOUR` : '0 ORDERS/HOUR'}</span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4 text-[#747878] font-mono text-[11px]">
             <span>TOTAL PRODUCTS: <strong className="text-[#141414]">{products.length}</strong></span>

@@ -98,7 +98,7 @@ export const AdminRtoShieldView: React.FC<AdminRtoShieldViewProps> = ({ onTrigge
         </div>
 
         <div className="bg-white/10 p-4 rounded-2xl border border-white/15 text-center flex-shrink-0">
-          <p className="font-mono text-2xl font-bold text-emerald-400">₹18,450</p>
+          <p className="font-mono text-2xl font-bold text-emerald-400">₹0</p>
           <p className="text-[10px] text-white/80 font-bold uppercase tracking-wider mt-0.5">
             Saved This Week
           </p>

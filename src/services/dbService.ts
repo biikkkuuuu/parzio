@@ -39,14 +39,19 @@ const KEYS = {
   INSTAGRAM_POSTS: 'parzio_instagram_posts',
 };
 
-// One-time reset to guarantee existing browser local storage demo products & categories are cleared
+// One-time reset to guarantee existing browser local storage demo products, categories & orders are cleared
 const WIPE_FLAG = 'parzio_wipe_all_v1';
+const ORDERS_WIPE_FLAG = 'parzio_wipe_orders_v1';
 if (typeof window !== 'undefined') {
   try {
     if (!localStorage.getItem(WIPE_FLAG)) {
       localStorage.setItem(KEYS.PRODUCTS, '[]');
       localStorage.setItem(KEYS.CATEGORIES, '[]');
       localStorage.setItem(WIPE_FLAG, 'true');
+    }
+    if (!localStorage.getItem(ORDERS_WIPE_FLAG)) {
+      localStorage.setItem(KEYS.ORDERS, '[]');
+      localStorage.setItem(ORDERS_WIPE_FLAG, 'true');
     }
   } catch {}
 }
@@ -240,7 +245,7 @@ export const dbService = {
       const saved = localStorage.getItem(KEYS.ORDERS);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {}
     return INITIAL_ORDERS;

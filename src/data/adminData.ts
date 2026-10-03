@@ -109,12 +109,12 @@ export const HIGH_RISK_PINCODES = [
 ];
 
 export const DAILY_ANALYTICS = {
-  gmvToday: 248910,
-  ordersToday: 241,
-  avgOrderValue: 1032,
-  codSharePercent: 62,
-  prepaidSharePercent: 38,
-  rtoShieldSavings: 18450,
-  dispatchedWithin24HrPercent: 98.4,
-  activeVisitors: 318
+  gmvToday: 0,
+  ordersToday: 0,
+  avgOrderValue: 0,
+  codSharePercent: 0,
+  prepaidSharePercent: 0,
+  rtoShieldSavings: 0,
+  dispatchedWithin24HrPercent: 100,
+  activeVisitors: 0
 };
