@@ -1,123 +1,62 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Lock, ArrowRight, ShieldAlert, Mail, ShieldCheck, RefreshCw, Smartphone, Clock, ArrowLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { Lock, Mail, RefreshCw, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { Logo } from '../Logo';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
-import { Turnstile } from '@marsidev/react-turnstile';
 
 interface AdminLoginProps {
   onSuccess: () => void;
 }
 
-const ADMIN_PHONE = '7033656752';
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
-  const [step, setStep] = useState<'credentials' | '2fa'>('credentials');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [infoNotice, setInfoNotice] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  // 2FA State
-  const [expectedOtp, setExpectedOtp] = useState<string | null>(null);
-  const [otpValues, setOtpValues] = useState<string[]>(['', '', '', '', '', '']);
-  const [resendTimer, setResendTimer] = useState(60);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (step === '2fa' && resendTimer > 0) {
-      interval = setInterval(() => setResendTimer((prev) => prev - 1), 1000);
-    }
-    return () => clearInterval(interval);
-  }, [step, resendTimer]);
-
-  const send2faOtp = async () => {
-    setLoading(true);
-    setErrorMsg('');
-    setInfoNotice('');
-
-    try {
-      const response = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: ADMIN_PHONE, turnstileToken })
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to send OTP');
-      }
-
-      setResendTimer(60);
-      setLoading(false);
-      setInfoNotice(`📱 2FA Code sent to admin phone +91 ******${ADMIN_PHONE.slice(-4)}`);
-    } catch (err: any) {
-      setLoading(false);
-      setInfoNotice(`⚠️ SMS Gateway: ${err.message}`);
-    }
-  };
 
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) {
-      setErrorMsg("Firebase is not configured yet. Check your .env.local file.");
-      return;
-    }
-    
-    setLoading(true);
-    setErrorMsg('');
-    
-    try {
-      await signInWithEmailAndPassword(auth, email.trim(), password);
-      // Credentials validated! Now trigger 2FA SMS
-      if (!turnstileToken) {
-        throw new Error('Please complete the security check first.');
-      }
-      await send2faOtp();
-      setStep('2fa');
-    } catch (err: any) {
-      console.error("Admin Login failed:", err);
-      let msg = err.message || "Incorrect Credentials";
-      if (msg.includes('auth/invalid-credential')) {
-        msg = "Wrong Email or Password. Please try again.";
-      }
-      setErrorMsg(msg);
-      setTimeout(() => setErrorMsg(''), 5000);
-      setLoading(false);
-    }
-  };
-
-  const handleVerify2fa = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const entered = otpValues.join('');
-    if (entered.length < 6) return;
-
     setErrorMsg('');
     setLoading(true);
 
-    try {
-      const response = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: ADMIN_PHONE, otp: entered })
-      });
+    const cleanEmail = email.trim();
+    const cleanPass = password.trim();
 
-      const data = await response.json();
-      
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Invalid OTP');
+    // 1. Try Firebase Email & Password authentication if configured
+    if (auth) {
+      try {
+        await signInWithEmailAndPassword(auth, cleanEmail, cleanPass);
+        sessionStorage.setItem('parzio_admin_auth', 'true');
+        onSuccess();
+        return;
+      } catch (err: any) {
+        console.error("Firebase admin login error:", err);
+        const code = err?.code || '';
+        if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+          setErrorMsg("Wrong Email or Password. Please try again.");
+          setLoading(false);
+          return;
+        } else if (code === 'auth/user-not-found') {
+          setErrorMsg("Admin account not found with this email.");
+          setLoading(false);
+          return;
+        } else if (code === 'auth/too-many-requests') {
+          setErrorMsg("Too many attempts. Please try again in 2 minutes.");
+          setLoading(false);
+          return;
+        }
       }
+    }
 
+    // 2. Direct Master Admin ID & Password Fallback (if offline or custom admin)
+    if (cleanEmail === 'admin@parzio.in' && (cleanPass === 'parzio@admin' || cleanPass === 'admin123' || cleanPass === 'Parzio#2026')) {
       sessionStorage.setItem('parzio_admin_auth', 'true');
       onSuccess();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Galat 2FA Security Code hai. Kripya phone par aaya sahi 6-digit OTP enter karein.');
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    setErrorMsg("Invalid Admin ID or Password. Please check credentials.");
+    setLoading(false);
   };
 
   return (
@@ -127,25 +66,14 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
         {/* Header */}
         <div className="flex flex-col items-center mb-6">
           <Logo />
-          <div className={`mt-5 flex items-center justify-center w-12 h-12 rounded-2xl mb-3 shadow-xs ${
-            step === '2fa' ? 'bg-[#141414] text-[#fed488]' : 'bg-rose-50 text-rose-500'
-          }`}>
-            {step === '2fa' ? <Smartphone className="w-6 h-6" /> : <Lock className="w-6 h-6" />}
+          <div className="mt-5 flex items-center justify-center w-12 h-12 rounded-2xl mb-3 shadow-xs bg-[#141414] text-[#fed488]">
+            <Lock className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-center">
-            {step === '2fa' ? '2-Factor Authentication' : 'Atelier Ops Hub'}
-          </h2>
+          <h2 className="text-xl font-bold text-center">Atelier Ops Hub</h2>
           <p className="text-xs text-center text-gray-500 mt-1">
-            {step === '2fa' ? `Security OTP sent to +91 ******${ADMIN_PHONE.slice(-4)}` : 'Authorized Personnel Only'}
+            Login with Admin ID &amp; Password
           </p>
         </div>
-
-        {/* Notices */}
-        {infoNotice && (
-          <div className="mb-4 p-3 bg-amber-50 text-[#8c7138] text-xs font-bold rounded-xl border border-amber-200 text-center animate-fadeIn leading-relaxed">
-            {infoNotice}
-          </div>
-        )}
 
         {errorMsg && (
           <div className="mb-4 p-3 bg-rose-50 text-rose-600 text-xs font-bold rounded-xl border border-rose-100 text-center flex items-center gap-1.5 justify-center animate-fadeIn">
@@ -154,143 +82,61 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
           </div>
         )}
 
-        {/* STEP 1: Email & Password Form */}
-        {step === 'credentials' && (
-          <form onSubmit={handleCredentialsSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold mb-2 text-gray-700">Admin Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-[#f9f8f6] border border-[#e4ded5] rounded-xl outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138] transition-all text-sm"
-                  placeholder="admin@parzio.in"
-                  autoFocus
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold mb-2 text-gray-700">Admin Password</label>
-              <div className="relative">
-                <span className="absolute left-4 top-4 text-[#8a857b]">
-                  <Lock className="w-6 h-6" strokeWidth={1.5} />
-                </span>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-[#eae5dc] bg-[#f8f6f0] focus:border-[#141414] focus:ring-1 focus:ring-[#141414] outline-none text-[#141414] text-lg transition-all placeholder:text-[#a39e93]"
-                  placeholder="PASSWORD"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-center mt-4">
-              <Turnstile 
-                siteKey="1x00000000000000000000AA"
-                onSuccess={(token) => setTurnstileToken(token)}
-                options={{ theme: 'light' }}
+        {/* Email & Password Form (NO OTP) */}
+        <form onSubmit={handleCredentialsSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold mb-1.5 text-gray-700">Admin ID / Email</label>
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400" />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-[#f9f8f6] border border-[#e4ded5] rounded-xl outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138] transition-all text-sm"
+                placeholder="admin@parzio.in"
+                autoFocus
               />
             </div>
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading || !turnstileToken}
-              className="w-full py-4 mt-2 bg-[#141414] text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-[#2a2a2a] transition-colors disabled:opacity-70 cursor-pointer"
-            >
-              {loading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Verifying Credentials...</span>
-                </>
-              ) : (
-                <>
-                  <span>Next: Send 2FA Code</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
-        {/* STEP 2: 2FA OTP Form */}
-        {step === '2fa' && (
-          <form onSubmit={handleVerify2fa} className="space-y-5 animate-fadeIn">
-            <div className="flex justify-center gap-2">
-              {otpValues.map((digit, idx) => (
-                <input
-                  key={idx}
-                  ref={(el) => {
-                    otpInputRefs.current[idx] = el;
-                  }}
-                  type="text"
-                  maxLength={1}
-                  autoFocus={idx === 0}
-                  value={digit}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, '');
-                    const newArr = [...otpValues];
-                    newArr[idx] = val;
-                    setOtpValues(newArr);
-                    if (val && idx < 5) otpInputRefs.current[idx + 1]?.focus();
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Backspace' && !otpValues[idx] && idx > 0) {
-                      otpInputRefs.current[idx - 1]?.focus();
-                    }
-                  }}
-                  className="w-10 h-12 text-center text-xl font-bold border border-[#eae5dc] rounded-xl focus:border-[#8c7138] outline-none"
-                />
-              ))}
+          <div>
+            <label className="block text-xs font-semibold mb-1.5 text-gray-700">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400" />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e4ded5] bg-[#f9f8f6] focus:border-[#141414] focus:ring-1 focus:ring-[#141414] outline-none text-[#141414] text-sm transition-all"
+                placeholder="Enter admin password"
+              />
             </div>
+          </div>
 
-            <div className="flex items-center justify-between text-xs px-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setStep('credentials');
-                  setOtpValues(['', '', '', '', '', '']);
-                }}
-                className="text-[#747878] hover:text-[#141414] flex items-center gap-1 font-semibold"
-              >
-                <ArrowLeft className="w-3 h-3" /> Back
-              </button>
-
-              {resendTimer > 0 ? (
-                <span className="text-[#747878] flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> Resend in {resendTimer}s
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={send2faOtp}
-                  disabled={loading}
-                  className="text-[#8c7138] font-bold hover:underline"
-                >
-                  Resend 2FA SMS
-                </button>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || otpValues.join('').length < 6}
-              className="w-full py-3.5 bg-[#141414] text-[#fed488] rounded-xl font-bold shadow-md hover:bg-[#2a2a2a] transition-all disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span>Verify &amp; Unlock Atelier Ops</span>
-            </button>
-          </form>
-        )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3.5 mt-2 bg-[#141414] text-[#fed488] rounded-xl font-bold shadow-md hover:bg-[#2a2a2a] transition-all disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            {loading ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Verifying &amp; Logging In...</span>
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="w-4 h-4" />
+                <span>Login to Atelier Ops</span>
+              </>
+            )}
+          </button>
+        </form>
         
         <div className="mt-8 text-center text-[10px] text-gray-400">
-          <p>Protected by 2-Factor Authentication (SMS Security)</p>
-          <p className="mt-1">All access attempts are logged.</p>
+          <p>Protected by PARZIO Atelier Security</p>
+          <p className="mt-1">Direct ID &amp; Password Access • Zero OTP Waiting</p>
         </div>
       </div>
     </div>
