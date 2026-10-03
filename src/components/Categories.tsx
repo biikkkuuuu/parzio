@@ -9,44 +9,17 @@ interface CategoriesProps {
   onViewAllCategories?: () => void;
 }
 
-const CATEGORIES_ITEMS = [
-  {
-    name: 'Bangles',
-    subtitle: 'Trendy & Traditional',
-    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80'
-  },
-  {
-    name: 'Mangalsutra',
-    subtitle: 'A Bond for Life',
-    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'
-  },
-  {
-    name: 'Jewellery Sets',
-    subtitle: 'Complete Your Look',
-    image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80'
-  },
-  {
-    name: 'Earrings',
-    subtitle: 'Grace in Every Detail',
-    image: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=600&q=80'
-  },
-  {
-    name: 'Perfume',
-    subtitle: 'Fragrance for You',
-    image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=600&q=80'
-  },
-  {
-    name: 'Beauty & Care',
-    subtitle: 'Look Good, Feel Good',
-    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80'
-  }
-];
-
 export const Categories: React.FC<CategoriesProps> = ({
+  categories = [],
   onSelectCategory,
   onViewAllCategories
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // If all categories are deleted, hide the strip cleanly
+  if (!categories || categories.length === 0) {
+    return null;
+  }
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -110,7 +83,7 @@ export const Categories: React.FC<CategoriesProps> = ({
           ref={scrollRef}
           className="flex items-start gap-3 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-1 -mx-4 px-4 sm:mx-0 sm:px-0"
         >
-          {CATEGORIES_ITEMS.map((cat) => (
+          {categories.map((cat) => (
             <div
               key={cat.name}
               onClick={() => {
@@ -132,14 +105,11 @@ export const Categories: React.FC<CategoriesProps> = ({
                 />
               </div>
 
-              {/* Title and Subtitle underneath */}
+              {/* Title underneath */}
               <div className="mt-2 text-center">
                 <h3 className="font-sans font-bold text-xs sm:text-sm text-[#1a1714] group-hover:text-[#9e7144] transition-colors truncate">
                   {cat.name}
                 </h3>
-                <p className="text-[10px] sm:text-[11px] text-[#7a746e] mt-0.5 font-sans truncate">
-                  {cat.subtitle}
-                </p>
               </div>
             </div>
           ))}

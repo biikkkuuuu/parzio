@@ -323,7 +323,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
         </div>
 
         {/* Orders List Items */}
-        <div className="divide-y divide-[#f4f2ee]">
+        <div className="divide-y divide-[#eae5dc]">
           {filteredOrders.length === 0 ? (
             <div className="p-12 text-center text-[#747878] space-y-2">
               <Package className="w-8 h-8 text-[#8c7138] mx-auto opacity-50" />

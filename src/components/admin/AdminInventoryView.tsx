@@ -77,7 +77,7 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
         <div>
           <h3 className="font-display text-base font-bold text-[#141414] flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#8c7138]" />
-            Atelier Jewelry Vault Inventory ({products.length} Drops)
+            Product Catalog &amp; Stock Inventory ({products.length} Products)
           </h3>
           <p className="text-xs text-[#747878] mt-0.5">
             Add new designs, edit prices &amp; descriptions, adjust real-time stock, or remove archived items.
@@ -147,7 +147,7 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
                 <th className="py-3 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f4f2ee]">
+            <tbody className="divide-y divide-[#eae5dc]">
               {filteredProducts.map((product) => {
                 const stock = product.stock ?? 45;
                 const isLow = stock < 15;
@@ -212,7 +212,7 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => onUpdateStock(product.id, Math.max(0, stock - 1))}
-                          className="w-6 h-6 rounded-full bg-[#f4f2ee] hover:bg-[#eae5dc] text-xs font-bold flex items-center justify-center"
+                          className="w-6 h-6 rounded-full bg-[#faf8f5] hover:bg-[#eae5dc] text-xs font-bold flex items-center justify-center border border-[#eae5dc] cursor-pointer"
                         >
                           -
                         </button>
@@ -225,7 +225,7 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
                         </span>
                         <button
                           onClick={() => onUpdateStock(product.id, stock + 10)}
-                          className="px-1.5 py-0.5 rounded-full bg-[#f4f2ee] hover:bg-[#eae5dc] text-[10px] font-bold text-[#8c7138]"
+                          className="px-1.5 py-0.5 rounded-full bg-[#faf8f5] hover:bg-[#eae5dc] text-[10px] font-bold text-[#8c7138] border border-[#eae5dc] cursor-pointer"
                         >
                           +10
                         </button>

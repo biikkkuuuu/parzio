@@ -179,7 +179,7 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
                       {trend.orders} orders • <span className="text-[#8c7138]">{trend.gmv}</span>
                     </span>
                   </div>
-                  <div className="w-full h-3 rounded-full bg-[#f4f2ee] overflow-hidden">
+                  <div className="w-full h-3 rounded-full bg-[#faf8f5] border border-[#eae5dc] overflow-hidden">
                     <div
                       style={{ width: `${pct}%` }}
                       className={`h-full rounded-full transition-all duration-500 ${
@@ -213,7 +213,7 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
                 </span>
                 <span className="font-bold text-[#141414]">62%</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-[#f4f2ee] overflow-hidden">
+              <div className="w-full h-2 rounded-full bg-[#faf8f5] border border-[#eae5dc] overflow-hidden">
                 <div className="h-full bg-[#8c7138] rounded-full w-[62%]" />
               </div>
 
@@ -224,7 +224,7 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
                 </span>
                 <span className="font-bold text-emerald-800">38%</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-[#f4f2ee] overflow-hidden">
+              <div className="w-full h-2 rounded-full bg-[#faf8f5] border border-[#eae5dc] overflow-hidden">
                 <div className="h-full bg-emerald-600 rounded-full w-[38%]" />
               </div>
             </div>

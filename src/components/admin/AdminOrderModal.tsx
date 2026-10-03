@@ -73,7 +73,7 @@ export const AdminOrderModal: React.FC<AdminOrderModalProps> = ({
       setStatus('COD Confirmed');
       setCourier('BlueDart Express Air');
       setRtoRisk('Low');
-      setNotes('Direct phone/WhatsApp order created via Atelier Console.');
+      setNotes('Direct phone/WhatsApp order created via Admin Console.');
     }
   }, [initialOrder, isOpen, products]);
 

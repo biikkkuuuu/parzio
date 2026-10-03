@@ -284,74 +284,76 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
           </p>
         </div>
 
-        {/* Section Navigation Pills */}
-        <div className="flex flex-wrap items-center gap-2 bg-[#faf8f5] p-1.5 rounded-2xl border border-[#eae5dc]">
-          <button
-            type="button"
-            onClick={() => setActiveSection('hero-banners')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              activeSection === 'hero-banners'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#747878] hover:text-[#141414]'
-            }`}
-          >
-            Hero Banners ({banners.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSection('top-marquee')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              activeSection === 'top-marquee'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#747878] hover:text-[#141414]'
-            }`}
-          >
-            Top Marquee ({topMarqueeItems.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSection('promo-marquee')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              activeSection === 'promo-marquee'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#747878] hover:text-[#141414]'
-            }`}
-          >
-            Banner Ticker ({bannerMarqueeItems.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSection('skin-safe')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              activeSection === 'skin-safe'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#747878] hover:text-[#141414]'
-            }`}
-          >
-            Guarantee Banner
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSection('sale-banner')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              activeSection === 'sale-banner'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#747878] hover:text-[#141414]'
-            }`}
-          >
-            Sale Page Banner
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSection('sale-posters')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              activeSection === 'sale-posters'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#747878] hover:text-[#141414]'
-            }`}
-          >
-            Sale Posters & Promo Graphics ({salePosters.length})
-          </button>
+        {/* Section Navigation Pills - Horizontal Scroll Container */}
+        <div className="w-full sm:w-auto overflow-x-auto no-scrollbar py-0.5">
+          <div className="flex items-center gap-1.5 bg-[#faf8f5] p-1.5 rounded-2xl border border-[#eae5dc] whitespace-nowrap min-w-max">
+            <button
+              type="button"
+              onClick={() => setActiveSection('hero-banners')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                activeSection === 'hero-banners'
+                  ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                  : 'text-[#747878] hover:text-[#141414] hover:bg-white/60'
+              }`}
+            >
+              Hero Banners ({banners.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSection('top-marquee')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                activeSection === 'top-marquee'
+                  ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                  : 'text-[#747878] hover:text-[#141414] hover:bg-white/60'
+              }`}
+            >
+              Top Marquee ({topMarqueeItems.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSection('promo-marquee')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                activeSection === 'promo-marquee'
+                  ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                  : 'text-[#747878] hover:text-[#141414] hover:bg-white/60'
+              }`}
+            >
+              Banner Ticker ({bannerMarqueeItems.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSection('skin-safe')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                activeSection === 'skin-safe'
+                  ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                  : 'text-[#747878] hover:text-[#141414] hover:bg-white/60'
+              }`}
+            >
+              Guarantee Banner
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSection('sale-banner')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                activeSection === 'sale-banner'
+                  ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                  : 'text-[#747878] hover:text-[#141414] hover:bg-white/60'
+              }`}
+            >
+              Sale Page Banner
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSection('sale-posters')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                activeSection === 'sale-posters'
+                  ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                  : 'text-[#747878] hover:text-[#141414] hover:bg-white/60'
+              }`}
+            >
+              Sale Posters &amp; Promo Graphics ({salePosters.length})
+            </button>
+          </div>
         </div>
       </div>
 

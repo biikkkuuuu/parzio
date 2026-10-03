@@ -17,7 +17,8 @@ import {
   Flame,
   Crown,
   Grid,
-  ListFilter
+  ListFilter,
+  ArrowLeft
 } from 'lucide-react';
 
 interface AdminCategoriesViewProps {
@@ -28,6 +29,7 @@ interface AdminCategoriesViewProps {
   onDeleteCategory: (categoryName: string) => void;
   onAddProduct: (product: Product) => void;
   onEditProduct: (product: Product) => void;
+  onDeleteProduct?: (productId: string) => void;
   onTriggerToast: (msg: string) => void;
 }
 
@@ -80,6 +82,7 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
   onDeleteCategory,
   onAddProduct,
   onEditProduct,
+  onDeleteProduct,
   onTriggerToast
 }) => {
   // View mode: 'products-by-category' | 'category-cards'
@@ -92,6 +95,7 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
   // Expanded categories for viewing products in card mode
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
@@ -100,23 +104,20 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [targetCategoryForProduct, setTargetCategoryForProduct] = useState<string>('Necklaces');
 
-  // Category Form State
+  // Category Form State (Clean: Name & Cover Photo only)
   const [catName, setCatName] = useState('');
-  const [catSubtitle, setCatSubtitle] = useState('');
   const [catImage, setCatImage] = useState('');
 
   const openAddCategoryModal = () => {
     setEditingCategory(null);
     setCatName('');
-    setCatSubtitle('');
-    setCatImage(PRESET_IMAGES[0].url);
+    setCatImage('');
     setIsCategoryModalOpen(true);
   };
 
   const openEditCategoryModal = (cat: CategoryItem) => {
     setEditingCategory(cat);
     setCatName(cat.name);
-    setCatSubtitle(cat.subtitle);
     setCatImage(cat.image);
     setIsCategoryModalOpen(true);
   };
@@ -128,11 +129,15 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
       return;
     }
 
+    if (!catImage.trim()) {
+      onTriggerToast('Please upload a cover photo for this category.');
+      return;
+    }
+
     const trimmedName = catName.trim();
     const newCategory: CategoryItem = {
       name: trimmedName,
-      subtitle: catSubtitle.trim() || `${trimmedName} Collection`,
-      image: catImage.trim() || PRESET_IMAGES[0].url
+      image: catImage.trim()
     };
 
     if (editingCategory) {
@@ -170,6 +175,205 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
   const newLaunchCount = products.filter((p) => p.badge?.toUpperCase().includes('NEW LAUNCH')).length;
   const bestSellerCount = products.filter((p) => p.badge?.toUpperCase().includes('BEST SELLER')).length;
   const newCollectionCount = products.filter((p) => p.badge?.toUpperCase().includes('NEW COLLECTION')).length;
+
+  // DEDICATED FULL-PAGE VIEW FOR ADD / EDIT CATEGORY (NO POPUP)
+  if (isCategoryModalOpen) {
+    return (
+      <div className="space-y-6 animate-fadeIn pb-16">
+        {/* Top Header Navigation Bar */}
+        <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#eae5dc] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsCategoryModalOpen(false)}
+              className="w-10 h-10 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] hover:border-[#8c7138] hover:bg-[#8c7138]/10 text-[#141414] hover:text-[#8c7138] flex items-center justify-center transition-all cursor-pointer shadow-2xs shrink-0"
+              title="Back to Categories"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7138] bg-[#faf8f5] px-2.5 py-0.5 rounded-full border border-[#eae5dc]">
+                  Categories &amp; Collections
+                </span>
+                <span className="text-[#eae5dc]">•</span>
+                <span className="text-[11px] font-semibold text-[#747878]">
+                  {editingCategory ? 'Edit Collection' : 'Create New Collection'}
+                </span>
+              </div>
+              <h2 className="font-display font-bold text-2xl text-[#141414] mt-0.5">
+                {editingCategory ? `Edit Category: ${editingCategory.name}` : 'Create New Category'}
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsCategoryModalOpen(false)}
+              className="px-5 py-2.5 rounded-full border border-[#eae5dc] text-xs font-semibold text-[#747878] hover:bg-[#faf8f5] hover:text-[#141414] transition-colors cursor-pointer"
+            >
+              Cancel &amp; Back
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveCategory}
+              className="px-7 py-2.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-md active:scale-95 flex items-center gap-2"
+            >
+              <Check className="w-4 h-4 text-[#fed488]" />
+              <span>{editingCategory ? 'Save Changes' : 'Publish Category'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Page Form Card */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eae5dc] shadow-xs">
+          <form onSubmit={handleSaveCategory} className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column: Category Info */}
+              <div className="lg:col-span-6 space-y-6">
+                <div>
+                  <h4 className="text-sm font-bold text-[#141414] uppercase tracking-wider flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-[#8c7138]" />
+                    <span>Category Information</span>
+                  </h4>
+                  <p className="text-xs text-[#747878] mt-1">
+                    Set the title for this collection.
+                  </p>
+                </div>
+
+                {/* Category Name */}
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#747878] mb-1.5">
+                    Category Name <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Pendants, Chokers, Bangles, Sets"
+                    value={catName}
+                    onChange={(e) => setCatName(e.target.value)}
+                    className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-4 py-3 text-sm font-semibold text-[#141414] placeholder-[#a09e97] focus:outline-none focus:border-[#8c7138] focus:bg-white transition-all shadow-2xs"
+                  />
+                  <p className="text-[11px] text-[#747878] mt-1.5">
+                    Used for storefront navigation icons, page headings, and catalog filters.
+                  </p>
+                </div>
+
+                {/* Storefront Integration Info Box */}
+                <div className="p-5 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">✨</span>
+                    <h5 className="text-xs font-bold uppercase tracking-wider text-[#141414]">
+                      Storefront Placement
+                    </h5>
+                  </div>
+                  <ul className="text-xs text-[#555] space-y-2.5 leading-relaxed">
+                    <li className="flex items-start gap-2.5">
+                      <span className="text-[#8c7138] font-bold mt-0.5">•</span>
+                      <span><strong>Category Stories:</strong> Featured in the horizontal quick-browse circular icons on home and vault pages.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="text-[#8c7138] font-bold mt-0.5">•</span>
+                      <span><strong>Vault Collections:</strong> Rendered as an interactive card in the category showcase.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="text-[#8c7138] font-bold mt-0.5">•</span>
+                      <span><strong>Product Linking:</strong> Products tagged with this category will immediately group under it.</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Right Column: Image Upload & Specs */}
+              <div className="lg:col-span-6 space-y-6">
+                <div>
+                  <h4 className="text-sm font-bold text-[#141414] uppercase tracking-wider flex items-center gap-2">
+                    <Package className="w-4 h-4 text-[#8c7138]" />
+                    <span>Visual Asset &amp; Cover Photo</span>
+                  </h4>
+                  <p className="text-xs text-[#747878] mt-1">
+                    Upload a high-resolution square cover photo for storefront display.
+                  </p>
+                </div>
+
+                {/* Cover Photo Upload from Device */}
+                <DeviceImageUpload
+                  label="Category Cover Photo"
+                  required
+                  value={catImage}
+                  onChange={setCatImage}
+                  recommendedSize="1:1 Square (800 × 800px) • Max 3MB"
+                  aspectRatio="circle"
+                  maxSizeMB={3}
+                />
+
+                {/* Perfect Size Guide Box */}
+                <div className="p-5 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-[#8c7138]/15 text-[#8c7138] flex items-center justify-center font-bold text-xs shrink-0">
+                      📐
+                    </div>
+                    <h4 className="text-xs font-bold text-[#141414] uppercase tracking-wider">
+                      Category Photo Specifications
+                    </h4>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-[11px]">
+                    <div className="bg-white p-3.5 rounded-xl border border-[#eae5dc]">
+                      <span className="text-[10px] uppercase font-bold text-[#8c7138] block">Resolution (Size)</span>
+                      <strong className="text-[#141414] font-bold text-sm">800 × 800 px</strong>
+                      <span className="text-[#747878] block text-[10px] mt-0.5">Minimum: 400 × 400 px</span>
+                    </div>
+
+                    <div className="bg-white p-3.5 rounded-xl border border-[#eae5dc]">
+                      <span className="text-[10px] uppercase font-bold text-[#8c7138] block">Aspect Ratio</span>
+                      <strong className="text-[#141414] font-bold text-sm">1:1 Square</strong>
+                      <span className="text-[#747878] block text-[10px] mt-0.5">Circle &amp; card fit</span>
+                    </div>
+
+                    <div className="bg-white p-3.5 rounded-xl border border-[#eae5dc]">
+                      <span className="text-[10px] uppercase font-bold text-[#8c7138] block">File Format</span>
+                      <strong className="text-[#141414] font-bold text-sm">JPG, PNG, WebP</strong>
+                      <span className="text-[#747878] block text-[10px] mt-0.5">Clean studio background</span>
+                    </div>
+
+                    <div className="bg-white p-3.5 rounded-xl border border-[#eae5dc]">
+                      <span className="text-[10px] uppercase font-bold text-[#8c7138] block">Max File Size</span>
+                      <strong className="text-[#141414] font-bold text-sm">Under 3 MB</strong>
+                      <span className="text-[#747878] block text-[10px] mt-0.5">Fast page rendering</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/60 text-xs text-amber-950 leading-relaxed">
+                    💡 <strong>Pro Tip:</strong> Upload a square 1:1 photo (recommended 800 × 800 px) with centered jewelry framing. This ensures your category displays razor-sharp across circular story navigation and collection cards without distortion or unwanted cropping.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="flex items-center justify-end gap-3 pt-6 border-t border-[#eae5dc]">
+              <button
+                type="button"
+                onClick={() => setIsCategoryModalOpen(false)}
+                className="px-6 py-2.5 rounded-full border border-[#eae5dc] text-xs font-semibold text-[#747878] hover:bg-[#faf8f5] hover:text-[#141414] transition-colors cursor-pointer"
+              >
+                Cancel &amp; Back
+              </button>
+              <button
+                type="submit"
+                className="px-8 py-2.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-md active:scale-95 flex items-center gap-2"
+              >
+                <Check className="w-4 h-4 text-[#fed488]" />
+                <span>{editingCategory ? 'Save Changes' : 'Publish Category'}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -327,20 +531,37 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
                           {catProducts.length} items
                         </span>
                       </div>
-                      <p className="text-xs text-[#747878] mt-0.5">
-                        {category.subtitle}
-                      </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => openEditCategoryModal(category)}
+                      className="px-3 py-1.5 rounded-full border border-[#eae5dc] bg-white hover:border-[#8c7138] hover:text-[#8c7138] text-[#555] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95"
+                      title={`Edit ${category.name}`}
+                    >
+                      <Edit2 className="w-3.5 h-3.5 text-[#8c7138]" />
+                      <span className="hidden sm:inline">Edit</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCategoryToDelete(category.name)}
+                      className="px-3 py-1.5 rounded-full border border-rose-200 bg-rose-50/70 hover:bg-rose-100 hover:border-rose-300 text-rose-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95"
+                      title={`Delete ${category.name}`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                      <span>Delete Category</span>
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => handleOpenAddProductForCategory(category.name)}
                       className="px-3.5 py-1.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95"
                     >
                       <Plus className="w-3.5 h-3.5 text-[#fed488]" />
-                      <span>Add Product to {category.name}</span>
+                      <span>Add Product</span>
                     </button>
                   </div>
                 </div>
@@ -362,7 +583,7 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
                           <th className="py-2.5 px-4 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#f4f2ee]">
+                      <tbody className="divide-y divide-[#eae5dc]">
                         {catProducts.map((p) => {
                           const currentBadge = p.badge?.toUpperCase() || '';
                           return (
@@ -445,13 +666,26 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
 
                               {/* Actions */}
                               <td className="py-2.5 px-4 text-right whitespace-nowrap">
-                                <button
-                                  type="button"
-                                  onClick={() => onEditProduct(p)}
-                                  className="text-xs font-semibold text-[#8c7138] hover:underline cursor-pointer"
-                                >
-                                  Edit Details
-                                </button>
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => onEditProduct(p)}
+                                    className="px-2.5 py-1 rounded-full text-xs font-semibold text-[#8c7138] hover:bg-[#8c7138]/10 cursor-pointer transition-colors inline-flex items-center gap-1"
+                                    title="Edit Product"
+                                  >
+                                    <Edit2 className="w-3 h-3" />
+                                    <span>Edit</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setProductToDelete(p)}
+                                    className="px-2.5 py-1 rounded-full text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-100 hover:border-rose-200 cursor-pointer transition-all inline-flex items-center gap-1 active:scale-95"
+                                    title="Delete Product"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                    <span>Delete</span>
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           );
@@ -505,10 +739,6 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
                           {categoryProducts.length} items
                         </span>
                       </div>
-
-                      <p className="text-xs text-[#747878] mt-1 line-clamp-2">
-                        {category.subtitle}
-                      </p>
 
                       {/* Quick Edit & Delete Icons */}
                       <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#f4efea]">
@@ -597,8 +827,8 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
                             </div>
                           </div>
 
-                          {/* Quick Tag Selector in Card view */}
-                          <div className="flex items-center gap-1 shrink-0">
+                          {/* Quick Tag Selector and Actions in Card view */}
+                          <div className="flex items-center gap-1.5 shrink-0">
                             <select
                               value={p.badge || ''}
                               onChange={(e) => handleQuickSetBadge(p, e.target.value || undefined)}
@@ -609,6 +839,24 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
                               <option value="BEST SELLER">🔥 BEST SELLER</option>
                               <option value="NEW COLLECTION">👑 NEW COLLECTION</option>
                             </select>
+
+                            <button
+                              type="button"
+                              onClick={() => onEditProduct(p)}
+                              className="p-1.5 rounded-lg text-[#8c7138] hover:bg-[#8c7138]/10 cursor-pointer transition-colors"
+                              title="Edit Product"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setProductToDelete(p)}
+                              className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 cursor-pointer transition-all active:scale-95"
+                              title="Delete Product"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </div>
                       ))
@@ -621,153 +869,143 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
         </div>
       )}
 
-      {/* Add / Edit Category Modal */}
-      {isCategoryModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-[#eae5dc] shadow-2xl space-y-4 animate-fadeIn">
-            <div className="flex items-center justify-between pb-3 border-b border-[#eae5dc]">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-[#faf8f5] border border-[#eae5dc] text-[#8c7138] flex items-center justify-center">
-                  <Layers className="w-4 h-4" />
-                </div>
-                <h4 className="font-display font-bold text-base text-[#141414]">
-                  {editingCategory ? `Edit Category: ${editingCategory.name}` : 'Create New Category'}
-                </h4>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsCategoryModalOpen(false)}
-                className="p-1 rounded-full text-[#747878] hover:text-[#141414] hover:bg-[#faf8f5]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <form onSubmit={handleSaveCategory} className="space-y-4">
-              {/* Category Name */}
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-[#747878] mb-1">
-                  Category Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Pendants, Chokers, Bangles, Sets"
-                  value={catName}
-                  onChange={(e) => setCatName(e.target.value)}
-                  className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-xs font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                />
+
+      {/* Delete Category Confirmation Modal ("Ensure" dialog) */}
+      {categoryToDelete && (() => {
+        const catObj = categories.find((c) => c.name === categoryToDelete);
+        const catProds = products.filter((p) => p.category.toLowerCase() === categoryToDelete.toLowerCase());
+
+        return (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full border border-[#eae5dc] shadow-2xl space-y-5 animate-fadeIn">
+              <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto shadow-sm">
+                <Trash2 className="w-7 h-7" />
               </div>
 
-              {/* Subtitle */}
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-[#747878] mb-1">
-                  Tagline / Subtitle
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 18K Real Gold Solitaires & Charms"
-                  value={catSubtitle}
-                  onChange={(e) => setCatSubtitle(e.target.value)}
-                  className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-xs font-medium text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                />
-              </div>
-
-              {/* Cover Photo Upload from Device */}
-              <DeviceImageUpload
-                label="Category Cover Photo"
-                required
-                value={catImage}
-                onChange={setCatImage}
-                recommendedSize="1:1 Square (400 × 400px) • Max 3MB"
-                aspectRatio="circle"
-                maxSizeMB={3}
-              />
-
-              {/* Quick Presets */}
-              <div className="mt-2">
-                <span className="text-[10px] text-[#747878] font-bold uppercase tracking-wider block mb-1">
-                  Or Pick a Sample Preset:
+              <div className="text-center space-y-1">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
+                  Confirmation Required
                 </span>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {PRESET_IMAGES.map((preset, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setCatImage(preset.url)}
-                      className={`w-full aspect-square rounded-lg overflow-hidden border transition-all cursor-pointer ${
-                        catImage === preset.url
-                          ? 'ring-2 ring-[#8c7138] border-transparent'
-                          : 'border-[#eae5dc] opacity-70 hover:opacity-100'
-                      }`}
-                      title={preset.label}
-                    >
-                      <img
-                        src={preset.url}
-                        alt={preset.label}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
+                <h4 className="font-bold text-lg text-[#141414] pt-2">
+                  Delete Category "{categoryToDelete}"?
+                </h4>
+                <p className="text-xs text-[#747878] leading-relaxed max-w-xs mx-auto">
+                  Are you sure you want to delete this category? {catProds.length > 0 ? `It currently contains ${catProds.length} product(s).` : 'No products are currently assigned to it.'}
+                </p>
               </div>
 
-              {/* Buttons */}
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#eae5dc]">
+              {catObj && (
+                <div className="flex items-center gap-3 p-3 bg-[#faf8f5] rounded-2xl border border-[#eae5dc]">
+                  <img
+                    src={catObj.image}
+                    alt={catObj.name}
+                    className="w-12 h-12 rounded-xl object-cover border border-[#eae5dc] bg-white shrink-0"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = PRESET_IMAGES[0].url;
+                    }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-sm text-[#141414] truncate uppercase tracking-wider">
+                      {catObj.name}
+                    </p>
+                    <p className="text-[11px] text-[#8c7138] font-mono">
+                      {catProds.length} products listed
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setIsCategoryModalOpen(false)}
-                  className="px-4 py-2 rounded-full border border-[#eae5dc] text-xs font-semibold text-[#747878] hover:bg-[#faf8f5] cursor-pointer"
+                  onClick={() => setCategoryToDelete(null)}
+                  className="px-5 py-2.5 rounded-full border border-[#eae5dc] text-xs font-semibold text-[#555] hover:bg-[#faf8f5] cursor-pointer transition-all active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
-                  type="submit"
-                  className="px-5 py-2 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-xs active:scale-95"
+                  type="button"
+                  onClick={() => {
+                    onDeleteCategory(categoryToDelete);
+                    onTriggerToast(`Deleted category "${categoryToDelete}".`);
+                    setCategoryToDelete(null);
+                  }}
+                  className="px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-900/10 cursor-pointer transition-all active:scale-95 flex items-center gap-2"
                 >
-                  {editingCategory ? 'Save Changes' : 'Create Category'}
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Yes, Delete Category</span>
                 </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
-      {/* Delete Category Confirmation Modal */}
-      {categoryToDelete && (
+      {/* Delete Product Confirmation Modal ("Ensure" dialog) */}
+      {productToDelete && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-[#eae5dc] shadow-2xl space-y-4 animate-fadeIn">
-            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mx-auto">
-              <Trash2 className="w-6 h-6" />
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full border border-[#eae5dc] shadow-2xl space-y-5 animate-fadeIn">
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto shadow-sm">
+              <Trash2 className="w-7 h-7" />
             </div>
 
-            <div className="text-center">
-              <h4 className="font-bold text-base text-[#141414]">
-                Delete "{categoryToDelete}"?
+            <div className="text-center space-y-1">
+              <span className="text-[10px] font-bold tracking-widest uppercase text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
+                Confirmation Required
+              </span>
+              <h4 className="font-bold text-lg text-[#141414] pt-2">
+                Delete This Product?
               </h4>
-              <p className="text-xs text-[#747878] mt-1">
-                Are you sure you want to remove this category from the store? Products in this category will not be deleted but can be reassigned.
+              <p className="text-xs text-[#747878] leading-relaxed max-w-xs mx-auto">
+                Are you sure you want to permanently delete this product? This action cannot be reversed.
               </p>
             </div>
 
-            <div className="flex items-center justify-center gap-3 pt-2">
+            <div className="flex items-center gap-3 p-3 bg-[#faf8f5] rounded-2xl border border-[#eae5dc]">
+              <img
+                src={productToDelete.image}
+                alt={productToDelete.name}
+                className="w-12 h-12 rounded-xl object-cover border border-[#eae5dc] bg-white shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="font-bold text-sm text-[#141414] truncate">
+                  {productToDelete.name}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-white px-2 py-0.5 rounded border border-[#eae5dc] text-[#8c7138]">
+                    {productToDelete.category}
+                  </span>
+                  <span className="text-[11px] font-bold text-[#141414]">
+                    ₹{productToDelete.price}
+                  </span>
+                  <span className="text-[10px] font-mono text-[#747878]">
+                    SKU: {productToDelete.sku}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => setCategoryToDelete(null)}
-                className="px-4 py-2 rounded-full border border-[#eae5dc] text-xs font-semibold hover:bg-[#faf8f5] cursor-pointer"
+                onClick={() => setProductToDelete(null)}
+                className="px-5 py-2.5 rounded-full border border-[#eae5dc] text-xs font-semibold text-[#555] hover:bg-[#faf8f5] cursor-pointer transition-all active:scale-95"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  onDeleteCategory(categoryToDelete);
-                  onTriggerToast(`Deleted category "${categoryToDelete}".`);
-                  setCategoryToDelete(null);
+                  if (onDeleteProduct) {
+                    onDeleteProduct(productToDelete.id);
+                  }
+                  setProductToDelete(null);
                 }}
-                className="px-5 py-2 rounded-full bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold cursor-pointer"
+                className="px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-900/10 cursor-pointer transition-all active:scale-95 flex items-center gap-2"
               >
-                Confirm Delete
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Yes, Delete Product</span>
               </button>
             </div>
           </div>

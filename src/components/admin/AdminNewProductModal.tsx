@@ -72,7 +72,7 @@ export const AdminNewProductModal: React.FC<AdminNewProductModalProps> = ({
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#fed488]" />
             <h3 className="font-display text-base font-bold uppercase tracking-wider text-[#fed488]">
-              Add New Atelier Jewellery Drop
+              Add New Product
             </h3>
           </div>
           <button
@@ -211,7 +211,7 @@ export const AdminNewProductModal: React.FC<AdminNewProductModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-full border border-[#eae5dc] text-xs font-semibold hover:bg-[#f4f2ee] transition-all"
+              className="px-4 py-2 rounded-full border border-[#eae5dc] text-xs font-semibold hover:bg-[#faf8f5] transition-all cursor-pointer"
             >
               Cancel
             </button>

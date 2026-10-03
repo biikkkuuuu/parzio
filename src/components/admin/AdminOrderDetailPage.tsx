@@ -118,7 +118,7 @@ export const AdminOrderDetailPage: React.FC<AdminOrderDetailPageProps> = ({
               </span>
             </div>
             <p className="text-xs text-[#747878] mt-0.5">
-              Customer: <strong className="text-[#141414]">{order.customerName}</strong> • Placed via Atelier Checkout
+              Customer: <strong className="text-[#141414]">{order.customerName}</strong> • Placed via Store Checkout
             </p>
           </div>
         </div>
@@ -257,7 +257,7 @@ export const AdminOrderDetailPage: React.FC<AdminOrderDetailPageProps> = ({
                   <span className="text-xs font-mono font-bold text-[#8c7138] px-2.5 py-0.5 rounded-md bg-white border border-[#eae5dc]">
                     SKU: {order.sku}
                   </span>
-                  <span className="text-xs text-[#747878] font-medium">{order.tag || 'Atelier Vault'}</span>
+                  <span className="text-xs text-[#747878] font-medium">{order.tag || 'Store Catalog'}</span>
                 </div>
                 <h4 className="font-display font-bold text-base text-[#141414]">
                   {order.productName}

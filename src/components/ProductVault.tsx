@@ -12,65 +12,8 @@ interface ProductVaultProps {
   onOpenProductModal: (product: Product) => void;
 }
 
-const FEATURED_NEW_ARRIVALS = [
-  {
-    id: 'feat-bangles-1',
-    title: 'Traditional Red Bangles Set',
-    price: 299,
-    originalPrice: 499,
-    discount: '40% OFF',
-    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=500&q=80',
-    category: 'BANGLES'
-  },
-  {
-    id: 'feat-mangalsutra-1',
-    title: 'Gold Plated Mangalsutra',
-    price: 399,
-    originalPrice: 699,
-    discount: '43% OFF',
-    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=500&q=80',
-    category: 'MANGALSUTRA'
-  },
-  {
-    id: 'feat-jhumka-1',
-    title: 'Premium Jhumka Earrings',
-    price: 349,
-    originalPrice: 699,
-    discount: '43% OFF',
-    image: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=500&q=80',
-    category: 'EARRINGS'
-  },
-  {
-    id: 'feat-set-1',
-    title: 'Elegant Jewellery Set',
-    price: 599,
-    originalPrice: 999,
-    discount: '40% OFF',
-    image: 'https://images.unsplash.com/photo-1611591475816-43b664d4b121?auto=format&fit=crop&w=500&q=80',
-    category: 'JEWELLERY SETS'
-  },
-  {
-    id: 'feat-perfume-1',
-    title: "Women's Perfume 50ml",
-    price: 450,
-    originalPrice: 699,
-    discount: '36% OFF',
-    image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=500&q=80',
-    category: 'PERFUME'
-  },
-  {
-    id: 'feat-facewash-1',
-    title: 'Facewash - Glow & Fresh',
-    price: 199,
-    originalPrice: 299,
-    discount: '33% OFF',
-    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=500&q=80',
-    category: 'BEAUTY'
-  }
-];
-
 export const ProductVault: React.FC<ProductVaultProps> = ({
-  products,
+  products = [],
   activeFilter = 'ALL',
   onSelectFilter,
   onAddToCart,
@@ -81,36 +24,13 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
   const isFiltered = Boolean(
     activeFilter &&
     activeFilter !== 'ALL' &&
-    activeFilter !== 'NEW ARRIVALS'
+    activeFilter !== 'NEW ARRIVALS' &&
+    activeFilter !== 'HOME'
   );
 
-  // If a specific category is selected, prioritize filtered products
-  let displayList: Product[] = [];
-  if (isFiltered) {
-    displayList = products;
-  } else {
-    // Default 6 featured arrivals merged with catalog
-    const matchedFeatured = FEATURED_NEW_ARRIVALS.map((feat) => {
-      const matched = products.find((p) => {
-        if (!p) return false;
-        if (p.id === feat.id) return true;
-        const pName = (p.name || (p as unknown as { title?: string }).title || '').toLowerCase();
-        return pName === feat.title.toLowerCase();
-      });
-      return (matched || {
-        ...feat,
-        name: feat.title,
-        description: 'Exclusive DEMI-FINE design by PARZIO',
-        isNew: true,
-        inStock: true
-      }) as unknown as Product;
-    });
-
-    const otherProds = products.filter(
-      (p) => !matchedFeatured.some((mf) => mf.id === p.id)
-    );
-    displayList = [...matchedFeatured, ...otherProds];
-  }
+  const displayList: Product[] = isFiltered
+    ? products.filter((p) => p.category?.toUpperCase() === activeFilter.toUpperCase())
+    : products;
 
   const sectionHeading = isFiltered ? activeFilter : 'New Arrivals';
 
@@ -144,16 +64,10 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
           </button>
         </div>
 
-        {/* Product Cards Grid matching screenshot */}
         {displayList.length === 0 ? (
-          <div className="text-center py-12 bg-[#faf8f5] rounded-2xl border border-[#eee7dc]">
-            <p className="text-sm font-medium text-[#1a1714]">No items currently listed under "{activeFilter}".</p>
-            <button
-              onClick={() => onSelectFilter && onSelectFilter('ALL')}
-              className="mt-3 px-5 py-2 rounded-full bg-[#9e7144] text-white text-xs font-semibold hover:bg-[#865d34] transition-all cursor-pointer"
-            >
-              Browse All Products
-            </button>
+          <div className="text-center py-16 bg-[#faf8f5] rounded-3xl border border-[#eae5dc]">
+            <p className="text-sm font-bold text-[#141414]">No products available</p>
+            <p className="text-xs text-[#747878] mt-1">Add your catalog products from the Admin Panel to display them here.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">

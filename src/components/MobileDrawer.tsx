@@ -13,6 +13,7 @@ interface MobileDrawerProps {
   userProfile?: UserProfile | null;
   onLogout?: () => void;
   onLoginClick?: () => void;
+  dynamicCategories?: CategoryItem[];
 }
 
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({
@@ -23,19 +24,12 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onOpenAtelierOps,
   userProfile,
   onLogout,
-  onLoginClick
+  onLoginClick,
+  dynamicCategories = []
 }) => {
   if (!isOpen) return null;
 
-  const categories = [
-    'NEW ARRIVALS',
-    'NECKLACES',
-    'EARRINGS',
-    'RINGS',
-    'BRACELETS',
-    'ANKLETS',
-    'BEST SELLERS'
-  ];
+  const categories = dynamicCategories.map((c) => c.name);
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -123,27 +117,29 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             </span>
           </button>
 
-          {/* Categories List */}
-          <div>
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#747878] mb-2 px-1">
-              Shop By Category
-            </h4>
-            <div className="space-y-1">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    onSelectCategory(cat);
-                    onClose();
-                  }}
-                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#faf8f5] text-xs font-semibold text-[#141414] transition-colors"
-                >
-                  <span>{cat}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-[#747878]" />
-                </button>
-              ))}
+          {/* Categories List (Only rendered when categories exist) */}
+          {categories.length > 0 && (
+            <div>
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#747878] mb-2 px-1">
+                Shop By Category
+              </h4>
+              <div className="space-y-1">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      onSelectCategory(cat);
+                      onClose();
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#faf8f5] text-xs font-semibold text-[#141414] transition-colors"
+                  >
+                    <span>{cat}</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-[#747878]" />
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Direct Quick Services */}
           <div>
@@ -236,7 +232,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             >
               <div className="flex items-center gap-2">
                 <LayoutDashboard className="w-4 h-4 text-[#fed488]" />
-                <span>Atelier Ops Hub 01</span>
+                <span>Admin Panel</span>
               </div>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </button>

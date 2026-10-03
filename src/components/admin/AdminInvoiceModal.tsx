@@ -23,7 +23,7 @@ export const AdminInvoiceModal: React.FC<AdminInvoiceModalProps> = ({ order, onC
           <div className="flex items-center gap-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#fed488]" />
             <span className="font-display text-sm font-bold uppercase tracking-wider text-[#fed488]">
-              PARZIO ATELIER SHIPPING MANIFEST &amp; TAX INVOICE
+              PARZIO SHIPPING MANIFEST &amp; TAX INVOICE
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export const AdminInvoiceModal: React.FC<AdminInvoiceModalProps> = ({ order, onC
                 SHIPPED FROM (CONSIGNOR):
               </p>
               <p className="font-bold text-[#141414] mt-1 text-xs">
-                PARZIO ATELIER FULFILLMENT CENTER
+                PARZIO FULFILLMENT CENTER
               </p>
               <p className="text-[#444748] mt-0.5 leading-relaxed">
                 Unit 402, Lotus Grandeur, Veera Desai Rd,<br />
@@ -126,7 +126,7 @@ export const AdminInvoiceModal: React.FC<AdminInvoiceModalProps> = ({ order, onC
                   <th className="py-2 text-right">Total</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f4f2ee]">
+              <tbody className="divide-y divide-[#eae5dc]">
                 <tr>
                   <td className="py-2.5 font-medium text-[#141414]">
                     {order.productName}
@@ -147,7 +147,7 @@ export const AdminInvoiceModal: React.FC<AdminInvoiceModalProps> = ({ order, onC
             <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-emerald-800 font-bold text-[11px]">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>5-Step Atelier Quality Check: PASSED</span>
+                <span>5-Step Quality Check: PASSED</span>
               </div>
               <p className="text-[10px] text-[#747878]">
                 Includes Velvet Anti-Tarnish Pouch + 18K Certificate of Authenticity.

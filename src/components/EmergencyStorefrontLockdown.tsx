@@ -39,7 +39,7 @@ export const EmergencyStorefrontLockdown: React.FC<EmergencyStorefrontLockdownPr
         <div className="flex items-center gap-3">
           <Logo className="h-7 w-auto" isLight />
           <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-mono font-bold border border-rose-500/40 animate-pulse">
-            ATELIER EMERGENCY LOCKDOWN
+            STORE EMERGENCY LOCKDOWN
           </span>
         </div>
 
@@ -70,7 +70,7 @@ export const EmergencyStorefrontLockdown: React.FC<EmergencyStorefrontLockdownPr
         </span>
 
         <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-white mb-4">
-          PARZIO ATELIER IS CURRENTLY PAUSED
+          STOREFRONT ORDERS CURRENTLY PAUSED
         </h1>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-8 text-left space-y-3 backdrop-blur-sm max-w-lg w-full">
@@ -139,8 +139,8 @@ export const EmergencyStorefrontLockdown: React.FC<EmergencyStorefrontLockdownPr
 
       {/* Footer */}
       <footer className="relative z-10 px-6 py-4 border-t border-white/10 text-center text-xs text-white/40 max-w-6xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span>&copy; {new Date().getFullYear()} PARZIO LUXURY ATELIER INDIA. ALL RIGHTS RESERVED.</span>
-        <span className="font-mono text-[11px] text-[#fed488]">ATELIER ENCRYPTION 256-BIT</span>
+        <span>&copy; {new Date().getFullYear()} PARZIO INDIA. ALL RIGHTS RESERVED.</span>
+        <span className="font-mono text-[11px] text-[#fed488]">SECURITY ENCRYPTION 256-BIT</span>
       </footer>
 
     </div>

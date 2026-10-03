@@ -76,7 +76,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                       onClick={onOpenAtelierOps}
                       className="hover:text-[#c5a059] transition-colors cursor-pointer text-left text-gray-400"
                     >
-                      Admin Atelier Ops
+                      Admin Panel
                     </button>
                   </li>
                 )}

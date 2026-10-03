@@ -93,7 +93,7 @@ export const AdminRtoShieldView: React.FC<AdminRtoShieldViewProps> = ({ onTrigge
             Pre-Dispatch Fraud &amp; Bogus Address Prevention
           </h3>
           <p className="text-xs text-white/70 mt-1 max-w-2xl">
-            Automatically scans delivery addresses, unverified phone numbers, and repeat COD refuse patterns across 26,000+ Indian pincodes to protect atelier profit margins.
+            Automatically scans delivery addresses, unverified phone numbers, and repeat COD refuse patterns across 26,000+ Indian pincodes to protect store profit margins.
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export const AdminRtoShieldView: React.FC<AdminRtoShieldViewProps> = ({ onTrigge
                   <th className="py-2.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f4f2ee]">
+              <tbody className="divide-y divide-[#eae5dc]">
                 {pincodes.map((pin) => (
                   <tr key={pin.pincode} className="hover:bg-[#faf8f5]">
                     <td className="py-3 font-mono font-bold text-[#141414]">{pin.pincode}</td>

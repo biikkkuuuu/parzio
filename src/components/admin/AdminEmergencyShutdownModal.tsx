@@ -83,7 +83,7 @@ export const AdminEmergencyShutdownModal: React.FC<AdminEmergencyShutdownModalPr
                 )}
               </div>
               <p className="text-xs text-white/60">
-                Atelier Master Kill-Switch &amp; Instant Maintenance Lockdown
+                Storefront Master Kill-Switch &amp; Instant Maintenance Mode
               </p>
             </div>
           </div>
@@ -148,7 +148,7 @@ export const AdminEmergencyShutdownModal: React.FC<AdminEmergencyShutdownModalPr
                   <span>Full Store Lockdown</span>
                 </div>
                 <p className="text-[11px] text-white/60 leading-tight">
-                  Replaces entire storefront with high-end Atelier Emergency Maintenance screen.
+                  Replaces entire storefront with Emergency Maintenance screen.
                 </p>
               </button>
 

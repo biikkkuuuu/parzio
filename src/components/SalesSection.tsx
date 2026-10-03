@@ -116,8 +116,14 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
 
       {/* 2-Column to 4-Column Product Grid */}
       <div id="sales-product-grid" className="max-w-6xl mx-auto pt-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 p-2 sm:p-4">
-          {paginatedSaleProducts.map((product) => (
+        {paginatedSaleProducts.length === 0 ? (
+          <div className="text-center py-16 px-4 bg-white mx-3 sm:mx-4 rounded-3xl border border-[#eae5dc] shadow-xs">
+            <p className="text-sm font-bold text-[#141414]">No sale products available</p>
+            <p className="text-xs text-[#747878] mt-1">Add items from the Admin Panel to feature them in the sale collection.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 p-2 sm:p-4">
+            {paginatedSaleProducts.map((product) => (
             <div
               key={product.id}
               className="bg-white flex flex-col justify-between overflow-hidden shadow-xs rounded-xl border border-[#eae5dc] select-none transition-all hover:shadow-md"
@@ -183,6 +189,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
             </div>
           ))}
         </div>
+        )}
 
         {/* Sales Pagination Bar: Page 1, 2, 3... */}
         {totalPages > 1 && (

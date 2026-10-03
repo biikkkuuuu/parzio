@@ -30,11 +30,6 @@ const NAV_ITEMS = [
   { id: 'home', label: 'Home' },
   { id: 'categories', label: 'Categories' },
   { id: 'shop', label: 'Shop' },
-  { id: 'bangles', label: 'Bangles' },
-  { id: 'mangalsutra', label: 'Mangalsutra' },
-  { id: 'jewellery-sets', label: 'Jewellery Sets' },
-  { id: 'perfume', label: 'Perfume' },
-  { id: 'beauty', label: 'Beauty' },
   { id: 'offers', label: 'Offers' },
 ];
 

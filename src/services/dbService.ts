@@ -39,6 +39,18 @@ const KEYS = {
   INSTAGRAM_POSTS: 'parzio_instagram_posts',
 };
 
+// One-time reset to guarantee existing browser local storage demo products & categories are cleared
+const WIPE_FLAG = 'parzio_wipe_all_v1';
+if (typeof window !== 'undefined') {
+  try {
+    if (!localStorage.getItem(WIPE_FLAG)) {
+      localStorage.setItem(KEYS.PRODUCTS, '[]');
+      localStorage.setItem(KEYS.CATEGORIES, '[]');
+      localStorage.setItem(WIPE_FLAG, 'true');
+    }
+  } catch {}
+}
+
 /**
  * dbService: Unified Data Access Layer
  * Powered by Google Firebase Firestore (Pay-As-You-Go) + Local Storage Cache.
@@ -52,11 +64,10 @@ export const dbService = {
   getProducts(): Product[] {
     try {
       const saved = localStorage.getItem(KEYS.PRODUCTS);
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const cleaned = parsed.filter((p: Product) => p.id !== 'prod-test-one-rupee');
-          return cleaned.length > 0 ? cleaned : VAULT_PRODUCTS;
+        if (Array.isArray(parsed)) {
+          return parsed;
         }
       }
     } catch {}
@@ -123,16 +134,43 @@ export const dbService = {
     }
   },
 
+  async clearAllProducts(): Promise<void> {
+    this.saveProducts([]);
+    if (db && isFirebaseConfigured()) {
+      try {
+        const q = query(collection(db, 'products'));
+        const snapshot = await getDocs(q);
+        const promises = snapshot.docs.map((d) => deleteDoc(doc(db, 'products', d.id)));
+        await Promise.all(promises);
+      } catch (e) {
+        console.error('Failed to clear Firebase products:', e);
+      }
+    }
+  },
+
   // ================= CATEGORIES =================
   getCategories(): CategoryItem[] {
     try {
       const saved = localStorage.getItem(KEYS.CATEGORIES);
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {}
     return CATEGORIES_DATA;
+  },
+
+  async clearAllCategories(): Promise<void> {
+    this.saveCategories([]);
+    if (db && isFirebaseConfigured()) {
+      try {
+        const snapshot = await getDocs(collection(db, 'categories'));
+        const promises = snapshot.docs.map((d) => deleteDoc(doc(db, 'categories', d.id)));
+        await Promise.all(promises);
+      } catch (e) {
+        console.error('Failed to clear Firebase categories:', e);
+      }
+    }
   },
 
   saveCategories(categories: CategoryItem[]): void {

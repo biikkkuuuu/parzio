@@ -97,26 +97,16 @@ export const AllCategoriesView: React.FC<AllCategoriesViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'jewellery' | 'fragrance' | 'beauty'>('all');
 
-  // Merge dynamic admin categories with curated categories
+  // Dynamic categories strictly from DB/Admin
   const allCategoryList = useMemo(() => {
-    const list: CategoryCardData[] = [...CURATED_CATEGORIES];
-    
-    // Add any categories from DB/Admin that are not in curated list
-    categories.forEach((cat) => {
-      const exists = list.some((c) => c.name.toLowerCase() === cat.name.toLowerCase());
-      if (!exists) {
-        list.push({
-          id: cat.id || `cat-${cat.name.toLowerCase().replace(/\s+/g, '-')}`,
-          name: cat.name,
-          subtitle: cat.subtitle || 'Explore our exclusive collection',
-          image: cat.image || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
-          tag: 'New Collection',
-          type: 'jewellery'
-        });
-      }
-    });
-
-    return list;
+    return (categories || []).map((cat) => ({
+      id: cat.id || `cat-${cat.name.toLowerCase().replace(/\s+/g, '-')}`,
+      name: cat.name,
+      subtitle: cat.subtitle || 'Explore our exclusive collection',
+      image: cat.image || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
+      tag: 'Collection',
+      type: 'jewellery' as const
+    }));
   }, [categories]);
 
   // Product count calculator per category
@@ -297,9 +287,6 @@ export const AllCategoriesView: React.FC<AllCategoriesViewProps> = ({
                         </h3>
                         <ChevronRight className="w-3.5 h-3.5 text-[#a0a3a8] group-hover:text-[#9e7144] group-hover:translate-x-0.5 transition-all shrink-0" />
                       </div>
-                      <p className="text-[10px] sm:text-xs text-[#747878] mt-1 line-clamp-1 leading-normal">
-                        {cat.subtitle}
-                      </p>
                     </div>
 
                     <div className="mt-3 pt-2.5 border-t border-[#f0f1f3] flex items-center justify-between">

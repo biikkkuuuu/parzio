@@ -1,7 +1,7 @@
 export interface CategoryItem {
   id?: string;
   name: string;
-  subtitle: string;
+  subtitle?: string;
   image: string;
 }
 

@@ -23,7 +23,7 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    onTriggerToast('Atelier operational settings & logistics keys securely saved!');
+    onTriggerToast('Store settings & logistics keys securely saved!');
   };
 
   return (
@@ -34,7 +34,7 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
         <div>
           <h3 className="font-display text-base font-bold text-[#141414] flex items-center gap-2">
             <Lock className="w-4 h-4 text-[#8c7138]" />
-            Atelier Gateway Configurations &amp; Policies
+            Store Gateway Configurations &amp; Policies
           </h3>
           <p className="text-xs text-[#747878] mt-0.5">
             Manage live logistics courier webhooks, automated WhatsApp triggers, and pricing rules.
@@ -166,8 +166,8 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
           <div className="text-xs space-y-2">
             <div className="flex items-center justify-between p-3 rounded-2xl bg-[#faf8f5] border border-[#eae5dc]">
               <div>
-                <p className="font-bold text-[#141414]">Priya K. (Master Jeweller)</p>
-                <p className="text-[11px] text-[#747878]">Shift #04 • Mumbai Atelier Hub</p>
+                <p className="font-bold text-[#141414]">Operations Lead</p>
+                <p className="text-[11px] text-[#747878]">Shift #04 • Fulfillment Hub</p>
               </div>
               <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
                 Admin Role

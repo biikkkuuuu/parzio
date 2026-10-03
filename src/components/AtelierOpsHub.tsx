@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { OrderItem, OrderStatus, Product, CategoryItem, AdminTab, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon } from '../types';
-import { Logo } from './Logo';
 import { AdminAnalyticsView } from './admin/AdminAnalyticsView';
 import { AdminOrdersView } from './admin/AdminOrdersView';
 import { AdminInventoryView } from './admin/AdminInventoryView';
@@ -133,13 +132,13 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f2ee] text-[#1b1c1a]">
+    <div className="min-h-screen bg-[#fbf9f6] text-[#141414] font-sans antialiased selection:bg-[#fed488] selection:text-[#141414]">
       
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-50 bg-[#141414] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 border border-[#8c7138] animate-bounce text-xs font-semibold">
+        <div className="fixed top-6 right-6 z-50 bg-[#141414] text-[#fed488] px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 border border-[#8c7138] animate-bounce text-xs font-semibold">
           <Sparkles className="w-4 h-4 text-[#fed488]" />
-          <span>{toastMessage}</span>
+          <span className="text-white">{toastMessage}</span>
         </div>
       )}
 
@@ -166,47 +165,64 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
         </div>
       )}
 
-      {/* Top Admin App Bar */}
-      <header className="sticky top-0 z-40 bg-[#141414] text-white border-b border-[#2d2c2a] px-4 sm:px-8 py-3 shadow-md">
+      {/* Top Admin App Bar - Matching Storefront Clean Luxury Aesthetic */}
+      <header className="sticky top-0 z-40 bg-white text-[#141414] border-b border-[#eae5dc] px-4 sm:px-8 py-3 shadow-xs">
         <div className="w-full max-w-[1800px] mx-auto flex items-center justify-between gap-3">
           
-          {/* Left: Hamburger Button & Logo Branding */}
+          {/* Left: Hamburger Button & Brand Logo */}
           <div className="flex items-center gap-3 sm:gap-4">
             {/* Hamburger Button */}
             <button
               onClick={() => setIsHamburgerOpen(true)}
-              title="Open Atelier Ops Navigation Menu"
-              className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#8c7138] hover:bg-[#fed488] text-white hover:text-[#141414] text-xs font-bold transition-all shadow-sm active:scale-95 group border border-[#fed488]/30 cursor-pointer"
+              title="Open Navigation Menu"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold transition-all shadow-xs active:scale-95 group border border-black/10 cursor-pointer"
             >
-              <Menu className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <Menu className="w-4 h-4 group-hover:scale-110 transition-transform text-[#fed488]" />
               <span className="uppercase tracking-wider font-bold text-[11px]">
                 Menu
               </span>
             </button>
 
-            <div className="h-6 w-px bg-white/20 hidden sm:block" />
+            <div className="h-6 w-px bg-[#eae5dc] hidden sm:block" />
 
-            {/* Branding Logo */}
-            <div className="flex items-center gap-3">
-              <Logo className="h-6 w-auto" isLight />
+            {/* Clean Admin Label (No Logo) */}
+            <div className="flex items-center gap-2.5">
+              <span className="font-display font-bold text-sm sm:text-base tracking-wide text-[#141414] uppercase">
+                Admin Panel
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/60 text-[10px] font-bold text-emerald-800">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live
+              </span>
             </div>
           </div>
 
-          {/* Right: Emergency Stop & Logout Controls Only */}
-          <div className="flex items-center gap-2">
+          {/* Right: Quick Storefront Switcher, Emergency Stop & Logout Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
             
+            {/* Direct Storefront Switcher Button */}
+            <button
+              onClick={onBackToStore}
+              title="View Live Storefront"
+              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full bg-[#faf8f5] hover:bg-[#eae5dc] text-[#141414] border border-[#eae5dc] text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+            >
+              <Store className="w-3.5 h-3.5 text-[#8c7138]" />
+              <span className="hidden sm:inline">Storefront</span>
+              <span className="text-[10px] text-[#8c7138]">↗</span>
+            </button>
+
             {/* Emergency Shutdown Trigger */}
             <button
               onClick={() => setIsEmergencyModalOpen(true)}
               title="Pause Store Orders"
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 emergencyConfig.isActive
                   ? 'bg-rose-600 text-white animate-pulse shadow-md shadow-rose-950'
-                  : 'bg-rose-500/20 text-rose-300 hover:bg-rose-600 hover:text-white border border-rose-500/40'
+                  : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
               }`}
             >
-              <AlertOctagon className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">
+              <AlertOctagon className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden md:inline">
                 {emergencyConfig.isActive ? 'Orders Paused' : 'Emergency Stop'}
               </span>
             </button>
@@ -215,7 +231,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
             <button
               onClick={onLogout}
               title="Logout from Admin Panel"
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-rose-950/70 hover:text-rose-300 text-white/70 text-xs font-bold transition-colors border border-white/10 hover:border-rose-800/60 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 hover:bg-rose-50 hover:text-rose-700 text-neutral-600 border border-neutral-200 text-xs font-semibold transition-colors cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span className="hidden md:inline">Logout</span>
@@ -226,19 +242,19 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
         </div>
       </header>
 
-      {/* Live Telemetry Ticker */}
-      <div className="bg-[#1e1e1e] text-white/90 border-b border-black/40 text-xs py-2.5 px-4 sm:px-8">
-        <div className="w-full max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-4 font-mono text-[11px]">
-          <div className="flex items-center gap-2 text-[#fed488]">
-            <Clock className="w-3.5 h-3.5" />
+      {/* Live Telemetry Ticker - Warm Clean Ivory Aesthetic */}
+      <div className="bg-[#faf8f5] text-[#5c5f5e] border-b border-[#eae5dc] text-xs py-2 px-4 sm:px-8">
+        <div className="w-full max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-3 text-[11px] font-medium">
+          <div className="flex items-center gap-2 text-[#8c7138] font-bold">
+            <Clock className="w-3.5 h-3.5 text-[#8c7138]" />
             <span>LIVE SALES SPEED: 241 ORDERS/HOUR</span>
           </div>
-          <div className="flex items-center gap-4 text-white/70">
-            <span>TOTAL PRODUCTS: <strong className="text-white">{products.length}</strong></span>
+          <div className="flex items-center gap-3 sm:gap-4 text-[#747878] font-mono text-[11px]">
+            <span>TOTAL PRODUCTS: <strong className="text-[#141414]">{products.length}</strong></span>
             <span>•</span>
-            <span>ACTIVE ORDERS: <strong className="text-white">{orders.length}</strong></span>
+            <span>ACTIVE ORDERS: <strong className="text-[#141414]">{orders.length}</strong></span>
             <span>•</span>
-            <span className={`${emergencyConfig.isActive ? 'text-rose-400 font-bold animate-pulse' : 'text-emerald-400'} flex items-center gap-1`}>
+            <span className={`${emergencyConfig.isActive ? 'text-rose-600 font-bold animate-pulse' : 'text-emerald-700'} flex items-center gap-1 font-bold`}>
               <ShieldCheck className="w-3.5 h-3.5" />
               {emergencyConfig.isActive ? 'ORDERS PAUSED' : 'COD SAFETY: ON'}
             </span>
@@ -249,9 +265,9 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
       {/* Main Admin Workspace Container */}
       <main className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
         
-        {/* Module Header & Hamburger Switcher Bar */}
-        <div className="mb-6 bg-white p-4 sm:p-5 rounded-3xl border border-[#eae5dc] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
+        {/* Module Header & Unbreakable Module Switcher Bar */}
+        <div className="mb-6 bg-white p-4 sm:p-5 rounded-3xl border border-[#eae5dc] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
             <div className="w-11 h-11 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center text-[#8c7138] shadow-xs flex-shrink-0">
               {activeTab === 'overview' && <BarChart3 className="w-5 h-5" />}
               {activeTab === 'orders' && <Package className="w-5 h-5" />}
@@ -263,80 +279,120 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
               {activeTab === 'coupons' && <Tag className="w-5 h-5" />}
               {activeTab === 'settings' && <Settings className="w-5 h-5" />}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] text-[#8c7138] uppercase font-bold tracking-widest bg-[#faf8f5] border border-[#eae5dc] px-2 py-0.5 rounded-full">
                   Active Module
                 </span>
                 {activeTab === 'orders' && (
-                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.2 rounded-full">
+                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.5 rounded-full">
                     {orders.length} in queue
                   </span>
                 )}
                 {activeTab === 'inventory' && (
-                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.2 rounded-full">
+                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.5 rounded-full">
                     {products.length} items
                   </span>
                 )}
                 {activeTab === 'categories' && (
-                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.2 rounded-full">
+                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.5 rounded-full">
                     {categories.length} categories
                   </span>
                 )}
                 {activeTab === 'banners' && (
-                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.2 rounded-full">
+                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.5 rounded-full">
                     {banners.length} banners
                   </span>
                 )}
               </div>
-              <h2 className="font-display text-xl sm:text-2xl font-bold text-[#141414] mt-0.5">
+              <h2 className="font-display text-xl sm:text-2xl font-bold text-[#141414] mt-0.5 truncate">
                 {tabLabels[activeTab]}
               </h2>
             </div>
           </div>
 
-          {/* Direct Tab Bar */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 p-1 bg-[#faf8f5] border border-[#eae5dc] rounded-full text-xs">
+          {/* Direct Module Tab Bar - Fully Responsive Horizontal Scroll without Breaking Layout */}
+          <div className="w-full md:w-auto overflow-x-auto no-scrollbar py-0.5">
+            <div className="flex items-center gap-1.5 p-1 bg-[#faf8f5] border border-[#eae5dc] rounded-full text-xs whitespace-nowrap min-w-max">
               <button
-                onClick={() => setActiveTab('categories')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all ${
-                  activeTab === 'categories'
+                onClick={() => setActiveTab('overview')}
+                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
+                  activeTab === 'overview'
                     ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
                 }`}
               >
-                Categories ({categories.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('inventory')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all ${
-                  activeTab === 'inventory'
-                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900'
-                }`}
-              >
-                Stock ({products.length})
+                Overview
               </button>
               <button
                 onClick={() => setActiveTab('orders')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
                   activeTab === 'orders'
                     ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
                 }`}
               >
                 Orders ({orders.length})
               </button>
               <button
-                onClick={() => setActiveTab('banners')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all ${
-                  activeTab === 'banners'
+                onClick={() => setActiveTab('inventory')}
+                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
+                  activeTab === 'inventory'
                     ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
                 }`}
               >
-                Banners
+                Stock ({products.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('categories')}
+                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
+                  activeTab === 'categories'
+                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
+                }`}
+              >
+                Categories ({categories.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('banners')}
+                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
+                  activeTab === 'banners'
+                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
+                }`}
+              >
+                Banners ({banners.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('rto-shield')}
+                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
+                  activeTab === 'rto-shield'
+                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
+                }`}
+              >
+                COD Safety
+              </button>
+              <button
+                onClick={() => setActiveTab('coupons')}
+                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
+                  activeTab === 'coupons'
+                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
+                }`}
+              >
+                Coupons
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
+                  activeTab === 'settings'
+                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
+                }`}
+              >
+                Settings
               </button>
             </div>
           </div>
@@ -412,6 +468,10 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
             }}
             onAddProduct={onAddProduct}
             onEditProduct={onEditProduct}
+            onDeleteProduct={(prodId) => {
+              onDeleteProduct(prodId);
+              triggerToast('Product deleted successfully from catalog.');
+            }}
             onTriggerToast={triggerToast}
           />
         )}

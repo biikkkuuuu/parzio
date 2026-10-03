@@ -154,7 +154,7 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
       </div>
 
       {/* Exchanges List */}
-      <div className="bg-white rounded-3xl border border-[#eae5dc] shadow-sm overflow-hidden divide-y divide-[#f4f2ee]">
+      <div className="bg-white rounded-3xl border border-[#eae5dc] shadow-sm overflow-hidden divide-y divide-[#eae5dc]">
         {exchanges.map((req) => {
           const isPending = req.status === 'Pending Review';
           const isApproved = req.status === 'Approved & Pickup Scheduled';

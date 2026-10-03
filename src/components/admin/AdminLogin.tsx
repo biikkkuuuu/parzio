@@ -60,8 +60,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f2ee] flex flex-col items-center justify-center p-6 text-[#1b1c1a]">
-      <div className="max-w-sm w-full bg-white p-8 rounded-3xl shadow-xl border border-[#fed488]/30">
+    <div className="min-h-screen bg-[#fbf9f6] flex flex-col items-center justify-center p-6 text-[#141414]">
+      <div className="max-w-sm w-full bg-white p-8 rounded-3xl shadow-xl border border-[#eae5dc]">
         
         {/* Header */}
         <div className="flex flex-col items-center mb-6">
@@ -69,7 +69,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
           <div className="mt-5 flex items-center justify-center w-12 h-12 rounded-2xl mb-3 shadow-xs bg-[#141414] text-[#fed488]">
             <Lock className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-center">Atelier Ops Hub</h2>
+          <h2 className="text-xl font-bold text-center">Store Admin</h2>
           <p className="text-xs text-center text-gray-500 mt-1">
             Login with Admin ID &amp; Password
           </p>
@@ -128,14 +128,14 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
             ) : (
               <>
                 <ShieldCheck className="w-4 h-4" />
-                <span>Login to Atelier Ops</span>
+                <span>Login to Admin Panel</span>
               </>
             )}
           </button>
         </form>
         
         <div className="mt-8 text-center text-[10px] text-gray-400">
-          <p>Protected by PARZIO Atelier Security</p>
+          <p>Protected by Secure Admin Authentication</p>
           <p className="mt-1">Direct ID &amp; Password Access • Zero OTP Waiting</p>
         </div>
       </div>
