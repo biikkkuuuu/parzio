@@ -258,19 +258,36 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
                       </div>
                     </td>
 
-                    {/* Live Toggle */}
+                    {/* Live Toggle: Yes / No Switch */}
                     <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => onToggleLive(product.id)}
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                          isLive
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-zinc-200 text-zinc-600'
-                        }`}
-                      >
-                        {isLive ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                        <span>{isLive ? 'Active Live' : 'Draft'}</span>
-                      </button>
+                      <div className="inline-flex items-center gap-1 bg-[#faf8f5] p-1 rounded-full border border-[#eae5dc]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!isLive) onToggleLive(product.id);
+                          }}
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                            isLive
+                              ? 'bg-emerald-700 text-white shadow-xs'
+                              : 'text-[#747878] hover:text-[#141414]'
+                          }`}
+                        >
+                          Yes (Live)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isLive) onToggleLive(product.id);
+                          }}
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                            !isLive
+                              ? 'bg-neutral-800 text-white shadow-xs'
+                              : 'text-[#747878] hover:text-[#141414]'
+                          }`}
+                        >
+                          No (Draft)
+                        </button>
+                      </div>
                     </td>
 
                     {/* Actions: Edit & Delete */}

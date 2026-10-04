@@ -67,7 +67,16 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
         e.id === id ? { ...e, status: 'Approved & Pickup Scheduled' } : e
       )
     );
-    onTriggerToast(`Exchange #${id} approved! BlueDart Reverse-Pickup courier dispatched.`);
+    onTriggerToast(`Reverse Pickup approved (YES) for Ticket #${id}! Courier dispatched.`);
+  };
+
+  const handleReject = (id: string) => {
+    setExchanges((prev) =>
+      prev.map((e) =>
+        e.id === id ? { ...e, status: 'Rejected' } : e
+      )
+    );
+    onTriggerToast(`Return request rejected (NO) for Ticket #${id}.`);
   };
 
   const handleDispatchReplacement = (id: string) => {
@@ -76,7 +85,7 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
         e.id === id ? { ...e, status: 'Replacement Dispatched' } : e
       )
     );
-    onTriggerToast(`Replacement parcel dispatched for Exchange #${id}.`);
+    onTriggerToast(`Replacement dispatched (YES) for Exchange #${id}.`);
   };
 
   const handleSaveForm = (e: React.FormEvent) => {
@@ -207,6 +216,8 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
                             ? 'bg-amber-100 text-amber-800'
                             : isApproved
                             ? 'bg-blue-100 text-blue-800'
+                            : req.status === 'Rejected'
+                            ? 'bg-rose-100 text-rose-800'
                             : 'bg-emerald-100 text-emerald-800'
                         }`}
                       >
@@ -245,36 +256,84 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
                       </p>
                     </div>
 
-                    {/* Proof & Action */}
-                    <div className="flex items-center gap-3">
+                    {/* Proof & Action: Yes / No Decision Box */}
+                    <div className="flex flex-wrap items-center gap-2.5">
                       {req.evidencePhoto && (
                         <button
                           onClick={() => setSelectedPhoto(req.evidencePhoto || null)}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#faf8f5] hover:bg-[#eae5dc] border border-[#eae5dc] text-xs font-semibold text-[#141414] transition-colors"
                         >
                           <Eye className="w-3.5 h-3.5 text-[#8c7138]" />
-                          <span>View Photo Proof</span>
+                          <span>View Proof</span>
                         </button>
                       )}
 
+                      {/* Reverse Pickup Decision (YES / NO) */}
                       {isPending && (
-                        <button
-                          onClick={() => handleApprove(req.id)}
-                          className="px-4 py-1.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-1.5"
-                        >
-                          <Truck className="w-3.5 h-3.5 text-[#fed488]" />
-                          <span>Approve Reverse Pickup</span>
-                        </button>
+                        <div className="flex items-center gap-1.5 bg-[#faf8f5] p-1 rounded-full border border-[#eae5dc]">
+                          <span className="text-[10px] uppercase font-bold text-[#747878] px-2">Reverse Pickup?</span>
+                          
+                          {/* YES Button */}
+                          <button
+                            onClick={() => handleApprove(req.id)}
+                            title="Approve reverse courier pickup"
+                            className="px-3 py-1 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                          >
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>Yes (Approve)</span>
+                          </button>
+
+                          {/* NO Button */}
+                          <button
+                            onClick={() => handleReject(req.id)}
+                            title="Reject return request"
+                            className="px-3 py-1 rounded-full bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                          >
+                            <XCircle className="w-3 h-3" />
+                            <span>No (Reject)</span>
+                          </button>
+                        </div>
                       )}
 
+                      {/* Approved & Waiting for replacement dispatch */}
                       {isApproved && (
-                        <button
-                          onClick={() => handleDispatchReplacement(req.id)}
-                          className="px-4 py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-1.5"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Dispatch Replacement</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleDispatchReplacement(req.id)}
+                            className="px-4 py-1.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Truck className="w-3.5 h-3.5 text-[#fed488]" />
+                            <span>Dispatch Replacement (Yes)</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleReject(req.id)}
+                            className="px-3 py-1.5 rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold transition-all cursor-pointer"
+                          >
+                            Cancel Pickup (No)
+                          </button>
+                        </div>
+                      )}
+
+                      {req.status === 'Rejected' && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
+                            ✕ Pickup Disallowed (NO)
+                          </span>
+                          <button
+                            onClick={() => handleApprove(req.id)}
+                            className="text-[11px] font-bold text-[#8c7138] underline hover:text-[#141414] cursor-pointer"
+                          >
+                            Re-approve (Yes)
+                          </button>
+                        </div>
+                      )}
+
+                      {req.status === 'Replacement Dispatched' && (
+                        <span className="px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1 border border-emerald-200">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          Replacement Completed
+                        </span>
                       )}
                     </div>
                   </div>

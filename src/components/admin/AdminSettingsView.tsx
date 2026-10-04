@@ -126,7 +126,7 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
         <div className="bg-white rounded-3xl p-6 border border-[#eae5dc] shadow-sm space-y-4">
           <h4 className="font-display text-base font-bold text-[#141414] flex items-center gap-2 pb-2 border-b border-[#eae5dc]">
             <CreditCard className="w-4 h-4 text-[#8c7138]" />
-            Store Delivery &amp; COD Fees
+            Store Delivery, Reverse Pickup &amp; COD Policies
           </h4>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
@@ -152,6 +152,55 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
                 onChange={(e) => setCodFee(e.target.value)}
                 className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 font-bold text-[#141414] focus:outline-none focus:border-[#8c7138]"
               />
+            </div>
+          </div>
+
+          {/* Yes / No Global Policies */}
+          <div className="pt-2 border-t border-[#eae5dc] space-y-2.5 text-xs">
+            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-[#faf8f5] border border-[#eae5dc]">
+              <div>
+                <p className="font-bold text-[#141414]">Allow Reverse Pickup Courier</p>
+                <p className="text-[10px] text-[#747878]">Permit customer returns &amp; doorstep pickup</p>
+              </div>
+              <div className="inline-flex items-center gap-1 bg-white p-0.5 rounded-full border border-[#eae5dc]">
+                <button
+                  type="button"
+                  onClick={() => onTriggerToast('Reverse Pickup Policy set to YES (Allowed)')}
+                  className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-700 text-white shadow-xs cursor-pointer"
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onTriggerToast('Reverse Pickup Policy set to NO (Disallowed)')}
+                  className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#747878] hover:text-[#141414] cursor-pointer"
+                >
+                  No
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-[#faf8f5] border border-[#eae5dc]">
+              <div>
+                <p className="font-bold text-[#141414]">Accept Cash On Delivery (COD)</p>
+                <p className="text-[10px] text-[#747878]">Allow customers to place COD orders</p>
+              </div>
+              <div className="inline-flex items-center gap-1 bg-white p-0.5 rounded-full border border-[#eae5dc]">
+                <button
+                  type="button"
+                  onClick={() => onTriggerToast('Cash On Delivery set to YES (Enabled)')}
+                  className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-700 text-white shadow-xs cursor-pointer"
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onTriggerToast('Cash On Delivery set to NO (Prepaid Only)')}
+                  className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#747878] hover:text-[#141414] cursor-pointer"
+                >
+                  No
+                </button>
+              </div>
             </div>
           </div>
         </div>

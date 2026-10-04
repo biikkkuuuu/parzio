@@ -232,16 +232,35 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
 
-                <button
-                  onClick={() => handleToggle(coupon.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
-                    coupon.active
-                      ? 'bg-rose-50 text-rose-700 hover:bg-rose-100'
-                      : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                  }`}
-                >
-                  {coupon.active ? 'Deactivate' : 'Activate'}
-                </button>
+                <div className="inline-flex items-center gap-1 bg-[#faf8f5] p-1 rounded-full border border-[#eae5dc]">
+                  <span className="text-[10px] text-[#747878] font-bold px-1.5 uppercase">Active?</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!coupon.active) handleToggle(coupon.id);
+                    }}
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                      coupon.active
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'text-[#747878] hover:text-[#141414]'
+                    }`}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (coupon.active) handleToggle(coupon.id);
+                    }}
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                      !coupon.active
+                        ? 'bg-neutral-800 text-white shadow-xs'
+                        : 'text-[#747878] hover:text-[#141414]'
+                    }`}
+                  >
+                    No
+                  </button>
+                </div>
               </div>
             </div>
 

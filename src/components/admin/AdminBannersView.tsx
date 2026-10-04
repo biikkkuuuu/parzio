@@ -518,18 +518,35 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  {/* Active / Inactive Toggle */}
-                  <button
-                    type="button"
-                    onClick={() => handleToggleTopMarqueeActive(item.id)}
-                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition-colors cursor-pointer ${
-                      item.active
-                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                        : 'bg-neutral-200 text-neutral-600'
-                    }`}
-                  >
-                    {item.active ? 'Active' : 'Paused'}
-                  </button>
+                  {/* Active / Inactive Yes / No Switch */}
+                  <div className="inline-flex items-center gap-1 bg-[#faf8f5] p-0.5 rounded-full border border-[#eae5dc]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!item.active) handleToggleTopMarqueeActive(item.id);
+                      }}
+                      className={`px-2 py-0.5 rounded-full text-[9px] font-bold transition-all cursor-pointer ${
+                        item.active
+                          ? 'bg-emerald-700 text-white shadow-xs'
+                          : 'text-[#747878] hover:text-[#141414]'
+                      }`}
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (item.active) handleToggleTopMarqueeActive(item.id);
+                      }}
+                      className={`px-2 py-0.5 rounded-full text-[9px] font-bold transition-all cursor-pointer ${
+                        !item.active
+                          ? 'bg-neutral-800 text-white shadow-xs'
+                          : 'text-[#747878] hover:text-[#141414]'
+                      }`}
+                    >
+                      No
+                    </button>
+                  </div>
 
                   {/* Edit Button */}
                   <button
@@ -661,17 +678,35 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
                   {/* Card Controls Footer */}
                   <div className="px-5 py-3 bg-[#faf8f5] border-t border-[#eae5dc] flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleBannerActive(banner.id)}
-                        className={`px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer ${
-                          banner.active
-                            ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
-                            : 'bg-neutral-200 text-neutral-700'
-                        }`}
-                      >
-                        {banner.active ? 'Visible on Store' : 'Hidden'}
-                      </button>
+                      <div className="inline-flex items-center gap-1 bg-white p-1 rounded-full border border-[#eae5dc]">
+                        <span className="text-[10px] text-[#747878] font-bold px-1.5 uppercase">Visible?</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!banner.active) handleToggleBannerActive(banner.id);
+                          }}
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                            banner.active
+                              ? 'bg-emerald-700 text-white shadow-xs'
+                              : 'text-[#747878] hover:text-[#141414]'
+                          }`}
+                        >
+                          Yes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (banner.active) handleToggleBannerActive(banner.id);
+                          }}
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                            !banner.active
+                              ? 'bg-neutral-800 text-white shadow-xs'
+                              : 'text-[#747878] hover:text-[#141414]'
+                          }`}
+                        >
+                          No
+                        </button>
+                      </div>
                       <span className="text-[11px] text-[#747878]">Slide #{index + 1}</span>
                     </div>
 
@@ -1090,21 +1125,48 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
                     Target: {poster.linkCategory}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!onUpdateSalePosters) return;
-                        const updated = salePosters.map((p) =>
-                          p.id === poster.id ? { ...p, active: !p.active } : p
-                        );
-                        onUpdateSalePosters(updated);
-                        onTriggerToast(`Poster status changed to ${!poster.active ? 'Active' : 'Paused'}`);
-                      }}
-                      className="p-1.5 rounded-lg border border-[#eae5dc] bg-white hover:bg-[#eae5dc] text-[#141414] transition-colors"
-                      title={poster.active ? 'Pause Poster' : 'Activate Poster'}
-                    >
-                      {poster.active ? <Eye className="w-3.5 h-3.5 text-emerald-600" /> : <Eye className="w-3.5 h-3.5 text-amber-600" />}
-                    </button>
+                    <div className="inline-flex items-center gap-1 bg-white p-0.5 rounded-full border border-[#eae5dc]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!onUpdateSalePosters) return;
+                          if (!poster.active) {
+                            const updated = salePosters.map((p) =>
+                              p.id === poster.id ? { ...p, active: true } : p
+                            );
+                            onUpdateSalePosters(updated);
+                            onTriggerToast('Poster activated (YES)');
+                          }
+                        }}
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-bold transition-all cursor-pointer ${
+                          poster.active
+                            ? 'bg-emerald-700 text-white shadow-xs'
+                            : 'text-[#747878] hover:text-[#141414]'
+                        }`}
+                      >
+                        Yes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!onUpdateSalePosters) return;
+                          if (poster.active) {
+                            const updated = salePosters.map((p) =>
+                              p.id === poster.id ? { ...p, active: false } : p
+                            );
+                            onUpdateSalePosters(updated);
+                            onTriggerToast('Poster paused (NO)');
+                          }
+                        }}
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-bold transition-all cursor-pointer ${
+                          !poster.active
+                            ? 'bg-neutral-800 text-white shadow-xs'
+                            : 'text-[#747878] hover:text-[#141414]'
+                        }`}
+                      >
+                        No
+                      </button>
+                    </div>
                     <button
                       type="button"
                       onClick={() => {
