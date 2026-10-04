@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Product } from '../../types';
 import { DeviceImageUpload } from './DeviceImageUpload';
-import { X, Sparkles, Image, Tag, Droplet, ShieldCheck, DollarSign, Package, Plus, Check, ArrowLeft } from 'lucide-react';
+import { X, Sparkles, Image, Tag, Droplet, ShieldCheck, DollarSign, Package, Plus, Check, ArrowLeft, Trash2, Layers } from 'lucide-react';
 
 interface AdminProductModalProps {
   isOpen: boolean;
@@ -41,6 +41,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [originalPrice, setOriginalPrice] = useState('1499');
   const [sku, setSku] = useState('PRZ-DROP-01');
   const [image, setImage] = useState('');
+  const [extraImages, setExtraImages] = useState<string[]>([]);
   const [stock, setStock] = useState('50');
   const [material, setMaterial] = useState('316L Surgical Stainless Steel • 18K Real Gold PVD Plating');
   const [isWaterproof, setIsWaterproof] = useState(true);
@@ -69,6 +70,10 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       setOriginalPrice(String(initialProduct.originalPrice));
       setSku(initialProduct.sku);
       setImage(initialProduct.image);
+      const otherImages = initialProduct.images && initialProduct.images.length > 0
+        ? initialProduct.images.filter((img) => img !== initialProduct.image)
+        : (initialProduct.hoverImage && initialProduct.hoverImage !== initialProduct.image ? [initialProduct.hoverImage] : []);
+      setExtraImages(otherImages);
       setStock(String(initialProduct.stock ?? 45));
       setMaterial(initialProduct.material);
       setIsWaterproof(initialProduct.isWaterproof);
@@ -82,6 +87,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       setOriginalPrice('1499');
       setSku(`PRZ-${Date.now().toString().slice(-5)}`);
       setImage('');
+      setExtraImages([]);
       setStock('50');
       setMaterial('316L Surgical Stainless Steel • 18K Real Gold PVD Plating');
       setIsWaterproof(true);
@@ -101,6 +107,10 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
     e.preventDefault();
     if (!name.trim()) return;
 
+    const mainImg = image.trim() || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80';
+    const validExtraImages = extraImages.filter((img) => Boolean(img && img.trim()));
+    const allProductImages = [mainImg, ...validExtraImages];
+
     const savedProduct: Product = {
       id: initialProduct?.id || `prod-custom-${Date.now()}`,
       name: name.trim(),
@@ -111,8 +121,9 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       rating: initialProduct?.rating || 4.9,
       reviewsCount: initialProduct?.reviewsCount || 128,
       colorways: initialProduct?.colorways || 1,
-      image: image.trim() || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
-      hoverImage: initialProduct?.hoverImage,
+      image: mainImg,
+      images: allProductImages,
+      hoverImage: validExtraImages[0] || initialProduct?.hoverImage || mainImg,
       description: description.trim(),
       sku: sku.trim() || `PRZ-${Date.now().toString().slice(-5)}`,
       material,
@@ -417,19 +428,124 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             <div className="lg:col-span-5 space-y-6">
               {/* Product Photo Upload Card */}
               <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#eae5dc] shadow-xs space-y-5">
-                <h3 className="text-sm font-bold text-[#141414] uppercase tracking-wider flex items-center gap-2">
-                  <Image className="w-4 h-4 text-[#8c7138]" />
-                  <span>Product Visual Asset</span>
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-[#141414] uppercase tracking-wider flex items-center gap-2">
+                    <Image className="w-4 h-4 text-[#8c7138]" />
+                    <span>Product Visual Assets</span>
+                  </h3>
+                  <span className="text-[11px] font-bold text-[#8c7138] bg-[#faf8f5] px-2.5 py-0.5 rounded-full border border-[#eae5dc]">
+                    {1 + extraImages.filter(Boolean).length} Photos
+                  </span>
+                </div>
 
-                <DeviceImageUpload
-                  label="Product Photo"
-                  required
-                  value={image}
-                  onChange={setImage}
-                  recommendedSize="1:1 Square • 800 × 800px (Max 5MB)"
-                  aspectRatio="square"
-                />
+                {/* Primary / Cover Image */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#141414]">
+                    <span className="w-2 h-2 rounded-full bg-[#8c7138]"></span>
+                    <span>Primary Cover Photo <span className="text-rose-500">*</span></span>
+                    <span className="text-[10px] text-[#747878] font-normal">(Shown on Storefront Grid)</span>
+                  </div>
+                  <DeviceImageUpload
+                    label=""
+                    required
+                    value={image}
+                    onChange={setImage}
+                    recommendedSize="1:1 Square • 800 × 800px"
+                    aspectRatio="square"
+                  />
+                </div>
+
+                {/* Additional Gallery Photos */}
+                <div className="pt-2 border-t border-[#eae5dc] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-[#141414] uppercase tracking-wider flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-[#8c7138]" />
+                        <span>Additional Product Photos</span>
+                      </h4>
+                      <p className="text-[11px] text-[#747878] mt-0.5">
+                        Add alternate angles, on-model look, or detail shots (swipeable slider on product page).
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setExtraImages((prev) => [...prev, ''])}
+                      className="px-3 py-1.5 rounded-xl bg-[#faf8f5] hover:bg-[#8c7138] text-[#8c7138] hover:text-white border border-[#eae5dc] hover:border-[#8c7138] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Photo</span>
+                    </button>
+                  </div>
+
+                  {/* List of Extra Image Slots */}
+                  {extraImages.length === 0 ? (
+                    <div className="p-4 rounded-2xl bg-[#faf8f5] border border-dashed border-[#dfd7ca] text-center space-y-2">
+                      <p className="text-xs font-medium text-[#747878]">
+                        No additional photos added yet.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setExtraImages([''])}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8c7138] hover:underline cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Click here to add Photo #2</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {extraImages.map((extraImg, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 bg-[#faf8f5] rounded-2xl border border-[#eae5dc] space-y-2 relative group"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#8c7138] flex items-center gap-1">
+                              <span>Photo #{idx + 2} (Gallery View)</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setExtraImages((prev) => prev.filter((_, i) => i !== idx));
+                              }}
+                              className="text-xs font-semibold text-rose-500 hover:text-rose-700 flex items-center gap-1 cursor-pointer transition-colors p-1"
+                              title="Delete this photo slot"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Remove</span>
+                            </button>
+                          </div>
+
+                          <DeviceImageUpload
+                            label=""
+                            value={extraImg}
+                            onChange={(newVal) => {
+                              setExtraImages((prev) => {
+                                const copy = [...prev];
+                                copy[idx] = newVal;
+                                return copy;
+                              });
+                            }}
+                            recommendedSize="1:1 Square • 800 × 800px"
+                            aspectRatio="square"
+                          />
+                        </div>
+                      ))}
+
+                      <div className="text-right">
+                        <button
+                          type="button"
+                          onClick={() => setExtraImages((prev) => [...prev, ''])}
+                          className="text-xs font-bold text-[#8c7138] hover:text-[#141414] inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>+ Add Another Angle Photo</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Size Specifications Guide */}
                 <div className="p-4 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] space-y-3">

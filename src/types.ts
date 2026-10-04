@@ -16,6 +16,7 @@ export interface Product {
   reviewsCount: number;
   colorways: number;
   image: string;
+  images?: string[];
   hoverImage?: string;
   description: string;
   sku: string;

@@ -96,6 +96,7 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
   const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // Expanded categories for viewing products in card mode
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
@@ -669,7 +670,7 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
                                 <div className="flex items-center justify-end gap-1.5">
                                   <button
                                     type="button"
-                                    onClick={() => onEditProduct(p)}
+                                    onClick={() => setEditingProduct(p)}
                                     className="px-2.5 py-1 rounded-full text-xs font-semibold text-[#8c7138] hover:bg-[#8c7138]/10 cursor-pointer transition-colors inline-flex items-center gap-1"
                                     title="Edit Product"
                                   >
@@ -842,7 +843,7 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
 
                             <button
                               type="button"
-                              onClick={() => onEditProduct(p)}
+                              onClick={() => setEditingProduct(p)}
                               className="p-1.5 rounded-lg text-[#8c7138] hover:bg-[#8c7138]/10 cursor-pointer transition-colors"
                               title="Edit Product"
                             >
@@ -1031,6 +1032,21 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
           });
         }}
       />
+
+      {/* Edit Product Modal */}
+      {editingProduct && (
+        <AdminProductModal
+          isOpen={true}
+          initialProduct={editingProduct}
+          categories={categories}
+          onClose={() => setEditingProduct(null)}
+          onSaveProduct={(updated) => {
+            onEditProduct(updated);
+            onTriggerToast(`Updated "${updated.name}" successfully!`);
+            setEditingProduct(null);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -52,13 +52,15 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     setOpenAccordion(null);
   }, [product.id]);
 
-  // Gallery images
-  const galleryImages = [
-    product.image,
-    ...(product.hoverImage && product.hoverImage !== product.image ? [product.hoverImage] : []),
-    'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1611591475179-42cd3423e89d?auto=format&fit=crop&q=80&w=800'
-  ];
+  // Gallery images: use product.images if provided and non-empty, otherwise fallback to main image + hover
+  const galleryImages = (product.images && product.images.length > 0)
+    ? product.images
+    : [
+        product.image,
+        ...(product.hoverImage && product.hoverImage !== product.image ? [product.hoverImage] : []),
+        'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1611591475179-42cd3423e89d?auto=format&fit=crop&q=80&w=800'
+      ].filter(Boolean);
 
   const handlePrevImage = () => {
     setSelectedImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1));
@@ -275,6 +277,30 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Thumbnail Row if more than 1 image */}
+            {galleryImages.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar">
+                {galleryImages.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(idx)}
+                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
+                      selectedImageIndex === idx
+                        ? 'border-[#8c7138] ring-2 ring-[#8c7138]/20 shadow-xs scale-102'
+                        : 'border-[#eae5dc] opacity-70 hover:opacity-100 hover:border-[#8c7138]/50'
+                    }`}
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={`Thumbnail ${idx + 1}`}
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right Column: Buying Information (7 Cols on Desktop) */}
