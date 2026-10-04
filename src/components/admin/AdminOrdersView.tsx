@@ -325,10 +325,31 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
         {/* Orders List Items */}
         <div className="divide-y divide-[#eae5dc]">
           {filteredOrders.length === 0 ? (
-            <div className="p-12 text-center text-[#747878] space-y-2">
-              <Package className="w-8 h-8 text-[#8c7138] mx-auto opacity-50" />
-              <p className="font-bold text-sm text-[#141414]">{orders.length === 0 ? 'No orders yet' : 'No orders match your filter'}</p>
-              <p className="text-xs">{orders.length === 0 ? 'Customer orders will appear here live when placed.' : 'Try searching another term or click "Create Manual Order".'}</p>
+            <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
+              <div className="w-14 h-14 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center text-[#8c7138] shadow-inner">
+                <Package className="w-6 h-6" />
+              </div>
+              <div className="space-y-1 max-w-sm">
+                <h4 className="font-display text-base font-bold text-[#141414]">
+                  {orders.length === 0 ? 'No Customer Orders Yet' : 'No Orders Match Your Filter'}
+                </h4>
+                <p className="text-xs text-[#747878] leading-relaxed">
+                  {orders.length === 0
+                    ? 'Customer orders placed on the storefront will appear here live with AWB tracking and packing slips.'
+                    : 'Try clearing the search or category filters, or create a direct manual dispatch order.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingOrder(null);
+                  setIsOrderModalOpen(true);
+                }}
+                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Create Manual Order</span>
+              </button>
             </div>
           ) : (
             filteredOrders.map((order) => {

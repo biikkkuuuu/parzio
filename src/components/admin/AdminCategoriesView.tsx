@@ -379,35 +379,42 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner & Mode Switcher */}
-      <div className="bg-white rounded-3xl p-5 border border-[#eae5dc] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h3 className="font-display text-base font-bold text-[#141414] flex items-center gap-2">
-            <Layers className="w-4 h-4 text-[#8c7138]" />
-            Category &amp; Product Tag Manager ({categories.length} Collections • {products.length} Products)
-          </h3>
-          <p className="text-xs text-[#747878] mt-0.5">
-            Assign products to categories, give 1-click tags (New Launch, Best Seller, New Collection), or add new categories.
+      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#eae5dc] shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="w-8 h-8 rounded-xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center text-[#8c7138]">
+              <Layers className="w-4 h-4" />
+            </span>
+            <h3 className="font-display text-lg font-bold text-[#141414]">
+              Categories &amp; Collections
+            </h3>
+            <span className="text-[11px] font-bold text-[#8c7138] bg-[#faf8f5] px-2.5 py-0.5 rounded-full border border-[#eae5dc]">
+              {categories.length} Collections • {products.length} Products
+            </span>
+          </div>
+          <p className="text-xs text-[#747878] pl-10">
+            Organize products into jewelry collections, assign 1-click badges (New Launch, Best Seller, New Collection), or add new categories.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap pl-10 lg:pl-0">
           {/* Mode Switcher Buttons */}
           <div className="flex items-center gap-1 p-1 bg-[#faf8f5] border border-[#eae5dc] rounded-full text-xs">
             <button
               type="button"
               onClick={() => setActiveViewMode('products-by-category')}
-              className={`px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full font-bold transition-all cursor-pointer ${
                 activeViewMode === 'products-by-category'
                   ? 'bg-[#141414] text-[#fed488] shadow-2xs'
                   : 'text-[#747878] hover:text-[#141414]'
               }`}
             >
-              Products By Category &amp; Tags
+              Products By Category
             </button>
             <button
               type="button"
               onClick={() => setActiveViewMode('category-cards')}
-              className={`px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full font-bold transition-all cursor-pointer ${
                 activeViewMode === 'category-cards'
                   ? 'bg-[#141414] text-[#fed488] shadow-2xs'
                   : 'text-[#747878] hover:text-[#141414]'
@@ -420,76 +427,100 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
           <button
             type="button"
             onClick={openAddCategoryModal}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#141414] text-white hover:bg-[#8c7138] text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+            className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer active:scale-95 shrink-0"
           >
             <Plus className="w-4 h-4 text-[#fed488]" />
-            <span>Add New Category</span>
+            <span>Add Category</span>
           </button>
         </div>
       </div>
 
       {/* Tag Summary & Filter Strip */}
-      <div className="bg-white rounded-2xl p-4 border border-[#eae5dc] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Tag className="w-4 h-4 text-[#8c7138]" />
-          <span className="text-xs font-bold text-[#141414] uppercase tracking-wider">
-            Filter Products by Tag:
-          </span>
+      {products.length > 0 && (
+        <div className="bg-white rounded-2xl p-4 border border-[#eae5dc] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Tag className="w-4 h-4 text-[#8c7138]" />
+            <span className="text-xs font-bold text-[#141414] uppercase tracking-wider">
+              Filter by Tag:
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <button
+              type="button"
+              onClick={() => setTagFilter('ALL')}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+                tagFilter === 'ALL'
+                  ? 'bg-[#141414] text-white shadow-2xs'
+                  : 'bg-[#faf8f5] text-[#747878] hover:text-[#141414] border border-[#eae5dc]'
+              }`}
+            >
+              All Products ({products.length})
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTagFilter('NEW LAUNCH')}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+                tagFilter === 'NEW LAUNCH'
+                  ? 'bg-[#141414] text-[#fed488] border border-[#fed488] shadow-2xs'
+                  : 'bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc] hover:border-[#8c7138]'
+              }`}
+            >
+              ✨ New Launch ({newLaunchCount})
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTagFilter('BEST SELLER')}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+                tagFilter === 'BEST SELLER'
+                  ? 'bg-rose-950 text-rose-200 border border-rose-600 shadow-2xs'
+                  : 'bg-[#faf8f5] text-rose-700 border border-[#eae5dc] hover:border-rose-400'
+              }`}
+            >
+              🔥 Best Seller ({bestSellerCount})
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTagFilter('NEW COLLECTION')}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+                tagFilter === 'NEW COLLECTION'
+                  ? 'bg-[#0d211a] text-[#7de3bf] border border-[#2e6d57] shadow-2xs'
+                  : 'bg-[#faf8f5] text-emerald-800 border border-[#eae5dc] hover:border-emerald-400'
+              }`}
+            >
+              👑 New Collection ({newCollectionCount})
+            </button>
+          </div>
         </div>
-
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-          <button
-            type="button"
-            onClick={() => setTagFilter('ALL')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-              tagFilter === 'ALL'
-                ? 'bg-[#141414] text-white shadow-2xs'
-                : 'bg-[#faf8f5] text-[#747878] hover:text-[#141414] border border-[#eae5dc]'
-            }`}
-          >
-            All Products ({products.length})
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setTagFilter('NEW LAUNCH')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-              tagFilter === 'NEW LAUNCH'
-                ? 'bg-[#141414] text-[#fed488] border border-[#fed488] shadow-2xs'
-                : 'bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc] hover:border-[#8c7138]'
-            }`}
-          >
-            ✨ New Launch ({newLaunchCount})
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setTagFilter('BEST SELLER')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-              tagFilter === 'BEST SELLER'
-                ? 'bg-rose-950 text-rose-200 border border-rose-600 shadow-2xs'
-                : 'bg-[#faf8f5] text-rose-700 border border-[#eae5dc] hover:border-rose-400'
-            }`}
-          >
-            🔥 Best Seller ({bestSellerCount})
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setTagFilter('NEW COLLECTION')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-              tagFilter === 'NEW COLLECTION'
-                ? 'bg-[#0d211a] text-[#7de3bf] border border-[#2e6d57] shadow-2xs'
-                : 'bg-[#faf8f5] text-emerald-800 border border-[#eae5dc] hover:border-emerald-400'
-            }`}
-          >
-            👑 New Collection ({newCollectionCount})
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* MODE 1: PRODUCTS BY CATEGORY WITH 1-CLICK TAGGING */}
-      {activeViewMode === 'products-by-category' ? (
+      {categories.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-[#eae5dc] p-10 sm:p-14 text-center shadow-xs space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] text-[#8c7138] flex items-center justify-center mx-auto shadow-2xs">
+            <Layers className="w-8 h-8" />
+          </div>
+          <div className="max-w-md mx-auto space-y-1.5">
+            <h4 className="font-display text-lg font-bold text-[#141414]">
+              No Categories Created Yet
+            </h4>
+            <p className="text-xs text-[#747878] leading-relaxed">
+              Create your first jewelry collection (e.g. Necklaces, Earrings, Rings, Bracelets) to start organizing products and assigning promotional tags.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={openAddCategoryModal}
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
+          >
+            <Plus className="w-4 h-4 text-[#fed488]" />
+            <span>Create First Category</span>
+          </button>
+        </div>
+      ) : activeViewMode === 'products-by-category' ? (
         <div className="space-y-6">
           {categories.map((category) => {
             let catProducts = products.filter(

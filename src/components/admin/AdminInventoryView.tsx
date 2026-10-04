@@ -133,28 +133,54 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
       </div>
 
       {/* Inventory Products Table */}
-      <div className="bg-white rounded-3xl border border-[#eae5dc] shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="bg-[#faf8f5] border-b border-[#eae5dc] text-[10px] font-bold uppercase text-[#747878]">
-                <th className="py-3 px-5">Product &amp; SKU</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Price</th>
-                <th className="py-3 px-4">Quality Specs</th>
-                <th className="py-3 px-4">Stock In Hand</th>
-                <th className="py-3 px-4 text-center">Storefront Status</th>
-                <th className="py-3 px-5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#eae5dc]">
-              {filteredProducts.map((product) => {
-                const stock = product.stock ?? 45;
-                const isLow = stock < 15;
-                const isLive = product.isLive !== false;
+      {filteredProducts.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-[#eae5dc] p-10 sm:p-14 text-center shadow-xs space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] text-[#8c7138] flex items-center justify-center mx-auto shadow-2xs">
+            <Sparkles className="w-8 h-8" />
+          </div>
+          <div className="max-w-md mx-auto space-y-1.5">
+            <h4 className="font-display text-lg font-bold text-[#141414]">
+              {products.length === 0 ? 'No Products in Store Catalog' : 'No Products Match Filter'}
+            </h4>
+            <p className="text-xs text-[#747878] leading-relaxed">
+              {products.length === 0
+                ? 'Your live storefront is currently waiting for inventory. Drop your first jewelry item with multiple pictures and instant pricing.'
+                : 'Try adjusting your search query or pick a different category from above.'}
+            </p>
+          </div>
+          {products.length === 0 && (
+            <button
+              onClick={onOpenNewProductModal}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-[#fed488]" />
+              <span>Add First Product</span>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="bg-white rounded-3xl border border-[#eae5dc] shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="bg-[#faf8f5] border-b border-[#eae5dc] text-[10px] font-bold uppercase text-[#747878]">
+                  <th className="py-3 px-5">Product &amp; SKU</th>
+                  <th className="py-3 px-4">Category</th>
+                  <th className="py-3 px-4">Price</th>
+                  <th className="py-3 px-4">Quality Specs</th>
+                  <th className="py-3 px-4">Stock In Hand</th>
+                  <th className="py-3 px-4 text-center">Storefront Status</th>
+                  <th className="py-3 px-5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#eae5dc]">
+                {filteredProducts.map((product) => {
+                  const stock = product.stock ?? 45;
+                  const isLow = stock < 15;
+                  const isLive = product.isLive !== false;
 
-                return (
-                  <tr key={product.id} className="hover:bg-[#faf8f5] transition-colors">
+                  return (
+                    <tr key={product.id} className="hover:bg-[#faf8f5] transition-colors">
                     
                     {/* Product & SKU */}
                     <td className="py-3 px-5">
@@ -275,6 +301,7 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
           </table>
         </div>
       </div>
+      )}
 
       {/* Edit Product Modal */}
       {editingProduct && (

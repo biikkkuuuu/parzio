@@ -171,8 +171,30 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
       </div>
 
       {/* Coupons Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {coupons.map((coupon) => (
+      {coupons.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-[#eae5dc] p-10 sm:p-14 text-center shadow-xs space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] text-[#8c7138] flex items-center justify-center mx-auto shadow-2xs">
+            <Tag className="w-8 h-8" />
+          </div>
+          <div className="max-w-md mx-auto space-y-1.5">
+            <h4 className="font-display text-lg font-bold text-[#141414]">
+              No Active Discount Coupons
+            </h4>
+            <p className="text-xs text-[#747878] leading-relaxed">
+              Create your first promotional discount voucher (e.g. FLASH99, FIRST10) to reward buyers during checkout.
+            </p>
+          </div>
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
+          >
+            <Plus className="w-4 h-4 text-[#fed488]" />
+            <span>Create First Coupon</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {coupons.map((coupon) => (
           <div
             key={coupon.id}
             className={`p-5 rounded-3xl border transition-all shadow-sm ${
@@ -244,7 +266,8 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
 
       {/* Add / Edit Coupon Modal */}
       {isModalOpen && (

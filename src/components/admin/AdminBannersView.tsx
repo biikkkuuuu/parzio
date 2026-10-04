@@ -584,99 +584,121 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
           </div>
 
           {/* Banners Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {banners.map((banner, index) => (
-              <div
-                key={banner.id}
-                className={`bg-white rounded-3xl overflow-hidden border transition-all flex flex-col justify-between ${
-                  banner.active ? 'border-[#eae5dc] shadow-sm' : 'border-neutral-300 opacity-60'
-                }`}
+          {banners.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-[#eae5dc] p-12 text-center flex flex-col items-center justify-center space-y-3 shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center text-[#8c7138] shadow-inner">
+                <ImageIcon className="w-6 h-6" />
+              </div>
+              <div className="space-y-1 max-w-sm">
+                <h4 className="font-display text-base font-bold text-[#141414]">No Hero Banners Active</h4>
+                <p className="text-xs text-[#747878] leading-relaxed">
+                  Add high-converting promotional banners and slider photos to highlight your best jewellery collections.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleOpenAddBannerModal}
+                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
               >
-                {/* Banner Preview Card */}
-                <div className="p-5 flex gap-4">
-                  {/* Thumbnail */}
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border border-[#eae5dc] flex-shrink-0 bg-[#faf8f5]">
-                    <img
-                      src={banner.image}
-                      alt={banner.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add First Hero Banner</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {banners.map((banner, index) => (
+                <div
+                  key={banner.id}
+                  className={`bg-white rounded-3xl overflow-hidden border transition-all flex flex-col justify-between ${
+                    banner.active ? 'border-[#eae5dc] shadow-sm' : 'border-neutral-300 opacity-60'
+                  }`}
+                >
+                  {/* Banner Preview Card */}
+                  <div className="p-5 flex gap-4">
+                    {/* Thumbnail */}
+                    <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border border-[#eae5dc] flex-shrink-0 bg-[#faf8f5]">
+                      <img
+                        src={banner.image}
+                        alt={banner.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
 
-                  {/* Content Preview */}
-                  <div className="flex-1 min-w-0 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 rounded-full bg-[#141414] text-[#fed488] text-[9px] font-bold tracking-wider uppercase">
-                          {banner.badge}
-                        </span>
-                        {banner.active && (
-                          <span className="text-[10px] text-emerald-700 font-bold">
-                            ✓ Live on Store
+                    {/* Content Preview */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="px-2 py-0.5 rounded-full bg-[#141414] text-[#fed488] text-[9px] font-bold tracking-wider uppercase">
+                            {banner.badge}
                           </span>
-                        )}
+                          {banner.active && (
+                            <span className="text-[10px] text-emerald-700 font-bold">
+                              ✓ Live on Store
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 className="font-display text-base font-bold text-[#141414] leading-snug truncate">
+                          {banner.title} <span className="text-[#8c7138]">{banner.highlightText}</span>
+                        </h4>
+                        <p className="text-xs text-[#747878] font-medium mt-0.5 truncate">
+                          {banner.subtitle}
+                        </p>
+                        <p className="text-[11px] text-[#444748] mt-1 line-clamp-2 leading-relaxed">
+                          {banner.description}
+                        </p>
                       </div>
 
-                      <h4 className="font-display text-base font-bold text-[#141414] leading-snug truncate">
-                        {banner.title} <span className="text-[#8c7138]">{banner.highlightText}</span>
-                      </h4>
-                      <p className="text-xs text-[#747878] font-medium mt-0.5 truncate">
-                        {banner.subtitle}
-                      </p>
-                      <p className="text-[11px] text-[#444748] mt-1 line-clamp-2 leading-relaxed">
-                        {banner.description}
-                      </p>
+                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#eae5dc]">
+                        <span className="text-xs font-bold text-[#141414]">
+                          Price Tag: <strong className="text-[#8c7138]">{banner.priceText}</strong>
+                        </span>
+                        <span className="text-[10px] text-[#747878]">• CTA: "{banner.buttonText}"</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Controls Footer */}
+                  <div className="px-5 py-3 bg-[#faf8f5] border-t border-[#eae5dc] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleBannerActive(banner.id)}
+                        className={`px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer ${
+                          banner.active
+                            ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+                            : 'bg-neutral-200 text-neutral-700'
+                        }`}
+                      >
+                        {banner.active ? 'Visible on Store' : 'Hidden'}
+                      </button>
+                      <span className="text-[11px] text-[#747878]">Slide #{index + 1}</span>
                     </div>
 
-                    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#eae5dc]">
-                      <span className="text-xs font-bold text-[#141414]">
-                        Price Tag: <strong className="text-[#8c7138]">{banner.priceText}</strong>
-                      </span>
-                      <span className="text-[10px] text-[#747878]">• CTA: "{banner.buttonText}"</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditBannerModal(banner)}
+                        className="flex items-center gap-1 px-3 py-1 rounded-full border border-[#eae5dc] bg-white text-xs font-bold text-[#141414] hover:bg-[#8c7138] hover:text-white transition-colors cursor-pointer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBanner(banner.id)}
+                        className="p-1.5 rounded-full text-[#747878] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="Remove banner"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
-
-                {/* Card Controls Footer */}
-                <div className="px-5 py-3 bg-[#faf8f5] border-t border-[#eae5dc] flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleBannerActive(banner.id)}
-                      className={`px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer ${
-                        banner.active
-                          ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
-                          : 'bg-neutral-200 text-neutral-700'
-                      }`}
-                    >
-                      {banner.active ? 'Visible on Store' : 'Hidden'}
-                    </button>
-                    <span className="text-[11px] text-[#747878]">Slide #{index + 1}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEditBannerModal(banner)}
-                      className="flex items-center gap-1 px-3 py-1 rounded-full border border-[#eae5dc] bg-white text-xs font-bold text-[#141414] hover:bg-[#8c7138] hover:text-white transition-colors cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span>Edit</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteBanner(banner.id)}
-                      className="p-1.5 rounded-full text-[#747878] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                      title="Remove banner"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -990,7 +1012,40 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
           </div>
 
           {/* Sale Posters Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {salePosters.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-[#eae5dc] p-12 text-center flex flex-col items-center justify-center space-y-3 shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center text-[#8c7138] shadow-inner">
+                <ImageIcon className="w-6 h-6" />
+              </div>
+              <div className="space-y-1 max-w-sm">
+                <h4 className="font-display text-base font-bold text-[#141414]">No Sale Posters Created</h4>
+                <p className="text-xs text-[#747878] leading-relaxed">
+                  Design eye-catching sale event posters, countdown sale cards, and festive promotion cards for customers.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingPosterId(null);
+                  setPosterForm({
+                    title: '',
+                    subtitle: '',
+                    badge: 'MEGA SALE • FLAT ₹99',
+                    image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80',
+                    linkCategory: 'ALL SALE',
+                    buttonText: 'SHOP SALE POSTER OFFER',
+                    active: true
+                  });
+                  setIsPosterModalOpen(true);
+                }}
+                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Create First Sale Poster</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {salePosters.map((poster) => (
               <div
                 key={poster.id}
@@ -1082,7 +1137,8 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
               </div>
             ))}
           </div>
-        </div>
+        )}
+      </div>
       )}
 
       {/* ======================================================== */}

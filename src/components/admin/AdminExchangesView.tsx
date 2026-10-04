@@ -154,113 +154,136 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
       </div>
 
       {/* Exchanges List */}
-      <div className="bg-white rounded-3xl border border-[#eae5dc] shadow-sm overflow-hidden divide-y divide-[#eae5dc]">
-        {exchanges.map((req) => {
-          const isPending = req.status === 'Pending Review';
-          const isApproved = req.status === 'Approved & Pickup Scheduled';
-          const isDispatched = req.status === 'Replacement Dispatched';
-
-          return (
-            <div key={req.id} className="p-5 space-y-4 hover:bg-[#faf8f5] transition-colors">
-              
-              {/* Header Row */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-3">
-                  <span className="font-mono font-bold text-sm text-[#141414]">
-                    #{req.id}
-                  </span>
-                  <span className="text-[#747878]">•</span>
-                  <span className="font-mono text-xs text-[#8c7138]">
-                    Ref: {req.orderId}
-                  </span>
-                  <span className="text-[#747878]">•</span>
-                  <span className="font-semibold text-xs text-[#141414]">
-                    {req.customerName} ({req.phone})
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      isPending
-                        ? 'bg-amber-100 text-amber-800'
-                        : isApproved
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-emerald-100 text-emerald-800'
-                    }`}
-                  >
-                    {req.status}
-                  </span>
-
-                  <button
-                    onClick={() => openEditModal(req)}
-                    title="Edit Ticket"
-                    className="p-1 rounded-full hover:bg-[#eae5dc] text-[#141414]"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    onClick={() => setExchangeToDelete(req)}
-                    title="Delete Ticket"
-                    className="p-1 rounded-full hover:bg-rose-100 text-rose-700"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Body */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
-                <div className="space-y-1">
-                  <p className="font-display font-medium text-sm text-[#141414]">
-                    Item: {req.productName}
-                  </p>
-                  <p className="text-[#747878]">
-                    Reason: <span className="font-semibold text-[#141414]">{req.reason}</span>
-                  </p>
-                  <p className="text-[#8c7138] font-semibold">
-                    Requested Replacement: {req.requestedExchangeItem}
-                  </p>
-                </div>
-
-                {/* Proof & Action */}
-                <div className="flex items-center gap-3">
-                  {req.evidencePhoto && (
-                    <button
-                      onClick={() => setSelectedPhoto(req.evidencePhoto || null)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#faf8f5] hover:bg-[#eae5dc] border border-[#eae5dc] text-xs font-semibold text-[#141414] transition-colors"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-[#8c7138]" />
-                      <span>View Photo Proof</span>
-                    </button>
-                  )}
-
-                  {isPending && (
-                    <button
-                      onClick={() => handleApprove(req.id)}
-                      className="px-4 py-1.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-1.5"
-                    >
-                      <Truck className="w-3.5 h-3.5 text-[#fed488]" />
-                      <span>Approve Reverse Pickup</span>
-                    </button>
-                  )}
-
-                  {isApproved && (
-                    <button
-                      onClick={() => handleDispatchReplacement(req.id)}
-                      className="px-4 py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-1.5"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Dispatch Replacement</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
+      <div className="bg-white rounded-3xl border border-[#eae5dc] shadow-sm overflow-hidden">
+        {exchanges.length === 0 ? (
+          <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center text-[#8c7138] shadow-inner">
+              <RotateCcw className="w-6 h-6" />
             </div>
-          );
-        })}
+            <div className="space-y-1 max-w-sm">
+              <h4 className="font-display text-base font-bold text-[#141414]">No Return / Exchange Tickets</h4>
+              <p className="text-xs text-[#747878] leading-relaxed">
+                When customers report sizing mismatches or damage claims, return pickup requests will appear here.
+              </p>
+            </div>
+            <button
+              onClick={openCreateModal}
+              className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Create Return Ticket</span>
+            </button>
+          </div>
+        ) : (
+          <div className="divide-y divide-[#eae5dc]">
+            {exchanges.map((req) => {
+              const isPending = req.status === 'Pending Review';
+              const isApproved = req.status === 'Approved & Pickup Scheduled';
+              const isDispatched = req.status === 'Replacement Dispatched';
+
+              return (
+                <div key={req.id} className="p-5 space-y-4 hover:bg-[#faf8f5] transition-colors">
+                  
+                  {/* Header Row */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono font-bold text-sm text-[#141414]">
+                        #{req.id}
+                      </span>
+                      <span className="text-[#747878]">•</span>
+                      <span className="font-mono text-xs text-[#8c7138]">
+                        Ref: {req.orderId}
+                      </span>
+                      <span className="text-[#747878]">•</span>
+                      <span className="font-semibold text-xs text-[#141414]">
+                        {req.customerName} ({req.phone})
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                          isPending
+                            ? 'bg-amber-100 text-amber-800'
+                            : isApproved
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-emerald-100 text-emerald-800'
+                        }`}
+                      >
+                        {req.status}
+                      </span>
+
+                      <button
+                        onClick={() => openEditModal(req)}
+                        title="Edit Ticket"
+                        className="p-1 rounded-full hover:bg-[#eae5dc] text-[#141414]"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        onClick={() => setExchangeToDelete(req)}
+                        title="Delete Ticket"
+                        className="p-1 rounded-full hover:bg-rose-100 text-rose-700"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+                    <div className="space-y-1">
+                      <p className="font-display font-medium text-sm text-[#141414]">
+                        Item: {req.productName}
+                      </p>
+                      <p className="text-[#747878]">
+                        Reason: <span className="font-semibold text-[#141414]">{req.reason}</span>
+                      </p>
+                      <p className="text-[#8c7138] font-semibold">
+                        Requested Replacement: {req.requestedExchangeItem}
+                      </p>
+                    </div>
+
+                    {/* Proof & Action */}
+                    <div className="flex items-center gap-3">
+                      {req.evidencePhoto && (
+                        <button
+                          onClick={() => setSelectedPhoto(req.evidencePhoto || null)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#faf8f5] hover:bg-[#eae5dc] border border-[#eae5dc] text-xs font-semibold text-[#141414] transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-[#8c7138]" />
+                          <span>View Photo Proof</span>
+                        </button>
+                      )}
+
+                      {isPending && (
+                        <button
+                          onClick={() => handleApprove(req.id)}
+                          className="px-4 py-1.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-1.5"
+                        >
+                          <Truck className="w-3.5 h-3.5 text-[#fed488]" />
+                          <span>Approve Reverse Pickup</span>
+                        </button>
+                      )}
+
+                      {isApproved && (
+                        <button
+                          onClick={() => handleDispatchReplacement(req.id)}
+                          className="px-4 py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-1.5"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Dispatch Replacement</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Photo Preview Modal */}
