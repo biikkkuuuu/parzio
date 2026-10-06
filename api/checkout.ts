@@ -7,7 +7,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { items, paymentMethod, utr, address, phone, name, pincode, city, userId, deliveryDate } = req.body;
+  const { items, paymentMethod, utr, address, phone, name, pincode, city, userId, deliveryDate, couponCode, discountAmount } = req.body;
 
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Cart is empty' });
@@ -33,9 +33,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const generatedId = `PARZIO-${Math.floor(10000 + Math.random() * 90000)}`;
+  const validDiscount = Math.max(0, Number(discountAmount) || 0);
 
   if (!dbAdmin) {
     const totalQuantity = items.reduce((acc: number, c: any) => acc + (c.quantity || 1), 0);
+    const rawSubtotal = items.reduce((acc: number, c: any) => acc + (c.price || 99) * (c.quantity || 1), 0);
+    const finalAmount = Math.max(1, rawSubtotal - validDiscount);
+
     const fallbackOrder = {
       id: generatedId,
       userId: resolvedUserId,
@@ -43,11 +47,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       phone: `+91 ${phone.replace('+91', '').trim()}`,
       location: address ? `${address}, ${city} (${pincode})` : 'Address pending',
       pincode: pincode || '',
-      amount: items.reduce((acc: number, c: any) => acc + (c.price || 99) * (c.quantity || 1), 0),
-      totalAmount: items.reduce((acc: number, c: any) => acc + (c.price || 99) * (c.quantity || 1), 0),
+      amount: finalAmount,
+      totalAmount: finalAmount,
       paymentMethod: paymentMethod,
       isPrepaid: paymentMethod === 'Prepaid UPI',
       deliveryDate: deliveryDate || new Date().toISOString(),
+      couponCode: couponCode ? String(couponCode).toUpperCase() : undefined,
+      discountAmount: validDiscount > 0 ? validDiscount : undefined,
       items: items.map((item: any) => ({
         id: item.id,
         name: item.name || 'Jewellery Item',
@@ -66,8 +72,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       tag: paymentMethod === 'COD' ? 'OTP Verified' : 'Razorpay Verified',
       courier: 'BlueDart Air Express',
       notes: paymentMethod === 'Prepaid UPI'
-        ? `Prepaid Online (Razorpay) • Ref/ID: ${utr} • Address: ${address}, Pin: ${pincode}`
-        : `Doorstep delivery at ${address}, Pin: ${pincode}`
+        ? `Prepaid Online (Razorpay) • Ref/ID: ${utr} • Address: ${address}, Pin: ${pincode}${couponCode ? ` • Coupon: ${couponCode}` : ''}`
+        : `Doorstep delivery at ${address}, Pin: ${pincode}${couponCode ? ` • Coupon: ${couponCode}` : ''}`
     };
     return res.status(200).json({ success: true, order: fallbackOrder });
   }
@@ -118,6 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // 3. Create the order
       const firstItem = productSnaps[0].data()!;
       const totalQuantity = items.reduce((acc: number, c: any) => acc + c.quantity, 0);
+      const payableAmount = Math.max(1, verifiedAmount - validDiscount);
       
       const newOrder = {
         id: generatedId,
@@ -126,11 +133,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         phone: `+91 ${phone.replace('+91', '').trim()}`,
         location: address ? `${address}, ${city} (${pincode})` : 'Address pending',
         pincode: pincode || '',
-        amount: verifiedAmount,
-        totalAmount: verifiedAmount,
+        amount: payableAmount,
+        totalAmount: payableAmount,
         paymentMethod: paymentMethod,
         isPrepaid: paymentMethod === 'Prepaid UPI',
         deliveryDate: deliveryDate || new Date().toISOString(),
+        couponCode: couponCode ? String(couponCode).toUpperCase() : undefined,
+        discountAmount: validDiscount > 0 ? validDiscount : undefined,
         items: items.map((item: any, i: number) => {
           const live = productSnaps[i].data()!;
           return {
@@ -152,8 +161,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         tag: paymentMethod === 'COD' ? 'OTP Verified' : 'UPI Verification Pending',
         courier: 'BlueDart Air Express',
         notes: paymentMethod === 'Prepaid UPI'
-          ? `Prepaid UPI • UTR: ${utr} • Address: ${address}, Pin: ${pincode}`
-          : `Doorstep delivery at ${address}, Pin: ${pincode}`
+          ? `Prepaid UPI • UTR: ${utr} • Address: ${address}, Pin: ${pincode}${couponCode ? ` • Coupon: ${couponCode}` : ''}`
+          : `Doorstep delivery at ${address}, Pin: ${pincode}${couponCode ? ` • Coupon: ${couponCode}` : ''}`
       };
       
       const orderRef = dbAdmin!.collection('orders').doc(generatedId);

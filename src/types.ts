@@ -43,6 +43,8 @@ export interface Coupon {
   active: boolean;
   expiresAt: string;
   bannerImage?: string;
+  isPrivateSecret?: boolean;
+  singleUseOnly?: boolean;
 }
 
 export interface ExchangeRequest {
@@ -186,6 +188,8 @@ export interface OrderItem {
   items?: any[];
   totalAmount?: number;
   placedAt?: string;
+  couponCode?: string;
+  discountAmount?: number;
 }
 
 export interface StorefrontConfig {

@@ -18,10 +18,14 @@ import {
   Sparkles,
   Clock,
   Check,
-  Copy
+  Copy,
+  Tag,
+  AlertCircle
 } from 'lucide-react';
 import { HIGH_RISK_PINCODES } from '../data/adminData';
 import { lookupPincode } from '../services/postalService';
+import { Coupon } from '../types';
+import { validateCoupon, calculateCouponDiscount } from '../utils/couponUtils';
 
 interface CheckoutViewProps {
   cartItems: CartItem[];
@@ -30,6 +34,11 @@ interface CheckoutViewProps {
   userProfile?: UserProfile | null;
   onBack?: () => void;
   onLoginClick?: () => void;
+  coupons?: Coupon[];
+  appliedCoupon?: Coupon | null;
+  onApplyCoupon?: (coupon: Coupon) => void;
+  onRemoveCoupon?: () => void;
+  onCouponRedeemed?: (couponCode: string) => void;
 }
 
 export const CheckoutView: React.FC<CheckoutViewProps> = ({
@@ -38,7 +47,12 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   onOrderPlaced,
   userProfile,
   onBack,
-  onLoginClick
+  onLoginClick,
+  coupons = [],
+  appliedCoupon,
+  onApplyCoupon,
+  onRemoveCoupon,
+  onCouponRedeemed
 }) => {
   // Form Fields
   const [name, setName] = useState(userProfile?.name || '');
@@ -182,6 +196,38 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
   const verifiedAmount = getVerifiedTotal();
 
+  // Coupon state & calculation for Checkout
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [promoSuccess, setPromoSuccess] = useState<string | null>(null);
+
+  const couponDiscount = calculateCouponDiscount(appliedCoupon, verifiedAmount);
+  const payableAmount = Math.max(1, verifiedAmount - couponDiscount);
+
+  const handleApplyCheckoutPromo = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPromoError(null);
+    setPromoSuccess(null);
+
+    const res = validateCoupon(promoCodeInput, verifiedAmount, coupons);
+    if (!res.valid) {
+      setPromoError(res.message);
+      return;
+    }
+
+    if (res.coupon && onApplyCoupon) {
+      onApplyCoupon(res.coupon);
+    }
+    setPromoSuccess(res.message);
+    setPromoCodeInput('');
+  };
+
+  const handleRemoveCheckoutCoupon = () => {
+    if (onRemoveCoupon) onRemoveCoupon();
+    setPromoSuccess(null);
+    setPromoError(null);
+  };
+
   // Handler to Proceed from Details
   const handleProceedToNextStep = async (e?: React.FormEvent) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -241,7 +287,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       ? import.meta.env.VITE_RAZORPAY_KEY_ID
       : 'rzp_live_Th5XJWuXtanrZf';
 
-    const safeAmount = Math.max(1, Math.round(verifiedAmount || totalAmount || 1));
+    const safeAmount = Math.max(1, Math.round(payableAmount));
     const cleanPhone = (phone || '9876543210').replace(/\D/g, '').slice(-10) || '9876543210';
 
     const options = {
@@ -405,7 +451,9 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
           pincode,
           phone: phone.replace(/\D/g, ''),
           name,
-          deliveryDate
+          deliveryDate,
+          couponCode: appliedCoupon?.code,
+          discountAmount: couponDiscount
         })
       });
 
@@ -419,6 +467,11 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       setPlacedOrderData(data.order);
       setIsSubmitting(false);
       setStep('success');
+
+      if (appliedCoupon && onCouponRedeemed) {
+        onCouponRedeemed(appliedCoupon.code);
+      }
+
       onOrderPlaced(data.order);
     } catch (err: any) {
       setIsSubmitting(false);
@@ -672,15 +725,64 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
               </div>
 
               {/* Order Total Row */}
-              <div className="p-3.5 rounded-2xl bg-white border border-[#eae5dc] flex items-center justify-between shadow-xs">
-                <div>
-                  <span className="text-[11px] text-[#747878]">Total Order Value</span>
-                  <p className="font-display text-lg font-bold text-[#141414]">₹{totalAmount}</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-                    Includes All Taxes &amp; Courier
-                  </span>
+              <div className="p-3.5 rounded-2xl bg-white border border-[#eae5dc] space-y-2 shadow-xs">
+                {/* Promo Code Input on mobile details */}
+                {!appliedCoupon ? (
+                  <div className="flex gap-2 pb-2 border-b border-[#eae5dc]">
+                    <div className="relative flex-1">
+                      <Tag className="w-3 h-3 text-[#747878] absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Coupon code (e.g. PAR123)"
+                        value={promoCodeInput}
+                        onChange={(e) => {
+                          setPromoCodeInput(e.target.value.toUpperCase());
+                          setPromoError(null);
+                        }}
+                        className="w-full pl-8 pr-2 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs font-mono font-bold uppercase focus:outline-none focus:border-[#8c7138] text-[#141414]"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleApplyCheckoutPromo}
+                      className="px-3 py-2 rounded-xl bg-[#141414] text-white text-xs font-bold uppercase hover:bg-[#8c7138] transition-colors cursor-pointer"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between pb-2 border-b border-emerald-200 bg-emerald-50/50 p-2 rounded-xl">
+                    <div className="flex items-center gap-1.5 text-xs text-emerald-800 font-bold">
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>Coupon {appliedCoupon.code}</span>
+                      <span className="text-[10px] text-emerald-700 font-normal">(-₹{couponDiscount})</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCheckoutCoupon}
+                      className="text-xs text-rose-600 font-bold hover:underline cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+
+                {promoError && (
+                  <p className="text-[10px] text-rose-700 bg-rose-50 p-2 rounded-lg leading-tight">
+                    {promoError}
+                  </p>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] text-[#747878]">Total Order Value</span>
+                    <p className="font-display text-lg font-bold text-[#141414]">₹{payableAmount}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                      Includes All Taxes &amp; Courier
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -707,7 +809,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    <span>Pay ₹{verifiedAmount} Online (Razorpay)</span>
+                    <span>Pay ₹{payableAmount} Online (Razorpay)</span>
                   </>
                 )}
               </button>
@@ -732,7 +834,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                   <CreditCard className="w-3.5 h-3.5" /> Scan &amp; Pay via any UPI App
                 </div>
                 <h3 className="text-base font-bold text-[#141414]">Complete Your UPI Payment</h3>
-                <p className="text-xs text-[#747878] mt-0.5">Pay exactly <strong className="text-[#141414]">₹{verifiedAmount}</strong> to confirm your order</p>
+                <p className="text-xs text-[#747878] mt-0.5">Pay exactly <strong className="text-[#141414]">₹{payableAmount}</strong> to confirm your order</p>
               </div>
 
               {/* QR Code Card */}
@@ -740,7 +842,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                 <div className="bg-white p-3 rounded-xl border border-[#eae5dc] shadow-xs mb-3">
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-                      `upi://pay?pa=7033656752@ybl&pn=PARZIO&am=${verifiedAmount}&cu=INR&tn=PARZIO Order`
+                      `upi://pay?pa=7033656752@ybl&pn=PARZIO&am=${payableAmount}&cu=INR&tn=PARZIO Order`
                     )}`}
                     alt="UPI QR Code"
                     className="w-40 h-40 object-contain mx-auto"
@@ -1026,23 +1128,82 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                 ))}
               </div>
               
-              <div className="border-t border-[#eae5dc] pt-5 space-y-3 text-sm">
+              {/* Desktop Promo Code Input */}
+              <div className="pt-4 border-t border-[#eae5dc]">
+                {!appliedCoupon ? (
+                  <div className="space-y-1.5">
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Tag className="w-3 h-3 text-[#747878] absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          placeholder="Coupon (e.g. PAR123)"
+                          value={promoCodeInput}
+                          onChange={(e) => {
+                            setPromoCodeInput(e.target.value.toUpperCase());
+                            setPromoError(null);
+                          }}
+                          className="w-full pl-8 pr-2 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs font-mono font-bold uppercase focus:outline-none focus:border-[#8c7138] text-[#141414]"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleApplyCheckoutPromo}
+                        className="px-3.5 py-2 rounded-xl bg-[#141414] text-white text-xs font-bold uppercase hover:bg-[#8c7138] transition-colors cursor-pointer"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                    {promoError && (
+                      <p className="text-[10px] text-rose-700 bg-rose-50 p-2 rounded-xl leading-tight">
+                        {promoError}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-emerald-50 border border-emerald-300 rounded-2xl p-2.5 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs text-emerald-900 font-bold">
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>{appliedCoupon.code}</span>
+                      <span className="text-[10px] font-normal text-emerald-800">(-₹{couponDiscount})</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCheckoutCoupon}
+                      className="text-xs text-rose-600 font-bold hover:underline cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-[#eae5dc] pt-4 space-y-2.5 text-xs">
                 <div className="flex justify-between text-[#747878] font-medium">
                   <span>Subtotal</span>
-                  <span>₹{totalAmount}</span>
+                  <span className="font-bold text-[#141414]">₹{verifiedAmount}</span>
                 </div>
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-700 font-bold">
+                    <span className="flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      <span>Coupon Discount ({appliedCoupon?.code})</span>
+                    </span>
+                    <span>-₹{couponDiscount}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-[#747878] font-medium">
                   <span>Shipping</span>
                   <span className="text-emerald-600 font-bold">FREE</span>
                 </div>
               </div>
               
-              <div className="border-t border-[#eae5dc] mt-5 pt-5 flex justify-between items-end">
+              <div className="border-t border-[#eae5dc] mt-4 pt-4 flex justify-between items-end">
                 <div>
-                  <span className="font-bold text-[#141414] block">Total</span>
-                  <span className="text-[10px] text-[#747878] font-medium">Includes all taxes</span>
+                  <span className="font-bold text-[#141414] block">Total Payable</span>
+                  <span className="text-[10px] text-[#747878] font-medium">Includes all taxes &amp; delivery</span>
                 </div>
-                <span className="text-3xl font-black text-[#141414]">₹{totalAmount}</span>
+                <span className="text-2xl font-black text-[#141414]">₹{payableAmount}</span>
               </div>
 
               {/* Trust Badges */}

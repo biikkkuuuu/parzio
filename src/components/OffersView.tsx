@@ -48,8 +48,8 @@ export const OffersView: React.FC<OffersViewProps> = ({
     }, 150);
   };
 
-  // Only display active coupons configured from the admin panel
-  const activeCoupons = coupons.filter((c) => c.active !== false);
+  // Only display active, public coupons configured from the admin panel (exclude private/secret customer vouchers)
+  const activeCoupons = coupons.filter((c) => c.active !== false && !c.isPrivateSecret);
 
   return (
     <div className="min-h-screen bg-[#fbf9f6] text-[#141414] flex flex-col">

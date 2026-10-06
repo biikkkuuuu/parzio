@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { CartItem } from '../types';
+import React, { useState, useEffect } from 'react';
+import { CartItem, Coupon } from '../types';
 import {
   ShoppingBag,
   Trash2,
@@ -10,8 +10,12 @@ import {
   ArrowRight,
   ArrowLeft,
   CheckCircle2,
-  Tag
+  Tag,
+  X,
+  AlertCircle,
+  Sparkles
 } from 'lucide-react';
+import { validateCoupon, calculateCouponDiscount } from '../utils/couponUtils';
 
 interface CartViewProps {
   cartItems: CartItem[];
@@ -19,6 +23,10 @@ interface CartViewProps {
   onRemoveItem: (productId: string) => void;
   onCheckout: () => void;
   onBackToStore: () => void;
+  coupons?: Coupon[];
+  appliedCoupon?: Coupon | null;
+  onApplyCoupon?: (coupon: Coupon) => void;
+  onRemoveCoupon?: () => void;
 }
 
 const MINIMUM_CART_VALUE = 1;
@@ -28,10 +36,15 @@ export const CartView: React.FC<CartViewProps> = ({
   onUpdateQuantity,
   onRemoveItem,
   onCheckout,
-  onBackToStore
+  onBackToStore,
+  coupons = [],
+  appliedCoupon,
+  onApplyCoupon,
+  onRemoveCoupon
 }) => {
   const [promoCode, setPromoCode] = useState('');
-  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [promoSuccess, setPromoSuccess] = useState<string | null>(null);
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null);
 
   const totalAmount = cartItems.reduce(
@@ -45,15 +58,43 @@ export const CartView: React.FC<CartViewProps> = ({
   const totalCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const savings = Math.max(0, originalTotalAmount - totalAmount);
 
-  const isMinMet = totalAmount >= 1;
-  const progressPercent = 100;
-  const remainingAmount = 0;
+  // Calculate live coupon discount
+  const couponDiscount = calculateCouponDiscount(appliedCoupon, totalAmount);
+  const payableAmount = Math.max(1, totalAmount - couponDiscount);
+
+  // If subtotal drops below coupon minimum, warn and remove
+  useEffect(() => {
+    if (appliedCoupon && appliedCoupon.minOrderValue && totalAmount < appliedCoupon.minOrderValue) {
+      if (onRemoveCoupon) onRemoveCoupon();
+      setPromoError(
+        `Coupon "${appliedCoupon.code}" removed because cart subtotal is below the required ₹${appliedCoupon.minOrderValue}.`
+      );
+      setPromoSuccess(null);
+    }
+  }, [totalAmount, appliedCoupon, onRemoveCoupon]);
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
-    if (promoCode.trim()) {
-      setPromoApplied(true);
+    setPromoError(null);
+    setPromoSuccess(null);
+
+    const result = validateCoupon(promoCode, totalAmount, coupons);
+    if (!result.valid) {
+      setPromoError(result.message);
+      return;
     }
+
+    if (result.coupon && onApplyCoupon) {
+      onApplyCoupon(result.coupon);
+    }
+    setPromoSuccess(result.message);
+    setPromoCode('');
+  };
+
+  const handleRemoveCoupon = () => {
+    if (onRemoveCoupon) onRemoveCoupon();
+    setPromoSuccess(null);
+    setPromoError(null);
   };
 
   return (
@@ -228,29 +269,76 @@ export const CartView: React.FC<CartViewProps> = ({
                 <h3 className="font-bold text-[#141414] text-lg">Order Summary</h3>
 
                 {/* Promo Code Form */}
-                <form onSubmit={handleApplyPromo} className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Tag className="w-3.5 h-3.5 text-[#747878] absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      placeholder="Coupon Code"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138] text-[#141414]"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="px-4 py-2.5 rounded-xl bg-[#141414] text-white text-xs font-bold uppercase hover:bg-[#8c7138] transition-colors cursor-pointer"
-                  >
-                    Apply
-                  </button>
-                </form>
+                {!appliedCoupon ? (
+                  <form onSubmit={handleApplyPromo} className="space-y-2">
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Tag className="w-3.5 h-3.5 text-[#747878] absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          placeholder="Enter Coupon (e.g. PAR123)"
+                          value={promoCode}
+                          onChange={(e) => {
+                            setPromoCode(e.target.value.toUpperCase());
+                            setPromoError(null);
+                          }}
+                          className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white border border-[#eae5dc] text-xs font-mono font-bold uppercase focus:outline-none focus:border-[#8c7138] text-[#141414]"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="px-4 py-2.5 rounded-xl bg-[#141414] text-white text-xs font-bold uppercase hover:bg-[#8c7138] transition-colors cursor-pointer"
+                      >
+                        Apply
+                      </button>
+                    </div>
 
-                {promoApplied && (
+                    {promoError && (
+                      <p className="text-[11px] text-rose-700 bg-rose-50 border border-rose-200 p-2.5 rounded-xl flex items-start gap-1.5 leading-snug">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-rose-600" />
+                        <span>{promoError}</span>
+                      </p>
+                    )}
+                  </form>
+                ) : (
+                  <div className="bg-emerald-50/80 border border-emerald-300 rounded-2xl p-3 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                        <span className="font-mono text-xs font-bold text-emerald-900 tracking-wider">
+                          {appliedCoupon.code}
+                        </span>
+                        {appliedCoupon.isPrivateSecret && (
+                          <span className="text-[9px] bg-[#141414] text-[#fed488] px-1.5 py-0.2 rounded font-bold uppercase">
+                            Secret Voucher
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="p-1 rounded-full text-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer"
+                        title="Remove coupon"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <p className="text-[11px] text-emerald-800 font-semibold leading-tight">
+                      {appliedCoupon.title || `Special Offer applied to order`}
+                    </p>
+
+                    <div className="flex items-center justify-between text-[11px] text-emerald-800 pt-1 border-t border-emerald-200">
+                      <span>Voucher Discount</span>
+                      <strong className="font-bold text-emerald-900">-₹{couponDiscount}</strong>
+                    </div>
+                  </div>
+                )}
+
+                {promoSuccess && !appliedCoupon && (
                   <p className="text-[11px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 p-2 rounded-xl flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>Coupon applied! Free express delivery active.</span>
+                    <span>{promoSuccess}</span>
                   </p>
                 )}
 
@@ -261,9 +349,19 @@ export const CartView: React.FC<CartViewProps> = ({
                     <span className="font-bold text-[#141414]">₹{totalAmount}</span>
                   </div>
 
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between text-emerald-700 font-bold">
+                      <span className="flex items-center gap-1">
+                        <Tag className="w-3 h-3" />
+                        <span>Coupon Savings ({appliedCoupon?.code})</span>
+                      </span>
+                      <span>-₹{couponDiscount}</span>
+                    </div>
+                  )}
+
                   {savings > 0 && (
                     <div className="flex justify-between text-emerald-700 font-medium">
-                      <span>Total Savings</span>
+                      <span>Store Promotion Savings</span>
                       <span className="font-bold">-₹{savings}</span>
                     </div>
                   )}
@@ -281,7 +379,7 @@ export const CartView: React.FC<CartViewProps> = ({
                       <span className="text-[10px] text-[#747878]">Inclusive of all taxes &amp; duties</span>
                     </div>
                     <span className="text-2xl sm:text-3xl font-black text-[#141414]">
-                      ₹{totalAmount}
+                      ₹{payableAmount}
                     </span>
                   </div>
                 </div>

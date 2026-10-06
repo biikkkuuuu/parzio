@@ -56,6 +56,22 @@ export const INITIAL_COUPONS: Coupon[] = [
     usageLimit: 500,
     active: true,
     expiresAt: '2026-12-31'
+  },
+  {
+    id: 'coup-secret-1',
+    code: 'PAR123',
+    title: 'Direct Client Exclusive Privilege Voucher',
+    description: 'Special private voucher for direct orders on official Parzio store.',
+    badge: 'SECRET VOUCHER',
+    discountType: 'fixed',
+    discountValue: 100,
+    minOrderValue: 499,
+    usageCount: 0,
+    usageLimit: 1,
+    active: true,
+    expiresAt: '2026-12-31',
+    isPrivateSecret: true,
+    singleUseOnly: true
   }
 ];
 

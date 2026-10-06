@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { CartItem } from '../types';
-import { X, Trash2, Plus, Minus, ShoppingBag, ShieldCheck, Truck, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { CartItem, Coupon } from '../types';
+import { X, Trash2, Plus, Minus, ShoppingBag, ShieldCheck, Truck, ArrowRight, CheckCircle2, Tag, Sparkles, AlertCircle } from 'lucide-react';
+import { validateCoupon, calculateCouponDiscount } from '../utils/couponUtils';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -9,6 +10,10 @@ interface CartDrawerProps {
   onUpdateQuantity: (productId: string, delta: number) => void;
   onRemoveItem: (productId: string) => void;
   onCheckout: () => void;
+  coupons?: Coupon[];
+  appliedCoupon?: Coupon | null;
+  onApplyCoupon?: (coupon: Coupon) => void;
+  onRemoveCoupon?: () => void;
 }
 
 const MINIMUM_CART_VALUE = 1;
@@ -19,10 +24,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   cartItems,
   onUpdateQuantity,
   onRemoveItem,
-  onCheckout
+  onCheckout,
+  coupons = [],
+  appliedCoupon,
+  onApplyCoupon,
+  onRemoveCoupon
 }) => {
   const [promoCode, setPromoCode] = useState('');
-  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [promoSuccess, setPromoSuccess] = useState<string | null>(null);
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null);
 
   // Prevent background body scroll when CartDrawer is open
@@ -60,11 +70,42 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const progressPercent = 100;
   const remainingAmount = 0;
 
+  const couponDiscount = calculateCouponDiscount(appliedCoupon, totalAmount);
+  const payableAmount = Math.max(1, totalAmount - couponDiscount);
+
+  // If subtotal drops below coupon min requirement, remove coupon
+  useEffect(() => {
+    if (appliedCoupon && appliedCoupon.minOrderValue && totalAmount < appliedCoupon.minOrderValue) {
+      if (onRemoveCoupon) onRemoveCoupon();
+      setPromoError(
+        `Coupon "${appliedCoupon.code}" removed because cart subtotal is below ₹${appliedCoupon.minOrderValue}.`
+      );
+      setPromoSuccess(null);
+    }
+  }, [totalAmount, appliedCoupon, onRemoveCoupon]);
+
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
-    if (promoCode.trim()) {
-      setPromoApplied(true);
+    setPromoError(null);
+    setPromoSuccess(null);
+
+    const result = validateCoupon(promoCode, totalAmount, coupons);
+    if (!result.valid) {
+      setPromoError(result.message);
+      return;
     }
+
+    if (result.coupon && onApplyCoupon) {
+      onApplyCoupon(result.coupon);
+    }
+    setPromoSuccess(result.message);
+    setPromoCode('');
+  };
+
+  const handleRemoveCoupon = () => {
+    if (onRemoveCoupon) onRemoveCoupon();
+    setPromoSuccess(null);
+    setPromoError(null);
   };
 
   return (
@@ -197,25 +238,61 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           {cartItems.length > 0 && (
             <div className="p-4 sm:p-5 pb-16 sm:pb-5 border-t border-[#eae5dc] bg-white space-y-3">
               {/* Promo Code Box */}
-              <form onSubmit={handleApplyPromo} className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Coupon code (e.g. PARZIO99)"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                  className="flex-1 px-3 py-2 rounded-full bg-[#faf8f5] border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138] text-[#141414]"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-full bg-[#141414] text-white text-xs font-bold uppercase hover:bg-[#8c7138] transition-colors"
-                >
-                  Apply
-                </button>
-              </form>
-              {promoApplied && (
-                <p className="text-[11px] text-emerald-700 font-bold">
-                  ✓ Voucher applied: Free Express Courier active!
-                </p>
+              {!appliedCoupon ? (
+                <form onSubmit={handleApplyPromo} className="space-y-1.5">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Coupon code (e.g. PAR123)"
+                      value={promoCode}
+                      onChange={(e) => {
+                        setPromoCode(e.target.value.toUpperCase());
+                        setPromoError(null);
+                      }}
+                      className="flex-1 px-3.5 py-2 rounded-full bg-[#faf8f5] border border-[#eae5dc] text-xs font-mono font-bold uppercase focus:outline-none focus:border-[#8c7138] text-[#141414]"
+                    />
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-full bg-[#141414] text-white text-xs font-bold uppercase hover:bg-[#8c7138] transition-colors cursor-pointer"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                  {promoError && (
+                    <p className="text-[10px] text-rose-700 bg-rose-50 border border-rose-200 p-2 rounded-xl flex items-start gap-1">
+                      <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
+                      <span>{promoError}</span>
+                    </p>
+                  )}
+                </form>
+              ) : (
+                <div className="bg-emerald-50 border border-emerald-300 rounded-2xl p-2.5 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                      <span className="font-mono text-xs font-bold text-emerald-900 tracking-wider">
+                        {appliedCoupon.code}
+                      </span>
+                      {appliedCoupon.isPrivateSecret && (
+                        <span className="text-[9px] bg-[#141414] text-[#fed488] px-1.5 py-0.2 rounded font-bold uppercase">
+                          Secret
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="p-1 rounded-full text-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer"
+                      title="Remove coupon"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-emerald-800">
+                    <span>Coupon Discount</span>
+                    <strong className="font-bold text-emerald-900">-₹{couponDiscount}</strong>
+                  </div>
+                </div>
               )}
 
               {/* Price Calculation */}
@@ -224,6 +301,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   <span>Subtotal</span>
                   <span className="font-bold text-[#141414]">₹{totalAmount}</span>
                 </div>
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-700 font-bold">
+                    <span className="flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      <span>Coupon Discount</span>
+                    </span>
+                    <span>-₹{couponDiscount}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>Shipping</span>
                   <span className="font-bold text-emerald-700">
@@ -232,7 +318,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 </div>
                 <div className="flex justify-between text-sm font-bold text-[#141414] pt-1 border-t border-[#eae5dc]">
                   <span>Total Amount</span>
-                  <span className="font-bold text-base text-[#141414]">₹{totalAmount}</span>
+                  <span className="font-bold text-base text-[#141414]">₹{payableAmount}</span>
                 </div>
               </div>
 

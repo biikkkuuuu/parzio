@@ -515,6 +515,7 @@ export default function App() {
 
   // Coupons State (Unified Data Layer via dbService)
   const [coupons, setCoupons] = useState<Coupon[]>(() => dbService.getCoupons());
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
 
   useEffect(() => {
     try {
@@ -524,6 +525,37 @@ export default function App() {
       console.error(e);
     }
   }, [coupons]);
+
+  const handleApplyCoupon = (coupon: Coupon) => {
+    setAppliedCoupon(coupon);
+    showToast(`Applied coupon "${coupon.code}" successfully!`);
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    showToast('Coupon removed.');
+  };
+
+  const handleCouponRedeemed = (code: string) => {
+    const cleanCode = code.trim().toUpperCase();
+    setCoupons((prev) => {
+      const updated = prev.map((c) => {
+        if (c.code.toUpperCase() === cleanCode) {
+          const newCount = (c.usageCount || 0) + 1;
+          const shouldDeactivate = c.singleUseOnly || (c.usageLimit && newCount >= c.usageLimit);
+          return {
+            ...c,
+            usageCount: newCount,
+            active: shouldDeactivate ? false : c.active
+          };
+        }
+        return c;
+      });
+      dbService.saveCoupons(updated);
+      return updated;
+    });
+    setAppliedCoupon(null);
+  };
 
   // Emergency Storefront Shutdown Configuration
   const [emergencyConfig, setEmergencyConfig] = useState<EmergencyShutdownConfig>({
@@ -1323,6 +1355,10 @@ export default function App() {
                 handleTabChange('checkout');
               }}
               onBackToStore={() => handleTabChange('home')}
+              coupons={coupons}
+              appliedCoupon={appliedCoupon}
+              onApplyCoupon={handleApplyCoupon}
+              onRemoveCoupon={handleRemoveCoupon}
             />
           </main>
         ) : activeTab === 'checkout' ? (
@@ -1337,6 +1373,11 @@ export default function App() {
               userProfile={userProfile}
               onBack={() => handleTabChange('home')}
               onLoginClick={() => handleTabChange('login')}
+              coupons={coupons}
+              appliedCoupon={appliedCoupon}
+              onApplyCoupon={handleApplyCoupon}
+              onRemoveCoupon={handleRemoveCoupon}
+              onCouponRedeemed={handleCouponRedeemed}
             />
           </main>
         ) : activeTab === 'login' ? (
@@ -1478,6 +1519,10 @@ export default function App() {
           setIsCartOpen(false);
           handleTabChange('checkout');
         }}
+        coupons={coupons}
+        appliedCoupon={appliedCoupon}
+        onApplyCoupon={handleApplyCoupon}
+        onRemoveCoupon={handleRemoveCoupon}
       />
 
 
