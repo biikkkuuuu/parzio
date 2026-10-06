@@ -195,26 +195,6 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
                 Live
               </span>
             </div>
-
-            {/* Direct 1-Click Coupons Shortcut in Header */}
-            <button
-              type="button"
-              onClick={() => setActiveTab('coupons')}
-              className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs ${
-                activeTab === 'coupons'
-                  ? 'bg-[#8c7138] text-white ring-2 ring-[#fed488]'
-                  : 'bg-[#faf8f5] text-[#8c7138] border border-[#8c7138]/50 hover:bg-[#8c7138] hover:text-white'
-              }`}
-              title="Open Coupons & Custom Vouchers"
-            >
-              <Tag className="w-3.5 h-3.5 text-[#8c7138] group-hover:text-white" />
-              <span>🎟️ Coupons &amp; Vouchers</span>
-              {coupons && coupons.length > 0 && (
-                <span className="text-[10px] bg-[#141414] text-[#fed488] px-1.5 py-0.2 rounded-full font-bold">
-                  {coupons.length}
-                </span>
-              )}
-            </button>
           </div>
 
           {/* Right: Quick Storefront Switcher, Emergency Stop & Logout Controls */}
@@ -285,8 +265,8 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
       {/* Main Admin Workspace Container */}
       <main className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
         
-        {/* Module Header & Unbreakable Module Switcher Bar */}
-        <div className="mb-6 bg-white p-4 sm:p-5 rounded-3xl border border-[#eae5dc] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Module Header - Clean and Focused */}
+        <div className="mb-6 bg-white p-4 sm:p-5 rounded-3xl border border-[#eae5dc] shadow-xs flex items-center justify-between gap-4">
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="w-11 h-11 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center text-[#8c7138] shadow-xs flex-shrink-0">
               {activeTab === 'overview' && <BarChart3 className="w-5 h-5" />}
@@ -300,121 +280,12 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
               {activeTab === 'settings' && <Settings className="w-5 h-5" />}
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] text-[#8c7138] uppercase font-bold tracking-widest bg-[#faf8f5] border border-[#eae5dc] px-2 py-0.5 rounded-full">
-                  Active Module
-                </span>
-                {activeTab === 'orders' && (
-                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.5 rounded-full">
-                    {orders.length} in queue
-                  </span>
-                )}
-                {activeTab === 'inventory' && (
-                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.5 rounded-full">
-                    {products.length} items
-                  </span>
-                )}
-                {activeTab === 'categories' && (
-                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.5 rounded-full">
-                    {categories.length} categories
-                  </span>
-                )}
-                {activeTab === 'banners' && (
-                  <span className="text-[10px] font-mono font-bold bg-[#141414] text-[#fed488] px-2 py-0.5 rounded-full">
-                    {banners.length} banners
-                  </span>
-                )}
-              </div>
+              <span className="text-[10px] text-[#8c7138] uppercase font-bold tracking-widest bg-[#faf8f5] border border-[#eae5dc] px-2 py-0.5 rounded-full">
+                Active Module
+              </span>
               <h2 className="font-display text-xl sm:text-2xl font-bold text-[#141414] mt-0.5 truncate">
                 {tabLabels[activeTab]}
               </h2>
-            </div>
-          </div>
-
-          {/* Direct Module Tab Bar - Fully Responsive Horizontal Scroll without Breaking Layout */}
-          <div className="w-full md:w-auto overflow-x-auto no-scrollbar py-0.5">
-            <div className="flex items-center gap-1.5 p-1 bg-[#faf8f5] border border-[#eae5dc] rounded-full text-xs whitespace-nowrap min-w-max">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
-                  activeTab === 'overview'
-                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
-                }`}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => setActiveTab('orders')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
-                  activeTab === 'orders'
-                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
-                }`}
-              >
-                Orders ({orders.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('coupons')}
-                className={`px-3.5 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'coupons'
-                    ? 'bg-[#8c7138] text-white shadow-xs ring-2 ring-[#fed488]'
-                    : 'bg-[#fed488]/30 text-[#8c7138] border border-[#8c7138]/40 hover:bg-[#8c7138] hover:text-white'
-                }`}
-              >
-                <Tag className="w-3.5 h-3.5" />
-                <span>Coupons &amp; Vouchers</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('inventory')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
-                  activeTab === 'inventory'
-                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
-                }`}
-              >
-                Stock ({products.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('categories')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
-                  activeTab === 'categories'
-                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
-                }`}
-              >
-                Categories ({categories.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('banners')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
-                  activeTab === 'banners'
-                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
-                }`}
-              >
-                Banners ({banners.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('rto-shield')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
-                  activeTab === 'rto-shield'
-                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
-                }`}
-              >
-                COD Safety
-              </button>
-              <button
-                onClick={() => setActiveTab('settings')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
-                  activeTab === 'settings'
-                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
-                }`}
-              >
-                Settings
-              </button>
             </div>
           </div>
         </div>
