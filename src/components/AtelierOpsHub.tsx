@@ -131,6 +131,18 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
     settings: 'Store Settings'
   };
 
+  const tabDescriptions: Record<AdminTab, string> = {
+    overview: 'Real-time overview of store performance, revenue, and active orders.',
+    orders: 'View, process, track status, and generate packing slips for customer orders.',
+    inventory: 'Manage catalog products, stock quantity, price points, and live status.',
+    categories: 'Organize jewellery collections, classifications, and category tags.',
+    banners: 'Configure top announcement ticker and storefront promotional banners.',
+    'rto-shield': 'Cash on delivery fraud prevention, customer verification, and delivery risk shield.',
+    exchanges: 'Review, approve, and manage customer replacement and return requests.',
+    coupons: 'Create promotional discounts and secret single-use customer vouchers.',
+    settings: 'Configure store operations, WhatsApp chat number, and preferences.'
+  };
+
   return (
     <div className="min-h-screen bg-[#fbf9f6] text-[#141414] font-sans antialiased selection:bg-[#fed488] selection:text-[#141414]">
       
@@ -262,144 +274,18 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
         </div>
       </div>
 
-      {/* Top Admin Heading Navigation Bar - Professional Heading with All Options */}
-      <nav className="bg-white border-b border-[#eae5dc] px-3 sm:px-8 shadow-xs sticky top-0 z-30">
-        <div className="w-full max-w-[1800px] mx-auto flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-2 whitespace-nowrap">
-          <button
-            type="button"
-            onClick={() => setActiveTab('overview')}
-            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-              activeTab === 'overview'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
-            }`}
-          >
-            <BarChart3 className="w-4 h-4 shrink-0" />
-            <span>Overview</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('orders')}
-            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-              activeTab === 'orders'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
-            }`}
-          >
-            <Package className="w-4 h-4 shrink-0" />
-            <span>Customer Orders</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-              activeTab === 'orders' ? 'bg-[#fed488] text-[#141414]' : 'bg-[#faf8f5] text-[#747878] border border-[#eae5dc]'
-            }`}>
-              {orders.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('coupons')}
-            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-              activeTab === 'coupons'
-                ? 'bg-[#8c7138] text-white shadow-xs ring-2 ring-[#fed488]'
-                : 'text-[#8c7138] bg-[#fed488]/20 border border-[#8c7138]/30 hover:bg-[#8c7138] hover:text-white'
-            }`}
-          >
-            <Tag className="w-4 h-4 shrink-0" />
-            <span>🎟️ Coupons &amp; Vouchers</span>
-            {coupons && coupons.length > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                activeTab === 'coupons' ? 'bg-[#141414] text-[#fed488]' : 'bg-[#8c7138] text-white'
-              }`}>
-                {coupons.length}
-              </span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('inventory')}
-            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-              activeTab === 'inventory'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 shrink-0" />
-            <span>Stock &amp; Products</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-              activeTab === 'inventory' ? 'bg-[#fed488] text-[#141414]' : 'bg-[#faf8f5] text-[#747878] border border-[#eae5dc]'
-            }`}>
-              {products.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('categories')}
-            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-              activeTab === 'categories'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
-            }`}
-          >
-            <Layers className="w-4 h-4 shrink-0" />
-            <span>Categories</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-              activeTab === 'categories' ? 'bg-[#fed488] text-[#141414]' : 'bg-[#faf8f5] text-[#747878] border border-[#eae5dc]'
-            }`}>
-              {categories.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('banners')}
-            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-              activeTab === 'banners'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 shrink-0" />
-            <span>Banners &amp; Marquee</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-              activeTab === 'banners' ? 'bg-[#fed488] text-[#141414]' : 'bg-[#faf8f5] text-[#747878] border border-[#eae5dc]'
-            }`}>
-              {banners.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('rto-shield')}
-            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-              activeTab === 'rto-shield'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span>COD Safety</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-              activeTab === 'settings'
-                ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
-            }`}
-          >
-            <Settings className="w-4 h-4 shrink-0" />
-            <span>Settings</span>
-          </button>
-        </div>
-      </nav>
-
       {/* Main Admin Workspace Container */}
       <main className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
+        
+        {/* Clean Page Heading */}
+        <div className="mb-6 pb-2 border-b border-[#eae5dc]/80">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#141414] tracking-tight">
+            {tabLabels[activeTab]}
+          </h1>
+          <p className="text-xs sm:text-sm text-[#747878] mt-1">
+            {tabDescriptions[activeTab]}
+          </p>
+        </div>
 
         {activeTab === 'overview' && (
           <AdminAnalyticsView
