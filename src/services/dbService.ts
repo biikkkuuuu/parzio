@@ -18,6 +18,7 @@ import { db, isFirebaseConfigured } from '../lib/firebase';
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   setDoc,
   deleteDoc,
@@ -39,21 +40,17 @@ const KEYS = {
   INSTAGRAM_POSTS: 'parzio_instagram_posts',
 };
 
-// One-time reset to guarantee existing browser local storage demo products, categories & orders are cleared
-const WIPE_FLAG = 'parzio_wipe_all_v1';
-const ORDERS_WIPE_FLAG = 'parzio_wipe_orders_v1';
-if (typeof window !== 'undefined') {
+
+/**
+ * Helper to strip undefined values so Firebase Firestore setDoc never throws
+ * "Unsupported field value: undefined"
+ */
+function sanitizeForFirestore<T>(data: T): T {
   try {
-    if (!localStorage.getItem(WIPE_FLAG)) {
-      localStorage.setItem(KEYS.PRODUCTS, '[]');
-      localStorage.setItem(KEYS.CATEGORIES, '[]');
-      localStorage.setItem(WIPE_FLAG, 'true');
-    }
-    if (!localStorage.getItem(ORDERS_WIPE_FLAG)) {
-      localStorage.setItem(KEYS.ORDERS, '[]');
-      localStorage.setItem(ORDERS_WIPE_FLAG, 'true');
-    }
-  } catch {}
+    return JSON.parse(JSON.stringify(data));
+  } catch {
+    return data;
+  }
 }
 
 /**
@@ -99,12 +96,43 @@ export const dbService = {
         });
         this.saveProducts(products);
         return products;
+      } else {
+        // If Firestore products collection is empty, seed initial vault products so all visitors see products
+        for (const p of VAULT_PRODUCTS) {
+          await setDoc(doc(db, 'products', p.id), p);
+        }
+        this.saveProducts(VAULT_PRODUCTS);
+        return VAULT_PRODUCTS;
       }
     } catch (e) {
       console.warn('Firebase products fetch fallback to local cache:', e);
     }
     return null;
   },
+
+  subscribeToProducts(onProductsChange: (products: Product[]) => void) {
+    if (!db || !isFirebaseConfigured()) return null;
+    try {
+      const q = query(collection(db, 'products'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        if (!snapshot.empty) {
+          const products: Product[] = [];
+          snapshot.forEach((docSnap) => {
+            products.push(docSnap.data() as Product);
+          });
+          this.saveProducts(products);
+          onProductsChange(products);
+        }
+      }, (error) => {
+        console.warn('Firebase products realtime listener warning:', error);
+      });
+      return unsubscribe;
+    } catch (e) {
+      console.error('Firebase realtime products subscription error:', e);
+      return null;
+    }
+  },
+
 
   async upsertProduct(product: Product): Promise<Product> {
     // 1. Immediate local persistence
@@ -118,7 +146,7 @@ export const dbService = {
     // 2. Sync to Firebase Firestore
     if (db && isFirebaseConfigured()) {
       try {
-        await setDoc(doc(db, 'products', product.id), product);
+        await setDoc(doc(db, 'products', product.id), sanitizeForFirestore(product));
       } catch (e) {
         console.error('Failed to sync product to Firebase:', e);
       }
@@ -197,12 +225,43 @@ export const dbService = {
         });
         this.saveCategories(categories);
         return categories;
+      } else {
+        // Seed initial categories so cloud has all default categories
+        for (const cat of CATEGORIES_DATA) {
+          const catId = 'cat-' + cat.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+          await setDoc(doc(db, 'categories', catId), cat);
+        }
+        this.saveCategories(CATEGORIES_DATA);
+        return CATEGORIES_DATA;
       }
     } catch (e) {
       console.warn('Firebase categories fetch fallback to local cache:', e);
     }
     return null;
   },
+
+  subscribeToCategories(onCategoriesChange: (categories: CategoryItem[]) => void) {
+    if (!db || !isFirebaseConfigured()) return null;
+    try {
+      const unsubscribe = onSnapshot(collection(db, 'categories'), (snapshot) => {
+        if (!snapshot.empty) {
+          const categories: CategoryItem[] = [];
+          snapshot.forEach((docSnap) => {
+            categories.push(docSnap.data() as CategoryItem);
+          });
+          this.saveCategories(categories);
+          onCategoriesChange(categories);
+        }
+      }, (error) => {
+        console.warn('Firebase categories realtime listener warning:', error);
+      });
+      return unsubscribe;
+    } catch (e) {
+      console.error('Firebase realtime categories subscription error:', e);
+      return null;
+    }
+  },
+
 
   async upsertCategory(cat: CategoryItem): Promise<CategoryItem> {
     const categories = this.getCategories();
@@ -215,7 +274,7 @@ export const dbService = {
     if (db && isFirebaseConfigured()) {
       try {
         const catId = 'cat-' + cat.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-        await setDoc(doc(db, 'categories', catId), cat);
+        await setDoc(doc(db, 'categories', catId), sanitizeForFirestore(cat));
       } catch (e) {
         console.error('Failed to sync category to Firebase:', e);
       }
@@ -300,7 +359,7 @@ export const dbService = {
     // 3. Sync to Firebase Firestore
     if (db && isFirebaseConfigured()) {
       try {
-        await setDoc(doc(db, 'orders', order.id), order);
+        await setDoc(doc(db, 'orders', order.id), sanitizeForFirestore(order));
         
         // Sync decremented stock
         if (Array.isArray(order.items)) {
@@ -391,12 +450,22 @@ export const dbService = {
       if (saved) {
         const parsed: StoreBanner[] = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // If first banner still has old unsplash placeholder, migrate to new official PARZIO banner
+          let hasChanges = false;
+          // Heal broken links or migrate legacy unsplash placeholders
+          parsed.forEach((b) => {
+            if (b.image && (b.image.includes('1611591475155-4284fa28973b') || b.image.includes('1611591475819-79b8b730ab8b'))) {
+              b.image = '/images/parzio-hero-banner.jpg';
+              hasChanges = true;
+            }
+          });
           if (parsed[0].id === 'ban-1' && parsed[0].image && parsed[0].image.includes('images.unsplash.com')) {
             parsed[0].image = '/images/parzio-hero-banner.jpg';
             parsed[0].title = 'Khoobsurati Aapki';
             parsed[0].highlightText = 'Andaz PARZIO Ka';
             parsed[0].subtitle = 'Aapke Shringar, Hamara Pyaar';
+            hasChanges = true;
+          }
+          if (hasChanges) {
             this.saveBanners(parsed);
           }
           return parsed;
@@ -406,11 +475,71 @@ export const dbService = {
     return INITIAL_BANNERS;
   },
 
-  saveBanners(banners: StoreBanner[]): void {
+  saveBannersLocally(banners: StoreBanner[]): void {
     try {
       localStorage.setItem(KEYS.BANNERS, JSON.stringify(banners));
-    } catch {}
+    } catch (e) {
+      console.warn('Failed to cache banners locally:', e);
+    }
   },
+
+  async saveBanners(banners: StoreBanner[]): Promise<void> {
+    this.saveBannersLocally(banners);
+    // Also sync to Firebase Firestore if connected
+    if (db && isFirebaseConfigured()) {
+      try {
+        await setDoc(doc(db, 'store_settings', 'hero_banners'), sanitizeForFirestore({
+          banners,
+          updatedAt: new Date().toISOString()
+        }), { merge: true });
+      } catch (e) {
+        console.error('Failed to sync banners to Firebase:', e);
+      }
+    }
+  },
+
+  async fetchBannersFromCloud(): Promise<StoreBanner[] | null> {
+    if (!db || !isFirebaseConfigured()) return null;
+    try {
+      const docSnap = await getDoc(doc(db, 'store_settings', 'hero_banners'));
+      if (docSnap.exists() && docSnap.data()?.banners) {
+        const cloudBanners = docSnap.data().banners as StoreBanner[];
+        if (Array.isArray(cloudBanners) && cloudBanners.length > 0) {
+          this.saveBannersLocally(cloudBanners);
+          return cloudBanners;
+        }
+      } else {
+        const initial = this.getBanners();
+        await this.saveBanners(initial);
+        return initial;
+      }
+    } catch (e) {
+      console.warn('Firebase fetch banners fallback:', e);
+    }
+    return null;
+  },
+
+  subscribeToBanners(onBannersChange: (banners: StoreBanner[]) => void) {
+    if (!db || !isFirebaseConfigured()) return null;
+    try {
+      const unsubscribe = onSnapshot(doc(db, 'store_settings', 'hero_banners'), (docSnap) => {
+        if (docSnap.exists() && docSnap.data()?.banners) {
+          const cloudBanners = docSnap.data().banners as StoreBanner[];
+          if (Array.isArray(cloudBanners) && cloudBanners.length > 0) {
+            this.saveBannersLocally(cloudBanners);
+            onBannersChange(cloudBanners);
+          }
+        }
+      }, (error) => {
+        console.warn('Firebase realtime banners listener warning:', error);
+      });
+      return unsubscribe;
+    } catch (e) {
+      console.error('Firebase realtime banners subscription error:', e);
+      return null;
+    }
+  },
+
 
   getTopMarquee(): MarqueeItem[] {
     try {

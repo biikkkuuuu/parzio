@@ -210,10 +210,6 @@ export default function App() {
   // Products and Filtering (Unified Data Layer via dbService)
   const [products, setProducts] = useState<Product[]>(() => dbService.getProducts());
 
-  useEffect(() => {
-    dbService.saveProducts(products);
-  }, [products]);
-
   const [activeCategory, setActiveCategory] = useState<string>(() => {
     if (initialRoute.type === 'category' && initialRoute.id) {
       return initialRoute.id;
@@ -225,29 +221,49 @@ export default function App() {
   // Categories State (Unified Data Layer via dbService)
   const [categories, setCategories] = useState<CategoryItem[]>(() => dbService.getCategories());
 
-  useEffect(() => {
-    dbService.saveCategories(categories);
-  }, [categories]);
-
-  // Background Cloud Sync & Realtime Listeners when Supabase is configured
+  // Background Cloud Sync & Realtime Firestore Listeners across all devices/browsers
   useEffect(() => {
     let isMounted = true;
     const syncFromCloud = async () => {
       if (dbService.isConfigured) {
-        const [cloudProducts, cloudCategories, cloudOrders] = await Promise.all([
+        const [cloudProducts, cloudCategories, cloudOrders, cloudBanners] = await Promise.all([
           dbService.fetchProductsFromCloud(),
           dbService.fetchCategoriesFromCloud(),
           dbService.fetchOrdersFromCloud(),
+          dbService.fetchBannersFromCloud(),
         ]);
         if (isMounted) {
           if (cloudProducts && cloudProducts.length > 0) setProducts(cloudProducts);
           if (cloudCategories && cloudCategories.length > 0) setCategories(cloudCategories);
           if (cloudOrders && cloudOrders.length > 0) setOrders(cloudOrders);
+          if (cloudBanners && cloudBanners.length > 0) setBanners(cloudBanners);
         }
       }
     };
     syncFromCloud();
 
+    // 1. Realtime listener for Products: any add/edit/delete in admin updates all visitor tabs immediately
+    const unsubscribeProducts = dbService.subscribeToProducts((liveProducts) => {
+      if (isMounted && liveProducts && liveProducts.length > 0) {
+        setProducts(liveProducts);
+      }
+    });
+
+    // 2. Realtime listener for Categories
+    const unsubscribeCategories = dbService.subscribeToCategories((liveCats) => {
+      if (isMounted && liveCats && liveCats.length > 0) {
+        setCategories(liveCats);
+      }
+    });
+
+    // 3. Realtime listener for Hero Banners: any banner update/delete immediately reflects on all devices
+    const unsubscribeBanners = dbService.subscribeToBanners((liveBanners) => {
+      if (isMounted && liveBanners && liveBanners.length > 0) {
+        setBanners(liveBanners);
+      }
+    });
+
+    // 4. Realtime listener for Orders
     const unsubscribeOrders = dbService.subscribeToNewOrders((newOrder) => {
       setOrders((prev) => [newOrder, ...prev.filter((o) => o.id !== newOrder.id)]);
       showToast(`⚡ New Order Received: #${newOrder.id}`);
@@ -255,9 +271,13 @@ export default function App() {
 
     return () => {
       isMounted = false;
+      if (unsubscribeProducts) unsubscribeProducts();
+      if (unsubscribeCategories) unsubscribeCategories();
+      if (unsubscribeBanners) unsubscribeBanners();
       if (unsubscribeOrders) unsubscribeOrders();
     };
   }, []);
+
 
   const handleAddCategory = (newCat: CategoryItem) => {
     setCategories((prev) => [...prev, newCat]);
@@ -363,22 +383,24 @@ export default function App() {
 
   // Dynamic Banners and Moving Marquees (Unified Data Layer via dbService)
   const [banners, setBanners] = useState<StoreBanner[]>(() => dbService.getBanners());
-
-  useEffect(() => {
-    dbService.saveBanners(banners);
-  }, [banners]);
-
   const [topMarqueeItems, setTopMarqueeItems] = useState<MarqueeItem[]>(() => dbService.getTopMarquee());
-
-  useEffect(() => {
-    dbService.saveTopMarquee(topMarqueeItems);
-  }, [topMarqueeItems]);
-
   const [bannerMarqueeItems, setBannerMarqueeItems] = useState<MarqueeItem[]>(() => dbService.getBannerMarquee());
 
-  useEffect(() => {
-    dbService.saveBannerMarquee(bannerMarqueeItems);
-  }, [bannerMarqueeItems]);
+  const handleUpdateBanners = (updatedBanners: StoreBanner[]) => {
+    setBanners(updatedBanners);
+    dbService.saveBanners(updatedBanners);
+  };
+
+  const handleUpdateTopMarquee = (items: MarqueeItem[]) => {
+    setTopMarqueeItems(items);
+    dbService.saveTopMarquee(items);
+  };
+
+  const handleUpdateBannerMarquee = (items: MarqueeItem[]) => {
+    setBannerMarqueeItems(items);
+    dbService.saveBannerMarquee(items);
+  };
+
 
   const [skinSafeConfig, setSkinSafeConfig] = useState<SkinSafeConfig>(() => {
     try {
@@ -1031,9 +1053,9 @@ export default function App() {
             salePosters={salePosters}
             skinSafeConfig={skinSafeConfig}
             saleBannerConfig={saleBannerConfig}
-            onUpdateTopMarquee={setTopMarqueeItems}
-            onUpdateBannerMarquee={setBannerMarqueeItems}
-            onUpdateBanners={setBanners}
+            onUpdateTopMarquee={handleUpdateTopMarquee}
+            onUpdateBannerMarquee={handleUpdateBannerMarquee}
+            onUpdateBanners={handleUpdateBanners}
             onUpdateSalePosters={setSalePosters}
             onUpdateSkinSafeConfig={setSkinSafeConfig}
             onUpdateSaleBannerConfig={setSaleBannerConfig}

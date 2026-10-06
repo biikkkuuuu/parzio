@@ -107,7 +107,7 @@ export const INITIAL_BANNERS: StoreBanner[] = [
     stat2Label: 'Tarnish Risk',
     stat3Value: '4.9★',
     stat3Label: 'Customer Rating',
-    image: 'https://images.unsplash.com/photo-1611591475155-4284fa28973b?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1400&q=80',
     buttonText: 'EXPLORE BRACELETS',
     active: true
   },

@@ -14,6 +14,7 @@ import {
   Heart,
   Tag,
   Gift,
+  ArrowLeft,
   ArrowRight,
   MoveRight,
   Image as ImageIcon,
@@ -84,9 +85,10 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
   const [marqueeIcon, setMarqueeIcon] = useState<'truck' | 'shield' | 'sparkles' | 'star' | 'heart' | 'tag' | 'gift'>('sparkles');
   const [isAddingTopMarquee, setIsAddingTopMarquee] = useState(false);
 
-  // --- HERO BANNER MODAL/STATE ---
-  const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
+  // --- HERO BANNER PAGE / EDITOR STATE ---
+  const [isBannerEditorOpen, setIsBannerEditorOpen] = useState(false);
   const [editingBannerId, setEditingBannerId] = useState<string | null>(null);
+  const [bannerToDelete, setBannerToDelete] = useState<StoreBanner | null>(null);
 
   const [bannerForm, setBannerForm] = useState<Omit<StoreBanner, 'id'>>({
     title: 'Everything For',
@@ -102,7 +104,7 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
     stat2Label: 'Real Gold Plated',
     stat3Value: '5 Lac+',
     stat3Label: 'Happy Shoppers',
-    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
+    image: '/images/parzio-hero-banner.jpg',
     buttonText: 'Shop ₹99 Vault',
     active: true
   });
@@ -206,11 +208,11 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
       stat2Label: 'Gold Plated',
       stat3Value: 'Free',
       stat3Label: 'Shipping ₹500+',
-      image: 'https://images.unsplash.com/photo-1611591475819-79b8b730ab8b?auto=format&fit=crop&w=800&q=80',
+      image: '/images/parzio-hero-banner.jpg',
       buttonText: 'Explore Vault',
       active: true
     });
-    setIsBannerModalOpen(true);
+    setIsBannerEditorOpen(true);
   };
 
   const handleOpenEditBannerModal = (banner: StoreBanner) => {
@@ -233,11 +235,11 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
       buttonText: banner.buttonText,
       active: banner.active
     });
-    setIsBannerModalOpen(true);
+    setIsBannerEditorOpen(true);
   };
 
-  const handleSaveBanner = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveBanner = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (editingBannerId) {
       const updated = banners.map((b) =>
         b.id === editingBannerId ? { ...bannerForm, id: editingBannerId } : b
@@ -252,13 +254,25 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
       onUpdateBanners([newBanner, ...banners]);
       onTriggerToast('New storefront banner added and live!');
     }
-    setIsBannerModalOpen(false);
+    setIsBannerEditorOpen(false);
   };
 
   const handleDeleteBanner = (id: string) => {
+    const b = banners.find((item) => item.id === id);
+    if (b) {
+      setBannerToDelete(b);
+    }
+  };
+
+  const confirmDeleteBanner = (id: string) => {
     const filtered = banners.filter((b) => b.id !== id);
     onUpdateBanners(filtered);
-    onTriggerToast('Banner removed from storefront.');
+    onTriggerToast('Banner deleted successfully from storefront.');
+    setBannerToDelete(null);
+    if (editingBannerId === id) {
+      setIsBannerEditorOpen(false);
+      setEditingBannerId(null);
+    }
   };
 
   const handleToggleBannerActive = (id: string) => {
@@ -268,6 +282,463 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
     onUpdateBanners(updated);
     onTriggerToast('Banner visibility updated.');
   };
+
+  // ========================================================
+  // DEDICATED FULL-PAGE VIEW: CREATE / EDIT HERO BANNER
+  // (NO POPUP - FULL PAGE EXPERIENCE)
+  // ========================================================
+  if (isBannerEditorOpen) {
+    return (
+      <div className="space-y-6 animate-fadeIn pb-12">
+        {/* Top Header / Breadcrumb Bar */}
+        <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#eae5dc] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <button
+              type="button"
+              onClick={() => setIsBannerEditorOpen(false)}
+              className="p-2.5 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] hover:border-[#8c7138] hover:bg-white text-[#141414] hover:text-[#8c7138] transition-all cursor-pointer flex items-center justify-center shadow-xs"
+              title="Back to Banners"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7138] bg-[#faf8f5] px-2.5 py-0.5 rounded-full border border-[#eae5dc]">
+                  Storefront Banners
+                </span>
+                <span className="text-xs text-[#747878]">/</span>
+                <span className="text-xs font-semibold text-[#747878]">
+                  {editingBannerId ? 'Edit Mode' : 'New Creation'}
+                </span>
+              </div>
+              <h2 className="font-display font-bold text-xl sm:text-2xl text-[#141414] mt-1">
+                {editingBannerId ? 'Edit Storefront Hero Banner' : 'Create New Hero Banner'}
+              </h2>
+            </div>
+          </div>
+
+          {/* Quick Header Actions */}
+          <div className="flex items-center gap-2.5">
+            {editingBannerId && (
+              <button
+                type="button"
+                onClick={() => {
+                  const b = banners.find(item => item.id === editingBannerId);
+                  if (b) setBannerToDelete(b);
+                }}
+                className="px-4 py-2.5 rounded-full border border-rose-200 bg-rose-50 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Banner</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setIsBannerEditorOpen(false)}
+              className="px-5 py-2.5 rounded-full border border-[#eae5dc] bg-white text-xs font-bold text-[#747878] hover:bg-neutral-100 hover:text-[#141414] transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSaveBanner()}
+              className="px-6 py-2.5 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{editingBannerId ? 'Save & Update Banner' : 'Publish Banner to Store'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Banner Sizing Guidelines Card */}
+        <div className="bg-gradient-to-r from-[#faf8f5] via-white to-[#faf8f5] rounded-3xl border border-[#eae5dc] p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#141414] text-[#fed488] flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="text-xs font-bold text-[#141414] uppercase tracking-wider">
+                  Recommended Banner Size &amp; Sizing Specs
+                </h4>
+                <span className="text-[10px] bg-[#8c7138] text-white font-bold px-2.5 py-0.5 rounded-full">
+                  Aspect Ratio: 2.4 : 1
+                </span>
+              </div>
+              <p className="text-xs text-[#525252]">
+                <strong>Full HD Desktop:</strong> 1920 × 800 px &nbsp;•&nbsp; 
+                <strong>Standard Web:</strong> 1200 × 500 px or 1024 × 420 px &nbsp;•&nbsp;
+                <strong>Formats:</strong> JPG, PNG, WEBP (Max 5MB)
+              </p>
+              <p className="text-[11px] text-[#747878]">
+                💡 <em>Mobile Safe Zone:</em> Keep important jewelry items and main headlines in the center 70% safe zone to ensure stunning look across all mobile devices.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 2-Column Responsive Form Layout */}
+        <form onSubmit={handleSaveBanner} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* LEFT COLUMN: Hero Banner Image & Live Preview (7 cols) */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Image Upload Box */}
+              <div className="bg-white rounded-3xl border border-[#eae5dc] p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-[#eae5dc] pb-3">
+                  <div>
+                    <h3 className="font-display font-bold text-sm text-[#141414]">
+                      Hero Banner Image
+                    </h3>
+                    <p className="text-[11px] text-[#747878]">
+                      Upload banner graphic from device or paste direct image URL link
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-bold text-[#8c7138] bg-[#fbf9f6] border border-[#eae5dc] px-2.5 py-0.5 rounded-full">
+                    1920 × 800 px
+                  </span>
+                </div>
+
+                <DeviceImageUpload
+                  label="Hero Banner Image Graphic"
+                  required
+                  value={bannerForm.image}
+                  onChange={(img) => setBannerForm({ ...bannerForm, image: img })}
+                  recommendedSize="1920 × 800px (Aspect Ratio 2.4:1) • Max 5MB"
+                  aspectRatio="banner"
+                  maxSizeMB={5}
+                />
+              </div>
+
+              {/* Storefront Display Tips Box */}
+              <div className="bg-[#faf8f5] rounded-3xl border border-[#eae5dc] p-5 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#141414]">
+                  <Sparkles className="w-4 h-4 text-[#8c7138]" />
+                  <span>Storefront Banner Sizing Info</span>
+                </div>
+                <ul className="text-[11px] text-[#747878] space-y-1 list-disc list-inside leading-relaxed">
+                  <li><strong>Recommended Dimension:</strong> 1920 × 800 px (or 1200 × 500 px).</li>
+                  <li><strong>Aspect Ratio:</strong> ~2.4 : 1 (Display aspect on storefront is 1024:415).</li>
+                  <li><strong>Mobile Viewport:</strong> Center 70% is guaranteed visible on all iPhones &amp; Android devices.</li>
+                  <li><strong>Max File Size:</strong> Up to 5MB (auto-optimized on save).</li>
+                </ul>
+              </div>
+
+            </div>
+
+            {/* RIGHT COLUMN: Headlines, Details, Badges & Stats (5 cols) */}
+            <div className="lg:col-span-5 space-y-6">
+              
+              <div className="bg-white rounded-3xl border border-[#eae5dc] p-6 shadow-sm space-y-4">
+                <h3 className="font-display font-bold text-sm text-[#141414] border-b border-[#eae5dc] pb-3">
+                  Banner Text &amp; Call-To-Action
+                </h3>
+
+                {/* Title & Highlight */}
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#141414] mb-1">
+                      Main Headline Title <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={bannerForm.title}
+                      onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
+                      placeholder="e.g. Khoobsurati Aapki"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#141414] mb-1">
+                      Highlight Gold Headline <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={bannerForm.highlightText}
+                      onChange={(e) => setBannerForm({ ...bannerForm, highlightText: e.target.value })}
+                      placeholder="e.g. Andaz PARZIO Ka"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs font-bold text-[#8c7138] focus:outline-none focus:border-[#8c7138]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#141414] mb-1">
+                      Subtitle / Tagline <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={bannerForm.subtitle}
+                      onChange={(e) => setBannerForm({ ...bannerForm, subtitle: e.target.value })}
+                      placeholder="e.g. Aapke Shringar, Hamara Pyaar"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#141414] mb-1">
+                      Detailed Description <span className="text-rose-500">*</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      required
+                      value={bannerForm.description}
+                      onChange={(e) => setBannerForm({ ...bannerForm, description: e.target.value })}
+                      placeholder="e.g. Roz Khubsurat Banne ka Haq Sabka Hai."
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                    />
+                  </div>
+                </div>
+
+                {/* Badges & Button */}
+                <div className="space-y-3 pt-3 border-t border-[#eae5dc]">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#141414] mb-1">Top Badge</label>
+                      <input
+                        type="text"
+                        value={bannerForm.badge}
+                        onChange={(e) => setBannerForm({ ...bannerForm, badge: e.target.value })}
+                        placeholder="PARZIO ROYAL COLLECTION"
+                        className="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#141414] mb-1">Sub Badge</label>
+                      <input
+                        type="text"
+                        value={bannerForm.subBadge}
+                        onChange={(e) => setBannerForm({ ...bannerForm, subBadge: e.target.value })}
+                        placeholder="100% ORIGINAL"
+                        className="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#141414] mb-1">Price Tag Text</label>
+                      <input
+                        type="text"
+                        value={bannerForm.priceText}
+                        onChange={(e) => setBannerForm({ ...bannerForm, priceText: e.target.value })}
+                        placeholder="Special Drops"
+                        className="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#141414] mb-1">CTA Button Text</label>
+                      <input
+                        type="text"
+                        value={bannerForm.buttonText}
+                        onChange={(e) => setBannerForm({ ...bannerForm, buttonText: e.target.value })}
+                        placeholder="SHOP NOW →"
+                        className="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs font-bold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Toggle */}
+                <div className="pt-3 border-t border-[#eae5dc] flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-[#141414]">Live On Storefront</h4>
+                    <p className="text-[11px] text-[#747878]">Show this banner in top rotating hero slider</p>
+                  </div>
+                  <div className="inline-flex items-center gap-1 bg-[#faf8f5] p-1 rounded-full border border-[#eae5dc]">
+                    <button
+                      type="button"
+                      onClick={() => setBannerForm({ ...bannerForm, active: true })}
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        bannerForm.active
+                          ? 'bg-emerald-700 text-white shadow-xs'
+                          : 'text-[#747878] hover:text-[#141414]'
+                      }`}
+                    >
+                      Active
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBannerForm({ ...bannerForm, active: false })}
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        !bannerForm.active
+                          ? 'bg-neutral-800 text-white shadow-xs'
+                          : 'text-[#747878] hover:text-[#141414]'
+                      }`}
+                    >
+                      Hidden
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* 3 Metric Stats Card */}
+              <div className="bg-white rounded-3xl border border-[#eae5dc] p-6 shadow-sm space-y-3">
+                <h3 className="font-display font-bold text-sm text-[#141414]">
+                  3 Highlight Counters
+                </h3>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Stat 1: 100%"
+                      value={bannerForm.stat1Value}
+                      onChange={(e) => setBannerForm({ ...bannerForm, stat1Value: e.target.value })}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#eae5dc] text-center font-bold"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Label 1"
+                      value={bannerForm.stat1Label}
+                      onChange={(e) => setBannerForm({ ...bannerForm, stat1Label: e.target.value })}
+                      className="w-full px-2 py-1 text-[10px] text-center text-[#747878] mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Stat 2: 50,000+"
+                      value={bannerForm.stat2Value}
+                      onChange={(e) => setBannerForm({ ...bannerForm, stat2Value: e.target.value })}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#eae5dc] text-center font-bold"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Label 2"
+                      value={bannerForm.stat2Label}
+                      onChange={(e) => setBannerForm({ ...bannerForm, stat2Label: e.target.value })}
+                      className="w-full px-2 py-1 text-[10px] text-center text-[#747878] mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Stat 3: COD"
+                      value={bannerForm.stat3Value}
+                      onChange={(e) => setBannerForm({ ...bannerForm, stat3Value: e.target.value })}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#eae5dc] text-center font-bold"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Label 3"
+                      value={bannerForm.stat3Label}
+                      onChange={(e) => setBannerForm({ ...bannerForm, stat3Label: e.target.value })}
+                      className="w-full px-2 py-1 text-[10px] text-center text-[#747878] mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Bottom Actions Sticky Bar */}
+          <div className="sticky bottom-4 z-20 bg-white/95 backdrop-blur-md rounded-2xl border border-[#eae5dc] p-4 shadow-xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsBannerEditorOpen(false)}
+                className="px-5 py-2.5 rounded-full border border-[#eae5dc] bg-white text-xs font-bold text-[#747878] hover:bg-neutral-100 hover:text-[#141414] transition-colors cursor-pointer"
+              >
+                ← Cancel &amp; Back to Banners
+              </button>
+
+              {editingBannerId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const b = banners.find(item => item.id === editingBannerId);
+                    if (b) setBannerToDelete(b);
+                  }}
+                  className="px-4 py-2.5 rounded-full border border-rose-200 bg-rose-50 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete Banner</span>
+                </button>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="px-7 py-2.5 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{editingBannerId ? 'Save & Update Banner' : 'Publish Banner to Store'}</span>
+            </button>
+          </div>
+        </form>
+
+        {/* Delete Banner Yes/No Confirmation Dialog */}
+        {bannerToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+            <div className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-[#eae5dc] space-y-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center shrink-0">
+                  <Trash2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-base text-[#141414]">
+                    Delete Hero Banner?
+                  </h3>
+                  <p className="text-xs text-[#747878]">
+                    Are you sure you want to permanently delete this banner?
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3 bg-[#faf8f5] rounded-2xl border border-[#eae5dc] flex items-center gap-3">
+                <div className="w-16 h-10 rounded-lg overflow-hidden border border-[#eae5dc] shrink-0 bg-white">
+                  <img
+                    src={bannerToDelete.image || '/images/parzio-hero-banner.jpg'}
+                    alt={bannerToDelete.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-[#141414] truncate">
+                    {bannerToDelete.title} {bannerToDelete.highlightText}
+                  </p>
+                  <p className="text-[11px] text-[#747878] truncate">
+                    {bannerToDelete.subtitle}
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-xs text-[#525252]">
+                This action cannot be undone. The banner will be removed from your live storefront slider.
+              </p>
+
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#eae5dc]">
+                <button
+                  type="button"
+                  onClick={() => setBannerToDelete(null)}
+                  className="px-5 py-2.5 rounded-full border border-[#eae5dc] bg-white text-xs font-bold text-[#747878] hover:bg-neutral-100 hover:text-[#141414] transition-colors cursor-pointer"
+                >
+                  No, Keep Banner
+                </button>
+                <button
+                  type="button"
+                  onClick={() => confirmDeleteBanner(bannerToDelete.id)}
+                  className="px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Yes, Delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -600,6 +1071,33 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
             </button>
           </div>
 
+          {/* Banner Sizing Guidelines Card */}
+          <div className="bg-gradient-to-r from-[#faf8f5] via-white to-[#faf8f5] rounded-2xl border border-[#eae5dc] p-4 sm:p-4.5 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#141414] text-[#fed488] flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h5 className="text-xs font-bold text-[#141414]">
+                    Recommended Banner Dimensions &amp; Specifications
+                  </h5>
+                  <span className="text-[10px] bg-[#8c7138] text-white font-bold px-2 py-0.5 rounded-full">
+                    Aspect Ratio: 2.4 : 1
+                  </span>
+                </div>
+                <p className="text-xs text-[#525252]">
+                  <strong>Desktop / HD:</strong> 1920 × 800 px &nbsp;•&nbsp; 
+                  <strong>Standard:</strong> 1200 × 500 px or 1024 × 420 px &nbsp;•&nbsp;
+                  <strong>Formats:</strong> JPG, PNG, WEBP (Max 5MB)
+                </p>
+                <p className="text-[11px] text-[#747878]">
+                  💡 <em>Mobile Tip:</em> Keep main jewelry pieces and text in the center 70% safe zone to ensure stunning look across all mobile devices.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Banners Grid */}
           {banners.length === 0 ? (
             <div className="bg-white rounded-3xl border border-[#eae5dc] p-12 text-center flex flex-col items-center justify-center space-y-3 shadow-sm">
@@ -638,6 +1136,10 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
                         src={banner.image}
                         alt={banner.title}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = '/images/parzio-hero-banner.jpg';
+                        }}
                       />
                     </div>
 
@@ -1204,223 +1706,16 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
       )}
 
       {/* ======================================================== */}
-      {/* MODAL: ADD / EDIT STOREFRONT BANNER                      */}
-      {/* ======================================================== */}
-      {isBannerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-          <div
-            className="relative w-full max-w-xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-[#eae5dc] max-h-[92vh] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-[#eae5dc] bg-[#faf8f5] flex items-center justify-between">
-              <div>
-                <h3 className="font-display font-bold text-base text-[#141414]">
-                  {editingBannerId ? 'Edit Hero Banner' : 'Create New Hero Banner'}
-                </h3>
-                <p className="text-[11px] text-[#747878]">
-                  Update headline, image, pricing tag, and call-to-action button.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsBannerModalOpen(false)}
-                className="p-1.5 rounded-full hover:bg-neutral-200 text-[#747878] hover:text-[#141414] transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Form */}
-            <form onSubmit={handleSaveBanner} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 no-scrollbar">
-              
-              {/* Headlines */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-[#141414] mb-1">Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={bannerForm.title}
-                    onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
-                    placeholder="e.g. Everything For"
-                    className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#141414] mb-1">Highlight Gold Text</label>
-                  <input
-                    type="text"
-                    required
-                    value={bannerForm.highlightText}
-                    onChange={(e) => setBannerForm({ ...bannerForm, highlightText: e.target.value })}
-                    placeholder="e.g. Just ₹99"
-                    className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs font-semibold text-[#8c7138] focus:outline-none focus:border-[#8c7138]"
-                  />
-                </div>
-              </div>
-
-              {/* Subtitle */}
-              <div>
-                <label className="block text-xs font-bold text-[#141414] mb-1">Subtitle</label>
-                <input
-                  type="text"
-                  required
-                  value={bannerForm.subtitle}
-                  onChange={(e) => setBannerForm({ ...bannerForm, subtitle: e.target.value })}
-                  placeholder="e.g. Anti-Tarnish Daily Wear Jewellery"
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-xs font-bold text-[#141414] mb-1">Description</label>
-                <textarea
-                  rows={2}
-                  required
-                  value={bannerForm.description}
-                  onChange={(e) => setBannerForm({ ...bannerForm, description: e.target.value })}
-                  placeholder="Detailed description of collection"
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                />
-              </div>
-
-              {/* Badges & Button */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-[#141414] mb-1">Top Badge</label>
-                  <input
-                    type="text"
-                    value={bannerForm.badge}
-                    onChange={(e) => setBannerForm({ ...bannerForm, badge: e.target.value })}
-                    placeholder="SPECIAL SALE • FLAT ₹99"
-                    className="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#141414] mb-1">Sub Badge</label>
-                  <input
-                    type="text"
-                    value={bannerForm.subBadge}
-                    onChange={(e) => setBannerForm({ ...bannerForm, subBadge: e.target.value })}
-                    placeholder="100% WATERPROOF"
-                    className="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#141414] mb-1">Button Text</label>
-                  <input
-                    type="text"
-                    value={bannerForm.buttonText}
-                    onChange={(e) => setBannerForm({ ...bannerForm, buttonText: e.target.value })}
-                    placeholder="Shop ₹99 Vault"
-                    className="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-xs font-bold text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                  />
-                </div>
-              </div>
-
-              {/* Banner Image Upload from Device */}
-              <DeviceImageUpload
-                label="Hero Banner Image"
-                required
-                value={bannerForm.image}
-                onChange={(img) => setBannerForm({ ...bannerForm, image: img })}
-                recommendedSize="16:9 / 21:9 Widescreen (1920 × 800px) • Max 5MB"
-                aspectRatio="banner"
-                maxSizeMB={5}
-              />
-
-              {/* 3 Metric Stats */}
-              <div className="pt-2 border-t border-[#eae5dc]">
-                <label className="block text-xs font-bold text-[#141414] mb-2">3 Highlight Counters</label>
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Stat 1: ₹99"
-                      value={bannerForm.stat1Value}
-                      onChange={(e) => setBannerForm({ ...bannerForm, stat1Value: e.target.value })}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#eae5dc] text-center font-bold"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Label 1"
-                      value={bannerForm.stat1Label}
-                      onChange={(e) => setBannerForm({ ...bannerForm, stat1Label: e.target.value })}
-                      className="w-full px-2 py-1 text-[10px] text-center text-[#747878] mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Stat 2: 18K"
-                      value={bannerForm.stat2Value}
-                      onChange={(e) => setBannerForm({ ...bannerForm, stat2Value: e.target.value })}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#eae5dc] text-center font-bold"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Label 2"
-                      value={bannerForm.stat2Label}
-                      onChange={(e) => setBannerForm({ ...bannerForm, stat2Label: e.target.value })}
-                      className="w-full px-2 py-1 text-[10px] text-center text-[#747878] mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Stat 3: 5 Lac+"
-                      value={bannerForm.stat3Value}
-                      onChange={(e) => setBannerForm({ ...bannerForm, stat3Value: e.target.value })}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#eae5dc] text-center font-bold"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Label 3"
-                      value={bannerForm.stat3Label}
-                      onChange={(e) => setBannerForm({ ...bannerForm, stat3Label: e.target.value })}
-                      className="w-full px-2 py-1 text-[10px] text-center text-[#747878] mt-1"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Submit CTA */}
-              <div className="pt-3 border-t border-[#eae5dc] flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsBannerModalOpen(false)}
-                  className="px-5 py-2.5 rounded-full border border-[#eae5dc] text-xs font-bold text-[#747878] hover:bg-neutral-100 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
-                >
-                  {editingBannerId ? 'Save & Update Banner' : 'Publish Banner to Store'}
-                </button>
-              </div>
-
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ======================================================== */}
       {/* MODAL: ADD / EDIT SALE POSTER                            */}
       {/* ======================================================== */}
       {isPosterModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs animate-fadeIn overflow-y-auto">
           <div
-            className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl border border-[#eae5dc] max-h-[92vh] flex flex-col"
+            className="relative w-full max-w-lg bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-[#eae5dc] max-h-[90vh] flex flex-col my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-[#eae5dc] bg-[#faf8f5] flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b border-[#eae5dc] bg-[#faf8f5] flex items-center justify-between shrink-0">
               <div>
                 <h3 className="font-display font-bold text-base text-[#141414]">
                   {editingPosterId ? 'Edit Sale Poster' : 'Add New Sale Poster'}
@@ -1432,7 +1727,7 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsPosterModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-white border border-[#eae5dc] flex items-center justify-center text-[#747878] hover:text-[#141414]"
+                className="w-8 h-8 rounded-full bg-white border border-[#eae5dc] flex items-center justify-center text-[#747878] hover:text-[#141414] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1455,7 +1750,7 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
                     title: posterForm.title || 'SALE POSTER',
                     subtitle: posterForm.subtitle || '',
                     badge: posterForm.badge || 'FLAT ₹99',
-                    image: posterForm.image || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80',
+                    image: posterForm.image || '/images/parzio-hero-banner.jpg',
                     linkCategory: posterForm.linkCategory || 'ALL SALE',
                     buttonText: posterForm.buttonText || 'SHOP SALE OFFER',
                     active: posterForm.active ?? true
@@ -1465,113 +1760,177 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
                 }
                 setIsPosterModalOpen(false);
               }}
-              className="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs"
+              className="flex-1 min-h-0 flex flex-col overflow-hidden text-xs"
             >
-              <div>
-                <label className="block font-bold text-[#141414] mb-1">Poster Title / Headline</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. MEGA FESTIVE DISCOUNT POSTER"
-                  value={posterForm.title || ''}
-                  onChange={(e) => setPosterForm({ ...posterForm, title: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-bold text-[#141414]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#141414] mb-1">Subtitle / Offer Description</label>
-                <textarea
-                  rows={2}
-                  placeholder="e.g. Buy Any 3 Jewellery Pieces @ Flat ₹99 Each & Get Velvet Gift Pouch Free!"
-                  value={posterForm.subtitle || ''}
-                  onChange={(e) => setPosterForm({ ...posterForm, subtitle: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-[#141414]"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
                 <div>
-                  <label className="block font-bold text-[#141414] mb-1">Discount Offer Badge</label>
+                  <label className="block font-bold text-[#141414] mb-1">Poster Title / Headline</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. UP TO 92% OFF"
-                    value={posterForm.badge || ''}
-                    onChange={(e) => setPosterForm({ ...posterForm, badge: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-bold text-[#8c7138]"
+                    placeholder="e.g. MEGA FESTIVE DISCOUNT POSTER"
+                    value={posterForm.title || ''}
+                    onChange={(e) => setPosterForm({ ...posterForm, title: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-bold text-[#141414]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#141414] mb-1">Target Category Link</label>
-                  <select
-                    value={posterForm.linkCategory || 'ALL SALE'}
-                    onChange={(e) => setPosterForm({ ...posterForm, linkCategory: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-semibold text-[#141414]"
-                  >
-                    <option value="ALL SALE">ALL SALE</option>
-                    <option value="NECKLACES">NECKLACES</option>
-                    <option value="RINGS">RINGS</option>
-                    <option value="BRACELETS">BRACELETS</option>
-                    <option value="EARRINGS">EARRINGS</option>
-                    <option value="ANKLETS">ANKLETS</option>
-                  </select>
+                  <label className="block font-bold text-[#141414] mb-1">Subtitle / Offer Description</label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. Buy Any 3 Jewellery Pieces @ Flat ₹99 Each & Get Velvet Gift Pouch Free!"
+                    value={posterForm.subtitle || ''}
+                    onChange={(e) => setPosterForm({ ...posterForm, subtitle: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] text-[#141414]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-[#141414] mb-1">Discount Offer Badge</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. UP TO 92% OFF"
+                      value={posterForm.badge || ''}
+                      onChange={(e) => setPosterForm({ ...posterForm, badge: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-bold text-[#8c7138]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#141414] mb-1">Target Category Link</label>
+                    <select
+                      value={posterForm.linkCategory || 'ALL SALE'}
+                      onChange={(e) => setPosterForm({ ...posterForm, linkCategory: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-semibold text-[#141414]"
+                    >
+                      <option value="ALL SALE">ALL SALE</option>
+                      <option value="NECKLACES">NECKLACES</option>
+                      <option value="RINGS">RINGS</option>
+                      <option value="BRACELETS">BRACELETS</option>
+                      <option value="EARRINGS">EARRINGS</option>
+                      <option value="ANKLETS">ANKLETS</option>
+                    </select>
+                  </div>
+                </div>
+
+                <DeviceImageUpload
+                  label="Poster Banner Image"
+                  required
+                  value={posterForm.image || ''}
+                  onChange={(img) => setPosterForm({ ...posterForm, image: img })}
+                  recommendedSize="4:5 Vertical (800 × 1000px) • Max 4MB"
+                  aspectRatio="poster"
+                  maxSizeMB={4}
+                />
+
+                <div>
+                  <label className="block font-bold text-[#141414] mb-1">Button CTA Text</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. SHOP POSTER OFFER NOW"
+                    value={posterForm.buttonText || ''}
+                    onChange={(e) => setPosterForm({ ...posterForm, buttonText: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-bold text-[#141414]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="posterActiveCheck"
+                    checked={posterForm.active ?? true}
+                    onChange={(e) => setPosterForm({ ...posterForm, active: e.target.checked })}
+                    className="w-4 h-4 rounded text-[#8c7138] focus:ring-0 cursor-pointer"
+                  />
+                  <label htmlFor="posterActiveCheck" className="font-bold text-[#141414] cursor-pointer">
+                    Activate Sale Poster immediately on Storefront
+                  </label>
                 </div>
               </div>
 
-              <DeviceImageUpload
-                label="Poster Banner Image"
-                required
-                value={posterForm.image || ''}
-                onChange={(img) => setPosterForm({ ...posterForm, image: img })}
-                recommendedSize="4:5 Vertical (800 × 1000px) • Max 4MB"
-                aspectRatio="poster"
-                maxSizeMB={4}
-              />
-
-              <div>
-                <label className="block font-bold text-[#141414] mb-1">Button CTA Text</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. SHOP POSTER OFFER NOW"
-                  value={posterForm.buttonText || ''}
-                  onChange={(e) => setPosterForm({ ...posterForm, buttonText: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-bold text-[#141414]"
-                />
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="posterActiveCheck"
-                  checked={posterForm.active ?? true}
-                  onChange={(e) => setPosterForm({ ...posterForm, active: e.target.checked })}
-                  className="w-4 h-4 rounded text-[#8c7138] focus:ring-0 cursor-pointer"
-                />
-                <label htmlFor="posterActiveCheck" className="font-bold text-[#141414] cursor-pointer">
-                  Activate Sale Poster immediately on Storefront
-                </label>
-              </div>
-
-              {/* Modal Buttons */}
-              <div className="pt-3 border-t border-[#eae5dc] flex justify-end gap-2">
+              {/* Modal Sticky Footer */}
+              <div className="p-4 sm:p-5 border-t border-[#eae5dc] bg-[#faf8f5] flex items-center justify-end gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsPosterModalOpen(false)}
-                  className="px-5 py-2.5 rounded-full border border-[#eae5dc] text-xs font-bold text-[#747878] hover:bg-neutral-100 transition-colors cursor-pointer"
+                  className="px-5 py-2.5 rounded-full border border-[#eae5dc] bg-white text-xs font-bold text-[#747878] hover:bg-neutral-100 hover:text-[#141414] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
+                  className="px-6 py-2.5 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
                 >
-                  {editingPosterId ? 'Save & Update Poster' : 'Publish Sale Poster'}
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{editingPosterId ? 'Save & Update Poster' : 'Publish Sale Poster'}</span>
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Banner Yes/No Confirmation Dialog (Main View) */}
+      {bannerToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-[#eae5dc] space-y-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-base text-[#141414]">
+                  Delete Hero Banner?
+                </h3>
+                <p className="text-xs text-[#747878]">
+                  Are you sure you want to permanently delete this banner?
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-[#faf8f5] rounded-2xl border border-[#eae5dc] flex items-center gap-3">
+              <div className="w-16 h-10 rounded-lg overflow-hidden border border-[#eae5dc] shrink-0 bg-white">
+                <img
+                  src={bannerToDelete.image || '/images/parzio-hero-banner.jpg'}
+                  alt={bannerToDelete.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-[#141414] truncate">
+                  {bannerToDelete.title} {bannerToDelete.highlightText}
+                </p>
+                <p className="text-[11px] text-[#747878] truncate">
+                  {bannerToDelete.subtitle}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#525252]">
+              This action cannot be undone. The banner will be removed from your live storefront slider.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#eae5dc]">
+              <button
+                type="button"
+                onClick={() => setBannerToDelete(null)}
+                className="px-5 py-2.5 rounded-full border border-[#eae5dc] bg-white text-xs font-bold text-[#747878] hover:bg-neutral-100 hover:text-[#141414] transition-colors cursor-pointer"
+              >
+                No, Keep Banner
+              </button>
+              <button
+                type="button"
+                onClick={() => confirmDeleteBanner(bannerToDelete.id)}
+                className="px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Yes, Delete</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
