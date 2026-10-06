@@ -200,7 +200,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('coupons')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs ${
+              className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs ${
                 activeTab === 'coupons'
                   ? 'bg-[#8c7138] text-white ring-2 ring-[#fed488]'
                   : 'bg-[#faf8f5] text-[#8c7138] border border-[#8c7138]/50 hover:bg-[#8c7138] hover:text-white'
