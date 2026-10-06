@@ -21,7 +21,7 @@ export const WhatsAppSupport: React.FC<WhatsAppSupportProps> = ({ onNavigateTrac
   });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const WHATSAPP_NUMBER = '919876543210';
+  const WHATSAPP_NUMBER = '917033656752';
   const DEFAULT_MESSAGE = encodeURIComponent('Hi Parzio! I need help with jewellery and placing my order.');
 
   const faqs = [

@@ -22,7 +22,7 @@ export const EmergencyStorefrontLockdown: React.FC<EmergencyStorefrontLockdownPr
   onOpenAdmin
 }) => {
   const handleOpenWhatsApp = () => {
-    window.open('https://wa.me/919876543210?text=Hi%20Parzio%20Jewellery%20Concierge,%20inquiring%20about%20my%20order', '_blank');
+    window.open('https://wa.me/917033656752?text=Hi%20Parzio%20Jewellery%20Concierge,%20inquiring%20about%20my%20order', '_blank');
   };
 
   return (

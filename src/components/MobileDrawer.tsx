@@ -242,9 +242,14 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
         {/* Drawer Footer */}
         <div className="p-4 border-t border-[#eae5dc] bg-[#fbf9f6] text-[11px] text-[#747878] space-y-1.5">
           <p className="font-semibold text-[#141414]">PARZIO Demi-Fine Atelier</p>
-          <p className="flex items-center gap-1">
-            <Phone className="w-3 h-3 text-[#8c7138]" /> WhatsApp: +91 98765 43210
-          </p>
+          <a
+            href="https://wa.me/917033656752"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 hover:text-[#8c7138] transition-colors"
+          >
+            <Phone className="w-3 h-3 text-[#8c7138]" /> WhatsApp: +91 70336 56752
+          </a>
           <p className="text-[10px] text-[#9a9e9e]">100% Anti-Tarnish Guaranteed • ISO 9001:2015</p>
         </div>
       </div>
