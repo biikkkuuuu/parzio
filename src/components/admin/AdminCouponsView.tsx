@@ -5,7 +5,6 @@ import {
   Tag,
   Plus,
   CheckCircle2,
-  XCircle,
   Sparkles,
   Calendar,
   Percent,
@@ -19,7 +18,10 @@ import {
   Check,
   Share2,
   Zap,
-  Info
+  Info,
+  ArrowLeft,
+  ShieldCheck,
+  AlertCircle
 } from 'lucide-react';
 
 interface AdminCouponsViewProps {
@@ -36,6 +38,13 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
   const [coupons, setCoupons] = useState<Coupon[]>(() => propCoupons || INITIAL_COUPONS);
   const [activeTab, setActiveTab] = useState<'all' | 'secret' | 'public'>('all');
 
+  // Full Page view mode: 'list' | 'editor' (NO POPUPS)
+  const [viewMode, setViewMode] = useState<'list' | 'editor'>('list');
+  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+  const [inlineDeleteId, setInlineDeleteId] = useState<string | null>(null);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [copiedShareMsg, setCopiedShareMsg] = useState(false);
+
   // Sync if parent updates
   React.useEffect(() => {
     if (propCoupons) {
@@ -50,11 +59,6 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
     }
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
-  const [couponToDelete, setCouponToDelete] = useState<Coupon | null>(null);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
-
   // Form State
   const [code, setCode] = useState('');
   const [title, setTitle] = useState('');
@@ -68,12 +72,12 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
   const [usageLimit, setUsageLimit] = useState('1');
   const [expiresAt, setExpiresAt] = useState('2026-12-31');
 
-  // Open modal pre-configured for a Secret Customer Voucher (e.g. for Meesho / WhatsApp deals)
-  const openCreateSecretModal = () => {
+  // Open Full-Page Editor for Secret Customer Voucher (for Meesho / WhatsApp buyers)
+  const handleOpenCreateSecret = () => {
     setEditingCoupon(null);
-    setCode('PAR');
-    setTitle('Direct Customer Exclusive Discount');
-    setDescription('Private discount voucher for direct order on official store.');
+    setCode('PAR' + Math.floor(100 + Math.random() * 900));
+    setTitle('Direct Customer Exclusive Privilege');
+    setDescription('Private discount voucher for direct order on official Parzio store.');
     setBadge('SECRET DEAL');
     setDiscountType('fixed');
     setDiscountValue('100');
@@ -82,15 +86,16 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
     setSingleUseOnly(true);
     setUsageLimit('1');
     setExpiresAt('2026-12-31');
-    setIsModalOpen(true);
+    setViewMode('editor');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Open modal for standard public promo code
-  const openCreatePublicModal = () => {
+  // Open Full-Page Editor for Public Promo Code
+  const handleOpenCreatePublic = () => {
     setEditingCoupon(null);
-    setCode('');
-    setTitle('');
-    setDescription('');
+    setCode('PARZIO' + Math.floor(10 + Math.random() * 90));
+    setTitle('Special Storewide Welcome Offer');
+    setDescription('Use code during checkout for instant savings across all collections.');
     setBadge('EXCLUSIVE OFFER');
     setDiscountType('fixed');
     setDiscountValue('99');
@@ -99,10 +104,12 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
     setSingleUseOnly(false);
     setUsageLimit('1000');
     setExpiresAt('2026-12-31');
-    setIsModalOpen(true);
+    setViewMode('editor');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const openEditModal = (coupon: Coupon) => {
+  // Open Full-Page Editor for Existing Coupon
+  const handleOpenEdit = (coupon: Coupon) => {
     setEditingCoupon(coupon);
     setCode(coupon.code);
     setTitle(coupon.title || '');
@@ -115,7 +122,8 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
     setSingleUseOnly(coupon.singleUseOnly || coupon.usageLimit === 1);
     setUsageLimit(String(coupon.usageLimit));
     setExpiresAt(coupon.expiresAt);
-    setIsModalOpen(true);
+    setViewMode('editor');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleToggle = (id: string) => {
@@ -135,7 +143,10 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
 
   const handleSaveCoupon = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code.trim()) return;
+    if (!code.trim()) {
+      onTriggerToast('Please enter a valid coupon code.');
+      return;
+    }
 
     const finalUsageLimit = singleUseOnly ? 1 : (Number(usageLimit) || 100);
 
@@ -159,7 +170,7 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
           : c
       );
       updateAndNotify(updated);
-      onTriggerToast(`Promo coupon ${code.toUpperCase()} updated successfully!`);
+      onTriggerToast(`Coupon "${code.toUpperCase()}" updated successfully!`);
     } else {
       const newCoupon: Coupon = {
         id: `coup-${Date.now()}`,
@@ -181,19 +192,20 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
       updateAndNotify(updated);
       onTriggerToast(
         isPrivateSecret
-          ? `Secret voucher "${newCoupon.code}" created! Share this code with your customer.`
+          ? `Secret voucher "${newCoupon.code}" created! Share code with your customer.`
           : `Promo code "${newCoupon.code}" published successfully!`
       );
     }
 
-    setIsModalOpen(false);
+    setViewMode('list');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeleteCoupon = (id: string) => {
     const updated = coupons.filter((c) => c.id !== id);
     updateAndNotify(updated);
     onTriggerToast('Coupon code deleted permanently.');
-    setCouponToDelete(null);
+    setInlineDeleteId(null);
   };
 
   // Filter coupons based on active tab
@@ -206,42 +218,503 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
   const secretCouponsCount = coupons.filter((c) => c.isPrivateSecret).length;
   const publicCouponsCount = coupons.filter((c) => !c.isPrivateSecret).length;
 
-  return (
-    <div className="space-y-6">
-      
-      {/* Top Banner Header */}
-      <div className="bg-white rounded-3xl p-5 border border-[#eae5dc] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Tag className="w-4 h-4 text-[#8c7138]" />
-            <h3 className="font-display text-base font-bold text-[#141414]">
-              Coupons &amp; Custom Client Vouchers
-            </h3>
-            <span className="text-[10px] bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc] px-2.5 py-0.5 rounded-full font-bold">
-              {coupons.length} Total Codes
-            </span>
+  // Generated share message for WhatsApp / Meesho customer
+  const shareMessage = `Special Offer from PARZIO! Buy directly on our official store https://parzio.in and use exclusive coupon code "${code.toUpperCase() || 'PAR123'}" to get ₹${discountValue} OFF on orders above ₹${minOrder}!`;
+
+  const handleCopyShareMessage = () => {
+    navigator.clipboard.writeText(shareMessage);
+    setCopiedShareMsg(true);
+    onTriggerToast('Customer WhatsApp message copied to clipboard!');
+    setTimeout(() => setCopiedShareMsg(false), 2500);
+  };
+
+  // =========================================================================
+  // VIEW 1: FULL-PAGE EDITOR (NO POPUPS)
+  // =========================================================================
+  if (viewMode === 'editor') {
+    return (
+      <div className="space-y-6 animate-fadeIn pb-12">
+        {/* Top Navigation & Breadcrumbs */}
+        <div className="bg-white rounded-3xl p-5 border border-[#eae5dc] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className="p-2 rounded-2xl bg-[#faf8f5] hover:bg-[#eae5dc] border border-[#eae5dc] text-[#141414] transition-colors cursor-pointer flex items-center justify-center shrink-0"
+              title="Return to Coupons List"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#8c7138] bg-[#faf8f5] px-2 py-0.5 rounded-full border border-[#eae5dc]">
+                  Coupon Management
+                </span>
+                <span className="text-xs text-[#747878]">/</span>
+                <span className="text-xs font-semibold text-[#747878]">
+                  {editingCoupon ? 'Edit Mode' : isPrivateSecret ? 'Secret Client Voucher' : 'Public Promo'}
+                </span>
+              </div>
+              <h2 className="font-display text-xl sm:text-2xl font-bold text-[#141414] mt-0.5">
+                {editingCoupon
+                  ? `Edit Coupon: ${editingCoupon.code}`
+                  : isPrivateSecret
+                  ? 'Create Secret Customer Voucher'
+                  : 'Create Public Promo Code'}
+              </h2>
+            </div>
           </div>
-          <p className="text-xs text-[#747878] mt-0.5">
-            Create public store discounts or secret 1-time vouchers to convert Meesho, WhatsApp &amp; Instagram customers directly.
-          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className="px-4 py-2 rounded-full border border-[#eae5dc] bg-white hover:bg-[#faf8f5] text-xs font-semibold text-[#141414] transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveCoupon}
+              className="px-6 py-2.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2"
+            >
+              <Check className="w-4 h-4 text-[#fed488]" />
+              <span>{editingCoupon ? 'Save Changes' : 'Activate & Save Coupon'}</span>
+            </button>
+          </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* 2-Column Responsive Full Page Form */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* Left Column: Comprehensive Form Controls (8 Cols) */}
+          <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-7 border border-[#eae5dc] shadow-sm space-y-6">
+            
+            {/* Step 1: Privacy & Visibility Mode (Secret vs Public) */}
+            <div className="space-y-2.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#141414]">
+                1. Voucher Privacy &amp; Visibility Mode
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPrivateSecret(true);
+                    setBadge('SECRET DEAL');
+                    setSingleUseOnly(true);
+                  }}
+                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                    isPrivateSecret
+                      ? 'bg-[#faf8f5] border-[#8c7138] ring-2 ring-[#8c7138]/30 shadow-xs'
+                      : 'bg-white border-[#eae5dc] hover:border-[#8c7138]/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 font-bold text-xs text-[#141414]">
+                      <div className="w-7 h-7 rounded-lg bg-[#8c7138] text-white flex items-center justify-center">
+                        <Lock className="w-3.5 h-3.5" />
+                      </div>
+                      <span>Secret Client Voucher</span>
+                    </div>
+                    {isPrivateSecret && <CheckCircle2 className="w-4 h-4 text-[#8c7138]" />}
+                  </div>
+                  <p className="text-[11px] text-[#747878] mt-2 leading-relaxed">
+                    <strong>Hidden from website.</strong> Create a private code (e.g. PAR123) to share directly with your WhatsApp or Meesho buyer.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPrivateSecret(false);
+                    setBadge('EXCLUSIVE OFFER');
+                    setSingleUseOnly(false);
+                  }}
+                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                    !isPrivateSecret
+                      ? 'bg-[#faf8f5] border-[#141414] ring-2 ring-[#141414]/20 shadow-xs'
+                      : 'bg-white border-[#eae5dc] hover:border-[#141414]/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 font-bold text-xs text-[#141414]">
+                      <div className="w-7 h-7 rounded-lg bg-[#141414] text-[#fed488] flex items-center justify-center">
+                        <Globe className="w-3.5 h-3.5" />
+                      </div>
+                      <span>Public Store Promo</span>
+                    </div>
+                    {!isPrivateSecret && <CheckCircle2 className="w-4 h-4 text-[#141414]" />}
+                  </div>
+                  <p className="text-[11px] text-[#747878] mt-2 leading-relaxed">
+                    <strong>Visible to all visitors.</strong> Displayed in the store Offers page for every customer to discover and use.
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            {/* Step 2: Coupon Code */}
+            <div className="space-y-1.5 pt-4 border-t border-[#f5f2eb]">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#141414]">
+                  2. Coupon Code *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setCode('PAR' + Math.floor(100 + Math.random() * 900))}
+                  className="text-[11px] font-bold text-[#8c7138] hover:underline cursor-pointer flex items-center gap-1"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>Generate Code</span>
+                </button>
+              </div>
+              <div className="relative">
+                <Tag className="w-4 h-4 text-[#747878] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. PAR123 or MEESHO100"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase().replace(/\s+/g, ''))}
+                  className="w-full pl-10 pr-4 py-3 bg-[#faf8f5] border border-[#eae5dc] rounded-2xl font-mono text-sm font-bold text-[#141414] uppercase focus:outline-none focus:border-[#8c7138] focus:bg-white transition-all"
+                />
+              </div>
+              <p className="text-[11px] text-[#747878]">
+                Letters and numbers only. The customer will type this exact code on checkout.
+              </p>
+            </div>
+
+            {/* Step 3: Discount Type & Amount */}
+            <div className="space-y-2 pt-4 border-t border-[#f5f2eb]">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#141414]">
+                3. Discount Value &amp; Minimum Order Rules
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Discount Type */}
+                <div className="space-y-1">
+                  <span className="block text-[11px] font-semibold text-[#747878]">Discount Type</span>
+                  <select
+                    value={discountType}
+                    onChange={(e) => setDiscountType(e.target.value as any)}
+                    className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2.5 text-xs font-bold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                  >
+                    <option value="fixed">Fixed ₹ Amount Off</option>
+                    <option value="percentage">Percentage % Off</option>
+                  </select>
+                </div>
+
+                {/* Discount Amount */}
+                <div className="space-y-1">
+                  <span className="block text-[11px] font-semibold text-[#747878]">
+                    {discountType === 'fixed' ? 'Discount (₹) *' : 'Discount (%) *'}
+                  </span>
+                  <div className="relative">
+                    {discountType === 'fixed' ? (
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#747878]">₹</span>
+                    ) : (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#747878]">%</span>
+                    )}
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      value={discountValue}
+                      onChange={(e) => setDiscountValue(e.target.value)}
+                      className={`w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl py-2.5 text-xs font-bold text-[#141414] focus:outline-none focus:border-[#8c7138] ${
+                        discountType === 'fixed' ? 'pl-7 pr-3' : 'pl-3 pr-7'
+                      }`}
+                      placeholder={discountType === 'fixed' ? '100' : '10'}
+                    />
+                  </div>
+                </div>
+
+                {/* Min Order Value */}
+                <div className="space-y-1">
+                  <span className="block text-[11px] font-semibold text-[#747878]">Min Order (₹) *</span>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#747878]">₹</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={minOrder}
+                      onChange={(e) => setMinOrder(e.target.value)}
+                      className="w-full pl-7 pr-3 py-2.5 bg-[#faf8f5] border border-[#eae5dc] rounded-xl text-xs font-bold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                      placeholder="499"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 4: Redemption Rules (Single Use vs Multi) */}
+            <div className="space-y-2 pt-4 border-t border-[#f5f2eb]">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#141414]">
+                4. Customer Usage Limits
+              </label>
+
+              <div className="bg-[#faf8f5] p-3.5 rounded-2xl border border-[#eae5dc] space-y-3">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={singleUseOnly}
+                    onChange={(e) => {
+                      setSingleUseOnly(e.target.checked);
+                      if (e.target.checked) setUsageLimit('1');
+                    }}
+                    className="mt-0.5 w-4 h-4 accent-[#8c7138] rounded cursor-pointer"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-[#141414] block">
+                      Single-Use Only (1-Time Redemption)
+                    </span>
+                    <p className="text-[11px] text-[#747878] mt-0.5 leading-snug">
+                      Recommended for individual WhatsApp / Meesho clients. Once redeemed by the customer, the code expires automatically.
+                    </p>
+                  </div>
+                </label>
+
+                {!singleUseOnly && (
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[#eae5dc]/60">
+                    <div className="space-y-1">
+                      <span className="block text-[11px] font-semibold text-[#747878]">Total Max Redemptions</span>
+                      <input
+                        type="number"
+                        min="1"
+                        value={usageLimit}
+                        onChange={(e) => setUsageLimit(e.target.value)}
+                        className="w-full bg-white border border-[#eae5dc] rounded-xl px-3 py-2 text-xs font-bold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                        placeholder="100"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="block text-[11px] font-semibold text-[#747878]">Expiry Date</span>
+                      <input
+                        type="date"
+                        value={expiresAt}
+                        onChange={(e) => setExpiresAt(e.target.value)}
+                        className="w-full bg-white border border-[#eae5dc] rounded-xl px-3 py-2 text-xs font-bold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Step 5: Titles, Badges & Customer Terms */}
+            <div className="space-y-3 pt-4 border-t border-[#f5f2eb]">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#141414]">
+                5. Title &amp; Description (Displayed to Customer)
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <span className="block text-[11px] font-semibold text-[#747878]">Offer Headline / Title</span>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2.5 text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                    placeholder="e.g. Exclusive Client Welcome Offer"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <span className="block text-[11px] font-semibold text-[#747878]">Highlight Badge</span>
+                  <input
+                    type="text"
+                    value={badge}
+                    onChange={(e) => setBadge(e.target.value.toUpperCase())}
+                    className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2.5 text-xs uppercase font-bold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                    placeholder="e.g. SECRET DEAL"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="block text-[11px] font-semibold text-[#747878]">Offer Terms / Description</span>
+                <textarea
+                  rows={2}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl p-3 text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                  placeholder="e.g. Valid on all waterproof 18K gold plated necklaces, bangles & rings."
+                />
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#eae5dc]">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className="px-5 py-2.5 rounded-full border border-[#eae5dc] text-xs font-semibold text-[#141414] hover:bg-[#faf8f5] cursor-pointer"
+              >
+                Back to List
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCoupon}
+                className="px-7 py-3 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2"
+              >
+                <Check className="w-4 h-4 text-[#fed488]" />
+                <span>{editingCoupon ? 'Save Changes' : 'Activate & Save Coupon'}</span>
+              </button>
+            </div>
+
+          </div>
+
+          {/* Right Column: Live Voucher Ticket Preview & Share Assistant (5 Cols) */}
+          <div className="lg:col-span-5 space-y-5 sticky top-24">
+            
+            {/* Live Voucher Card Preview */}
+            <div className="bg-[#faf8f5] rounded-3xl p-5 border border-[#eae5dc] shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7138] flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Real-Time Customer Preview</span>
+                </span>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                  Live Preview
+                </span>
+              </div>
+
+              {/* Luxury Ticket Preview */}
+              <div className="bg-white rounded-2xl p-5 border border-[#eae5dc] shadow-xs relative overflow-hidden space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#8c7138] bg-[#fed488]/30 px-2 py-0.5 rounded">
+                      {badge || 'EXCLUSIVE OFFER'}
+                    </span>
+                    <h4 className="font-display font-bold text-base text-[#141414] mt-1.5 leading-snug">
+                      {title || `Special Offer on Orders Above ₹${minOrder || '499'}`}
+                    </h4>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="font-display font-black text-lg text-[#8c7138]">
+                      {discountType === 'fixed' ? `₹${discountValue || '100'} OFF` : `${discountValue || '10'}% OFF`}
+                    </span>
+                    <span className="block text-[10px] text-[#747878]">
+                      {minOrder ? `Min. ₹${minOrder}` : 'No Min.'}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-[#747878] leading-relaxed">
+                  {description || `Use this voucher on checkout for instant savings.`}
+                </p>
+
+                <div className="pt-3 border-t border-dashed border-[#eae5dc] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-sm font-black text-[#141414] bg-[#faf8f5] px-3 py-1 rounded-lg border border-[#eae5dc]">
+                      {code.toUpperCase() || 'PAR123'}
+                    </span>
+                    {isPrivateSecret && (
+                      <span className="text-[9px] bg-[#141414] text-[#fed488] px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1">
+                        <Lock className="w-2.5 h-2.5" />
+                        <span>Secret</span>
+                      </span>
+                    )}
+                    {singleUseOnly && (
+                      <span className="text-[9px] bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded font-bold uppercase">
+                        1-Time
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-[#747878]">
+                    Expires: {expiresAt}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Meesho / WhatsApp Direct Sharing Assistant */}
+            <div className="bg-gradient-to-tr from-[#141414] to-[#262016] text-white rounded-3xl p-5 border border-[#8c7138]/40 shadow-md space-y-3.5">
+              <div className="flex items-center gap-2 text-[#fed488]">
+                <Share2 className="w-4 h-4" />
+                <h4 className="font-bold text-xs uppercase tracking-wider">
+                  How to send to WhatsApp / Meesho Customer
+                </h4>
+              </div>
+
+              <p className="text-[11px] text-neutral-300 leading-relaxed">
+                Copy the pre-written message below and send it directly in your customer's WhatsApp chat or Meesho inbox.
+              </p>
+
+              <div className="bg-black/40 p-3 rounded-2xl border border-white/10 text-xs font-mono text-[#fed488] leading-relaxed">
+                "{shareMessage}"
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCopyShareMessage}
+                className="w-full py-2.5 rounded-full bg-[#fed488] hover:bg-white text-[#141414] font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                {copiedShareMsg ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-700" />
+                    <span>Copied WhatsApp Message!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    <span>Copy Customer WhatsApp Message</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // VIEW 2: FULL-PAGE LISTING (NO POPUPS)
+  // =========================================================================
+  return (
+    <div className="space-y-6 animate-fadeIn pb-12">
+      
+      {/* Top Banner Header */}
+      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#eae5dc] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="w-9 h-9 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center text-[#8c7138] shadow-2xs">
+              <Tag className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-display text-lg font-bold text-[#141414]">
+                  Coupons &amp; Custom Client Vouchers
+                </h3>
+                <span className="text-[10px] bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc] px-2.5 py-0.5 rounded-full font-bold">
+                  {coupons.length} Total
+                </span>
+              </div>
+              <p className="text-xs text-[#747878] mt-0.5">
+                Create secret single-use client vouchers for Meesho / WhatsApp buyers or manage public website discounts.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons: Opens Full-Page Editor Directly */}
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
             type="button"
-            onClick={openCreateSecretModal}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#8c7138] text-white hover:bg-[#725a2a] text-xs font-bold uppercase tracking-wider transition-all shadow-sm active:scale-95 cursor-pointer"
-            title="Create a secret private code to give directly to a customer"
+            onClick={handleOpenCreateSecret}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#8c7138] text-white hover:bg-[#725a2a] text-xs font-bold uppercase tracking-wider transition-all shadow-sm active:scale-95 cursor-pointer"
+            title="Create a secret private code for Meesho / WhatsApp customers"
           >
             <Lock className="w-3.5 h-3.5" />
-            <span>+ New Secret Voucher</span>
+            <span>+ Secret Client Voucher</span>
           </button>
 
           <button
             type="button"
-            onClick={openCreatePublicModal}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#141414] text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider transition-all shadow-sm active:scale-95 cursor-pointer"
+            onClick={handleOpenCreatePublic}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#141414] text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider transition-all shadow-sm active:scale-95 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5 text-[#fed488]" />
             <span>+ Public Promo Code</span>
@@ -289,16 +762,16 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
       </div>
 
       {/* Secret Vouchers Quick Guide Box */}
-      <div className="bg-gradient-to-r from-[#faf8f5] via-white to-[#faf8f5] rounded-2xl border border-[#eae5dc] p-4 flex items-start gap-3 shadow-2xs">
-        <div className="w-8 h-8 rounded-xl bg-[#8c7138] text-white flex items-center justify-center shrink-0 mt-0.5">
-          <Info className="w-4 h-4" />
+      <div className="bg-gradient-to-r from-[#faf8f5] via-white to-[#faf8f5] rounded-3xl border border-[#eae5dc] p-4 sm:p-5 flex items-start gap-3.5 shadow-2xs">
+        <div className="w-9 h-9 rounded-2xl bg-[#8c7138] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+          <Info className="w-4.5 h-4.5" />
         </div>
-        <div className="text-xs space-y-0.5">
+        <div className="text-xs space-y-1">
           <p className="font-bold text-[#141414]">
-            How to use Secret Vouchers for Marketplace (Meesho / WhatsApp) Customers:
+            How Secret Customer Vouchers Work for Marketplace Sales:
           </p>
           <p className="text-[#747878] leading-relaxed">
-            Create a code like <strong>PAR123</strong> with your desired discount (e.g. ₹100 OFF) and minimum purchase requirement (e.g. Min ₹499). Send this code directly to your customer. It will <strong>NOT</strong> appear on your public website offers page, ensuring only that specific customer can redeem it!
+            Create a custom code (e.g. <strong>PAR123</strong>) with your chosen discount (e.g. ₹100 OFF) and minimum order (e.g. ₹499). Send this code to your WhatsApp or Meesho buyer. It will <strong>never</strong> appear on the public website offers page, and can be configured as a 1-time single use code!
           </p>
         </div>
       </div>
@@ -315,14 +788,14 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
             </h4>
             <p className="text-xs text-[#747878] leading-relaxed">
               {activeTab === 'secret'
-                ? 'Create a private secret voucher code like PAR123 to send directly to your customer.'
+                ? 'Create your first private secret voucher code like PAR123 to send directly to your customer.'
                 : 'Create your first promotional discount voucher to reward buyers during checkout.'}
             </p>
           </div>
           <div className="flex items-center justify-center gap-2 pt-2">
             <button
               type="button"
-              onClick={openCreateSecretModal}
+              onClick={handleOpenCreateSecret}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#8c7138] hover:bg-[#725a2a] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
             >
               <Lock className="w-3.5 h-3.5" />
@@ -330,7 +803,7 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
             </button>
             <button
               type="button"
-              onClick={openCreatePublicModal}
+              onClick={handleOpenCreatePublic}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5 text-[#fed488]" />
@@ -399,7 +872,7 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
 
                     <button
                       type="button"
-                      onClick={() => openEditModal(coupon)}
+                      onClick={() => handleOpenEdit(coupon)}
                       className="p-1.5 rounded-xl hover:bg-[#faf8f5] text-[#747878] hover:text-[#141414] transition-colors cursor-pointer"
                       title="Edit coupon"
                     >
@@ -408,7 +881,7 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
 
                     <button
                       type="button"
-                      onClick={() => setCouponToDelete(coupon)}
+                      onClick={() => setInlineDeleteId(coupon.id)}
                       className="p-1.5 rounded-xl hover:bg-rose-50 text-[#747878] hover:text-rose-600 transition-colors cursor-pointer"
                       title="Delete coupon"
                     >
@@ -425,6 +898,31 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
                   {coupon.description || `Use code ${coupon.code} on checkout.`}
                 </p>
               </div>
+
+              {/* Inline Delete Confirmation Bar (NO POPUP) */}
+              {inlineDeleteId === coupon.id && (
+                <div className="mt-3 p-3 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-between gap-2 text-xs">
+                  <span className="text-rose-800 font-bold">
+                    Delete coupon {coupon.code}?
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setInlineDeleteId(null)}
+                      className="px-2.5 py-1 rounded-lg bg-white border border-rose-200 text-rose-900 font-semibold cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteCoupon(coupon.id)}
+                      className="px-3 py-1 rounded-lg bg-rose-600 text-white font-bold cursor-pointer"
+                    >
+                      Yes, Delete
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Specs & Status Footer */}
               <div className="pt-3 mt-3 border-t border-[#eae5dc] space-y-2.5">
@@ -449,358 +947,46 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
                     </span>
                   </div>
 
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-[#747878] block">
+                      Redemptions
+                    </span>
+                    <span className="font-mono text-xs font-bold text-[#141414]">
+                      {coupon.usageCount || 0} / {coupon.singleUseOnly ? 1 : coupon.usageLimit}
+                    </span>
+                  </div>
+
                   <div className="text-right">
                     <span className="text-[10px] uppercase font-bold text-[#747878] block">
-                      Usage Status
+                      Status
                     </span>
-                    <span className="font-mono font-bold text-xs text-[#141414]">
-                      {coupon.usageCount} / {coupon.usageLimit}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleToggle(coupon.id)}
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full transition-colors cursor-pointer ${
+                        coupon.active
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-neutral-200 text-neutral-600'
+                      }`}
+                    >
+                      {coupon.active ? 'ACTIVE' : 'PAUSED'}
+                    </button>
                   </div>
                 </div>
 
-                {/* Active Toggle & Share Bar */}
-                <div className="flex items-center justify-between pt-2 border-t border-[#eae5dc]/60">
+                <div className="flex items-center justify-between text-[11px] text-[#747878] pt-1">
+                  <span>Expiry: {coupon.expiresAt}</span>
                   <button
                     type="button"
-                    onClick={() => handleCopyCode(coupon.code)}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8c7138] hover:underline cursor-pointer"
+                    onClick={() => handleOpenEdit(coupon)}
+                    className="font-bold text-[#8c7138] hover:underline cursor-pointer"
                   >
-                    <Share2 className="w-3 h-3" />
-                    <span>Copy Code for Customer</span>
+                    Configure Details →
                   </button>
-
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-[#747878] font-bold">Active:</span>
-                    <div className="inline-flex items-center gap-0.5 bg-[#faf8f5] p-0.5 rounded-full border border-[#eae5dc]">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!coupon.active) handleToggle(coupon.id);
-                        }}
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                          coupon.active
-                            ? 'bg-emerald-700 text-white shadow-xs'
-                            : 'text-[#747878] hover:text-[#141414]'
-                        }`}
-                      >
-                        Yes
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (coupon.active) handleToggle(coupon.id);
-                        }}
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                          !coupon.active
-                            ? 'bg-neutral-800 text-white shadow-xs'
-                            : 'text-[#747878] hover:text-[#141414]'
-                        }`}
-                      >
-                        No
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Add / Edit Coupon Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-lg w-full border border-[#eae5dc] shadow-2xl space-y-4 animate-fadeIn max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#eae5dc]">
-              <div className="flex items-center gap-2">
-                {isPrivateSecret ? (
-                  <div className="w-8 h-8 rounded-xl bg-[#8c7138] text-white flex items-center justify-center shadow-xs">
-                    <Lock className="w-4 h-4" />
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 rounded-xl bg-[#141414] text-[#fed488] flex items-center justify-center shadow-xs">
-                    <Tag className="w-4 h-4" />
-                  </div>
-                )}
-                <div>
-                  <h4 className="font-bold text-sm text-[#141414]">
-                    {editingCoupon
-                      ? `Edit Coupon: ${editingCoupon.code}`
-                      : isPrivateSecret
-                      ? 'Create Secret Customer Voucher'
-                      : 'Create Public Promo Code'}
-                  </h4>
-                  <p className="text-[11px] text-[#747878]">
-                    {isPrivateSecret
-                      ? 'Secret code hidden from storefront offers, given directly to your customer.'
-                      : 'Public code shown in the website Offers directory.'}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-full hover:bg-neutral-100 text-[#747878] hover:text-[#141414]"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveCoupon} className="space-y-3.5 text-xs">
-              
-              {/* Privacy Mode Selector (Secret vs Public) */}
-              <div className="bg-[#faf8f5] p-3 rounded-2xl border border-[#eae5dc] space-y-2">
-                <span className="block text-[10px] font-bold uppercase text-[#747878]">
-                  Voucher Privacy &amp; Visibility Mode
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsPrivateSecret(true);
-                      setBadge('SECRET DEAL');
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      isPrivateSecret
-                        ? 'bg-white border-[#8c7138] ring-1 ring-[#8c7138] shadow-xs'
-                        : 'bg-white/50 border-[#eae5dc] text-[#747878] hover:bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 font-bold text-xs text-[#141414]">
-                      <Lock className="w-3.5 h-3.5 text-[#8c7138]" />
-                      <span>Secret Voucher</span>
-                    </div>
-                    <p className="text-[10px] text-[#747878] mt-0.5">
-                      Hidden from website. Send code to Meesho / WhatsApp customer.
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsPrivateSecret(false);
-                      setBadge('EXCLUSIVE OFFER');
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      !isPrivateSecret
-                        ? 'bg-white border-[#141414] ring-1 ring-[#141414] shadow-xs'
-                        : 'bg-white/50 border-[#eae5dc] text-[#747878] hover:bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 font-bold text-xs text-[#141414]">
-                      <Globe className="w-3.5 h-3.5 text-emerald-700" />
-                      <span>Public Store Promo</span>
-                    </div>
-                    <p className="text-[10px] text-[#747878] mt-0.5">
-                      Visible to all visitors in the website Offers tab.
-                    </p>
-                  </button>
-                </div>
-              </div>
-
-              {/* Coupon Code Input */}
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
-                  Coupon Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. PAR123, MEESHO99, VIP100"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3.5 py-2.5 uppercase font-mono font-bold text-sm text-[#8c7138] focus:outline-none focus:border-[#8c7138]"
-                />
-                <span className="text-[10px] text-[#747878] mt-0.5 block">
-                  Customers enter this exact code during checkout.
-                </span>
-              </div>
-
-              {/* Discount Type & Value */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
-                    Discount Type
-                  </label>
-                  <select
-                    value={discountType}
-                    onChange={(e) => setDiscountType(e.target.value as any)}
-                    className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                  >
-                    <option value="fixed">Flat ₹ Amount OFF</option>
-                    <option value="percentage">Percentage % OFF</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
-                    Discount Amount ({discountType === 'fixed' ? '₹' : '%'}) *
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    required
-                    value={discountValue}
-                    onChange={(e) => setDiscountValue(e.target.value)}
-                    className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 font-bold text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                    placeholder="e.g. 100"
-                  />
-                </div>
-              </div>
-
-              {/* Minimum Purchase Requirement */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
-                    Minimum Cart Subtotal (₹) *
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    required
-                    value={minOrder}
-                    onChange={(e) => setMinOrder(e.target.value)}
-                    className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 font-bold text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                    placeholder="e.g. 499"
-                  />
-                  <span className="text-[10px] text-[#747878] mt-0.5 block">
-                    Code will only apply if cart is ≥ ₹{minOrder || '0'}.
-                  </span>
-                </div>
-
-                {/* Single-Use vs Multi-Use */}
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
-                    Usage Limit *
-                  </label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSingleUseOnly(true);
-                        setUsageLimit('1');
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        singleUseOnly
-                          ? 'bg-[#141414] text-white shadow-xs'
-                          : 'bg-[#faf8f5] text-[#747878] border border-[#eae5dc]'
-                      }`}
-                    >
-                      1-Time Use
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSingleUseOnly(false);
-                        setUsageLimit('100');
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        !singleUseOnly
-                          ? 'bg-[#141414] text-white shadow-xs'
-                          : 'bg-[#faf8f5] text-[#747878] border border-[#eae5dc]'
-                      }`}
-                    >
-                      Multi-Use
-                    </button>
-                  </div>
-                  {!singleUseOnly && (
-                    <input
-                      type="number"
-                      min="1"
-                      value={usageLimit}
-                      onChange={(e) => setUsageLimit(e.target.value)}
-                      className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-1.5 mt-1 text-[#141414]"
-                      placeholder="Max usage cap"
-                    />
-                  )}
-                </div>
-              </div>
-
-              {/* Title & Terms */}
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
-                  Offer Title / Note
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Exclusive ₹100 Off on orders above ₹499"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-[#747878] mb-1">
-                  Expiry Date
-                </label>
-                <input
-                  type="date"
-                  value={expiresAt}
-                  onChange={(e) => setExpiresAt(e.target.value)}
-                  className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                />
-              </div>
-
-              {/* Modal Action Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#eae5dc]">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-full border border-[#eae5dc] text-xs font-semibold hover:bg-[#faf8f5] cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-sm cursor-pointer"
-                >
-                  {editingCoupon
-                    ? 'Save Changes'
-                    : isPrivateSecret
-                    ? 'Create Secret Voucher'
-                    : 'Publish Promo Code'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Yes / No Delete Confirmation Modal */}
-      {couponToDelete && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-[#eae5dc] shadow-2xl space-y-4 animate-scaleUp">
-            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto">
-              <Trash2 className="w-6 h-6" />
-            </div>
-            <div className="text-center space-y-1">
-              <h4 className="font-display font-bold text-base text-[#141414]">
-                Delete Coupon "{couponToDelete.code}"?
-              </h4>
-              <p className="text-xs text-[#747878] leading-relaxed">
-                Are you sure you want to delete this coupon? Customers will no longer be able to redeem it.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setCouponToDelete(null)}
-                className="w-full py-2.5 rounded-full border border-[#eae5dc] bg-white hover:bg-neutral-100 text-xs font-bold text-[#141414] transition-colors cursor-pointer"
-              >
-                No, Keep Coupon
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDeleteCoupon(couponToDelete.id)}
-                className="w-full py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-md cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Yes, Delete</span>
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
