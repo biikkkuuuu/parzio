@@ -59,6 +59,14 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
     badgeColor?: string;
   }[] = [
     {
+      id: 'coupons',
+      label: 'Coupons & Secret Vouchers',
+      sublabel: 'Create custom secret codes (PAR123) for Meesho/WhatsApp clients',
+      icon: <Tag className="w-4 h-4 text-[#8c7138]" />,
+      badge: 'SECRET VOUCHERS',
+      badgeColor: 'bg-[#8c7138] text-white'
+    },
+    {
       id: 'categories',
       label: 'Categories & Collections',
       sublabel: 'Create new categories and manage jewelry collections',
@@ -97,12 +105,6 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
       icon: <ShieldCheck className="w-4 h-4" />,
       badge: 'Active',
       badgeColor: 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-    },
-    {
-      id: 'coupons',
-      label: 'Coupons & Discounts',
-      sublabel: 'Create discount codes & special offers',
-      icon: <Tag className="w-4 h-4" />
     },
     {
       id: 'settings',

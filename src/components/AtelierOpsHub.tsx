@@ -195,6 +195,26 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
                 Live
               </span>
             </div>
+
+            {/* Direct 1-Click Coupons Shortcut in Header */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('coupons')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs ${
+                activeTab === 'coupons'
+                  ? 'bg-[#8c7138] text-white ring-2 ring-[#fed488]'
+                  : 'bg-[#faf8f5] text-[#8c7138] border border-[#8c7138]/50 hover:bg-[#8c7138] hover:text-white'
+              }`}
+              title="Open Coupons & Custom Vouchers"
+            >
+              <Tag className="w-3.5 h-3.5 text-[#8c7138] group-hover:text-white" />
+              <span>🎟️ Coupons &amp; Vouchers</span>
+              {coupons && coupons.length > 0 && (
+                <span className="text-[10px] bg-[#141414] text-[#fed488] px-1.5 py-0.2 rounded-full font-bold">
+                  {coupons.length}
+                </span>
+              )}
+            </button>
           </div>
 
           {/* Right: Quick Storefront Switcher, Emergency Stop & Logout Controls */}
@@ -335,6 +355,17 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
                 Orders ({orders.length})
               </button>
               <button
+                onClick={() => setActiveTab('coupons')}
+                className={`px-3.5 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === 'coupons'
+                    ? 'bg-[#8c7138] text-white shadow-xs ring-2 ring-[#fed488]'
+                    : 'bg-[#fed488]/30 text-[#8c7138] border border-[#8c7138]/40 hover:bg-[#8c7138] hover:text-white'
+                }`}
+              >
+                <Tag className="w-3.5 h-3.5" />
+                <span>Coupons &amp; Vouchers</span>
+              </button>
+              <button
                 onClick={() => setActiveTab('inventory')}
                 className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
                   activeTab === 'inventory'
@@ -373,16 +404,6 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
                 }`}
               >
                 COD Safety
-              </button>
-              <button
-                onClick={() => setActiveTab('coupons')}
-                className={`px-3 py-1.5 rounded-full font-bold transition-all shrink-0 cursor-pointer ${
-                  activeTab === 'coupons'
-                    ? 'bg-[#141414] text-[#fed488] shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/60'
-                }`}
-              >
-                Coupons
               </button>
               <button
                 onClick={() => setActiveTab('settings')}

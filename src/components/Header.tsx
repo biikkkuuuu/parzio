@@ -167,6 +167,19 @@ export const Header: React.FC<HeaderProps> = ({
             ) : null}
             <User className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
           </button>
+
+          {/* Admin Panel Access Button for Store Owner */}
+          {onToggleScreen && (
+            <button
+              type="button"
+              onClick={() => onToggleScreen('atelier-ops')}
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-[#fed488] hover:text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+              title="Open Admin Operations Panel"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Admin Panel</span>
+            </button>
+          )}
         </div>
       </div>
 

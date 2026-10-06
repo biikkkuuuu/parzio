@@ -18,7 +18,8 @@ import {
   Plus,
   Trash2,
   ChevronRight,
-  ArrowLeft
+  ArrowLeft,
+  LayoutDashboard
 } from 'lucide-react';
 import { OrderItem } from '../types';
 import { lookupPincode } from '../services/postalService';
@@ -471,6 +472,20 @@ export const AccountView: React.FC<AccountViewProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Admin Control Panel Switch */}
+            {onOpenAtelierOps && (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={onOpenAtelierOps}
+                  className="w-full py-2.5 rounded-xl bg-[#141414] text-[#fed488] font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#8c7138] hover:text-white transition-all shadow-xs cursor-pointer active:scale-98"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>Open Admin Panel (Operations Hub)</span>
+                </button>
+              </div>
+            )}
 
             {/* 5. Flipkart-Style Log Out / Log In Button */}
             <div className="pt-1">
