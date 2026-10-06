@@ -262,33 +262,144 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
         </div>
       </div>
 
+      {/* Top Admin Heading Navigation Bar - Professional Heading with All Options */}
+      <nav className="bg-white border-b border-[#eae5dc] px-3 sm:px-8 shadow-xs sticky top-0 z-30">
+        <div className="w-full max-w-[1800px] mx-auto flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-2 whitespace-nowrap">
+          <button
+            type="button"
+            onClick={() => setActiveTab('overview')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              activeTab === 'overview'
+                ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4 shrink-0" />
+            <span>Overview</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('orders')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              activeTab === 'orders'
+                ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
+            }`}
+          >
+            <Package className="w-4 h-4 shrink-0" />
+            <span>Customer Orders</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+              activeTab === 'orders' ? 'bg-[#fed488] text-[#141414]' : 'bg-[#faf8f5] text-[#747878] border border-[#eae5dc]'
+            }`}>
+              {orders.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('coupons')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              activeTab === 'coupons'
+                ? 'bg-[#8c7138] text-white shadow-xs ring-2 ring-[#fed488]'
+                : 'text-[#8c7138] bg-[#fed488]/20 border border-[#8c7138]/30 hover:bg-[#8c7138] hover:text-white'
+            }`}
+          >
+            <Tag className="w-4 h-4 shrink-0" />
+            <span>🎟️ Coupons &amp; Vouchers</span>
+            {coupons && coupons.length > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                activeTab === 'coupons' ? 'bg-[#141414] text-[#fed488]' : 'bg-[#8c7138] text-white'
+              }`}>
+                {coupons.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('inventory')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              activeTab === 'inventory'
+                ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 shrink-0" />
+            <span>Stock &amp; Products</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+              activeTab === 'inventory' ? 'bg-[#fed488] text-[#141414]' : 'bg-[#faf8f5] text-[#747878] border border-[#eae5dc]'
+            }`}>
+              {products.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('categories')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              activeTab === 'categories'
+                ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
+            }`}
+          >
+            <Layers className="w-4 h-4 shrink-0" />
+            <span>Categories</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+              activeTab === 'categories' ? 'bg-[#fed488] text-[#141414]' : 'bg-[#faf8f5] text-[#747878] border border-[#eae5dc]'
+            }`}>
+              {categories.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('banners')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              activeTab === 'banners'
+                ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 shrink-0" />
+            <span>Banners &amp; Marquee</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+              activeTab === 'banners' ? 'bg-[#fed488] text-[#141414]' : 'bg-[#faf8f5] text-[#747878] border border-[#eae5dc]'
+            }`}>
+              {banners.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('rto-shield')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              activeTab === 'rto-shield'
+                ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <span>COD Safety</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('settings')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              activeTab === 'settings'
+                ? 'bg-[#141414] text-[#fed488] shadow-xs'
+                : 'text-[#5c5f5e] hover:text-[#141414] hover:bg-[#faf8f5]'
+            }`}
+          >
+            <Settings className="w-4 h-4 shrink-0" />
+            <span>Settings</span>
+          </button>
+        </div>
+      </nav>
+
       {/* Main Admin Workspace Container */}
       <main className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
-        
-        {/* Module Header - Clean and Focused */}
-        <div className="mb-6 bg-white p-4 sm:p-5 rounded-3xl border border-[#eae5dc] shadow-xs flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-11 h-11 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center text-[#8c7138] shadow-xs flex-shrink-0">
-              {activeTab === 'overview' && <BarChart3 className="w-5 h-5" />}
-              {activeTab === 'orders' && <Package className="w-5 h-5" />}
-              {activeTab === 'inventory' && <Sparkles className="w-5 h-5" />}
-              {activeTab === 'categories' && <Layers className="w-5 h-5" />}
-              {activeTab === 'banners' && <Sparkles className="w-5 h-5" />}
-              {activeTab === 'rto-shield' && <ShieldCheck className="w-5 h-5" />}
-              {activeTab === 'exchanges' && <RotateCcw className="w-5 h-5" />}
-              {activeTab === 'coupons' && <Tag className="w-5 h-5" />}
-              {activeTab === 'settings' && <Settings className="w-5 h-5" />}
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10px] text-[#8c7138] uppercase font-bold tracking-widest bg-[#faf8f5] border border-[#eae5dc] px-2 py-0.5 rounded-full">
-                Active Module
-              </span>
-              <h2 className="font-display text-xl sm:text-2xl font-bold text-[#141414] mt-0.5 truncate">
-                {tabLabels[activeTab]}
-              </h2>
-            </div>
-          </div>
-        </div>
 
         {activeTab === 'overview' && (
           <AdminAnalyticsView
