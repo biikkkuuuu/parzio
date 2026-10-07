@@ -485,8 +485,6 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col font-sans animate-fadeIn">
-      {/* Hidden element for Firebase Recaptcha */}
-      <div id="recaptcha-container"></div>
 
       {/* Full-Width Header */}
       <div className="w-full border-b border-[#eae5dc] bg-white relative z-20">
