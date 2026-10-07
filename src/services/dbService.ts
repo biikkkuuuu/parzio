@@ -11,10 +11,6 @@ import {
   SaleBannerConfig,
   SalePoster
 } from '../types';
-import {
-  VAULT_PRODUCTS,
-  CATEGORIES_DATA
-} from '../data/products';
 import { INITIAL_ORDERS } from '../data/orders';
 import {
   INITIAL_BANNERS,
@@ -224,10 +220,10 @@ export const dbService = {
       const saved = localStorage.getItem(KEYS.CATEGORIES);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {}
-    return CATEGORIES_DATA;
+    return [];
   },
 
   saveCategories(categories: CategoryItem[]): void {
@@ -242,21 +238,12 @@ export const dbService = {
     if (!db || !isFirebaseConfigured()) return null;
     try {
       const snapshot = await getDocs(collection(db, 'categories'));
-      if (!snapshot.empty) {
-        const categories: CategoryItem[] = [];
-        snapshot.forEach((docSnap) => {
-          categories.push(docSnap.data() as CategoryItem);
-        });
-        this.saveCategories(categories);
-        return categories;
-      } else {
-        for (const cat of CATEGORIES_DATA) {
-          const catId = cat.id || 'cat-' + cat.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-          await setDoc(doc(db, 'categories', catId), sanitizeForFirestore(cat));
-        }
-        this.saveCategories(CATEGORIES_DATA);
-        return CATEGORIES_DATA;
-      }
+      const categories: CategoryItem[] = [];
+      snapshot.forEach((docSnap) => {
+        categories.push(docSnap.data() as CategoryItem);
+      });
+      this.saveCategories(categories);
+      return categories;
     } catch (e) {
       console.warn('Firebase categories fetch fallback:', e);
     }
@@ -267,14 +254,12 @@ export const dbService = {
     if (!db || !isFirebaseConfigured()) return null;
     try {
       const unsubscribe = onSnapshot(collection(db, 'categories'), (snapshot) => {
-        if (!snapshot.empty) {
-          const categories: CategoryItem[] = [];
-          snapshot.forEach((docSnap) => {
-            categories.push(docSnap.data() as CategoryItem);
-          });
-          this.saveCategories(categories);
-          onCategoriesChange(categories);
-        }
+        const categories: CategoryItem[] = [];
+        snapshot.forEach((docSnap) => {
+          categories.push(docSnap.data() as CategoryItem);
+        });
+        this.saveCategories(categories);
+        onCategoriesChange(categories);
       });
       return unsubscribe;
     } catch (e) {

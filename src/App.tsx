@@ -3,7 +3,6 @@ import { Product, CategoryItem, CartItem, OrderItem, ActiveScreen, OrderStatus, 
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { userService, UserProfile } from './services/userService';
-import { VAULT_PRODUCTS, CATEGORIES_DATA } from './data/products';
 import { INITIAL_ORDERS } from './data/orders';
 import { INITIAL_BANNERS, INITIAL_TOP_MARQUEE, INITIAL_BANNER_MARQUEE, INITIAL_SALE_POSTERS } from './data/bannerData';
 import { Header } from './components/Header';
@@ -72,6 +71,16 @@ import { SalesSection } from './components/SalesSection';
 import { WhatsAppSupport } from './components/WhatsAppSupport';
 import { LivePurchaseToast } from './components/LivePurchaseToast';
 import { Smartphone, Monitor, ShieldCheck, AlertOctagon } from 'lucide-react';
+
+// One-time cache clear so all visitors and admin sessions start clean without legacy mock catalog
+if (typeof window !== 'undefined') {
+  const CLEAN_CATALOG_KEY = 'parzio_clean_catalog_2026_v2';
+  if (!localStorage.getItem(CLEAN_CATALOG_KEY)) {
+    localStorage.removeItem('parzio_products');
+    localStorage.removeItem('parzio_categories');
+    localStorage.setItem(CLEAN_CATALOG_KEY, 'true');
+  }
+}
 
 export default function App() {
   // Screen mode: 'auto' | 'phone' | 'pc'
@@ -279,7 +288,7 @@ export default function App() {
         ]);
         if (isMounted) {
           if (cloudProducts !== null) setProducts(cloudProducts);
-          if (cloudCategories && cloudCategories.length > 0) setCategories(cloudCategories);
+          if (cloudCategories !== null) setCategories(cloudCategories);
           if (cloudOrders && cloudOrders.length > 0) setOrders(cloudOrders);
           if (cloudBanners && cloudBanners.length > 0) setBanners(cloudBanners);
           if (cloudCoupons && cloudCoupons.length > 0) setCoupons(cloudCoupons);
@@ -303,9 +312,9 @@ export default function App() {
       }
     });
 
-    // 2. Realtime listener for Categories
+    // 2. Realtime listener for Categories: any add/edit/delete in admin updates all visitor tabs immediately
     const unsubscribeCategories = dbService.subscribeToCategories((liveCats) => {
-      if (isMounted && liveCats && liveCats.length > 0) {
+      if (isMounted && liveCats !== null) {
         setCategories(liveCats);
       }
     });
