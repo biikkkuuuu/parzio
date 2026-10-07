@@ -146,9 +146,6 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
             <RotateCcw className="w-4 h-4 text-[#8c7138]" />
             Customer Exchanges &amp; Quality Returns ({exchanges.length} Tickets)
           </h3>
-          <p className="text-xs text-[#747878] mt-0.5">
-            Log replacement tickets, schedule reverse courier pickups, and dispatch replacements.
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5">

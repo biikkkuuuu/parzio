@@ -79,9 +79,6 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
             <Sparkles className="w-4 h-4 text-[#8c7138]" />
             Product Catalog &amp; Stock Inventory ({products.length} Products)
           </h3>
-          <p className="text-xs text-[#747878] mt-0.5">
-            Add new designs, edit prices &amp; descriptions, adjust real-time stock, or remove archived items.
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5">

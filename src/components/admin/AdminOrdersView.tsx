@@ -211,9 +211,6 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
             <Package className="w-4 h-4 text-[#8c7138]" />
             Orders List ({filteredOrders.length} Orders)
           </h3>
-          <p className="text-xs text-[#747878] mt-0.5">
-            Add new orders, change customer address, mark as shipped, or print shipping slips.
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">

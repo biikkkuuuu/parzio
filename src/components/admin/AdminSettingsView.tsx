@@ -36,9 +36,6 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
             <Lock className="w-4 h-4 text-[#8c7138]" />
             Store Gateway Configurations &amp; Policies
           </h3>
-          <p className="text-xs text-[#747878] mt-0.5">
-            Manage live logistics courier webhooks, automated WhatsApp triggers, and pricing rules.
-          </p>
         </div>
 
         <button
@@ -115,10 +112,6 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
                 <CheckCircle2 className="w-3 h-3" /> Green Tick WhatsApp Verified • @parzio_official
               </span>
             </div>
-
-            <div className="p-3 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] text-[11px] text-[#444748]">
-              Automated notifications sent upon: Order Placed, WhatsApp COD OTP Confirmation, Dispatch AWB Generated, and Out For Delivery.
-            </div>
           </div>
         </div>
 
@@ -160,7 +153,6 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
             <div className="flex items-center justify-between p-2.5 rounded-2xl bg-[#faf8f5] border border-[#eae5dc]">
               <div>
                 <p className="font-bold text-[#141414]">Allow Reverse Pickup Courier</p>
-                <p className="text-[10px] text-[#747878]">Permit customer returns &amp; doorstep pickup</p>
               </div>
               <div className="inline-flex items-center gap-1 bg-white p-0.5 rounded-full border border-[#eae5dc]">
                 <button
@@ -183,7 +175,6 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
             <div className="flex items-center justify-between p-2.5 rounded-2xl bg-[#faf8f5] border border-[#eae5dc]">
               <div>
                 <p className="font-bold text-[#141414]">Accept Cash On Delivery (COD)</p>
-                <p className="text-[10px] text-[#747878]">Allow customers to place COD orders</p>
               </div>
               <div className="inline-flex items-center gap-1 bg-white p-0.5 rounded-full border border-[#eae5dc]">
                 <button
@@ -222,10 +213,6 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
                 Admin Role
               </span>
             </div>
-
-            <p className="text-[11px] text-[#747878] italic">
-              All barcode scanners, packaging scales, and BlueDart dispatch thermal printers synchronized.
-            </p>
           </div>
         </div>
 

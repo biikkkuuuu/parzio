@@ -46,37 +46,7 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
   return (
     <div className="space-y-6">
       
-      {/* High-Visibility Quick Banner: Secret Client Vouchers (Meesho / WhatsApp / Instagram) */}
-      <div className="bg-gradient-to-r from-[#141414] via-[#2a241b] to-[#141414] text-white rounded-3xl p-5 sm:p-6 border border-[#8c7138]/50 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#8c7138] text-white flex items-center justify-center shrink-0 shadow-xs">
-            <Tag className="w-6 h-6 text-[#fed488]" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#fed488] bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
-                Exclusive Feature
-              </span>
-              <span className="text-xs text-white/70">• Direct Customer Vouchers</span>
-            </div>
-            <h4 className="font-display font-bold text-base sm:text-lg text-white mt-0.5">
-              Secret Client Coupons &amp; Custom Vouchers
-            </h4>
-            <p className="text-xs text-neutral-300 mt-0.5">
-              Create customized 1-time discount codes (e.g. PAR123) with min order rules for Meesho, WhatsApp &amp; Instagram customers.
-            </p>
-          </div>
-        </div>
 
-        <button
-          type="button"
-          onClick={() => onNavigateTab('coupons')}
-          className="px-5 py-2.5 rounded-full bg-[#8c7138] hover:bg-[#a88842] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer whitespace-nowrap flex items-center gap-2 shrink-0"
-        >
-          <Tag className="w-3.5 h-3.5" />
-          <span>Open Coupons &amp; Vouchers →</span>
-        </button>
-      </div>
 
       {/* Top 4 KPI Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -193,9 +163,6 @@ export const AdminAnalyticsView: React.FC<AdminAnalyticsViewProps> = ({
                 <Clock className="w-4 h-4 text-[#8c7138]" />
                 Hourly Orders &amp; Sales Speed
               </h3>
-              <p className="text-xs text-[#747878] mt-0.5">
-                {orders.length > 0 ? 'Live hourly sales flow' : 'No sales activity recorded yet'}
-              </p>
             </div>
             <span className="text-xs font-mono font-bold bg-[#faf8f5] px-2.5 py-1 rounded-full border border-[#eae5dc] text-[#141414]">
               TODAY'S RUN RATE

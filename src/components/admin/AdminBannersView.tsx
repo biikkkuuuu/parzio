@@ -750,9 +750,6 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
             <Sparkles className="w-4 h-4 text-[#8c7138]" />
             Banners &amp; Running Marquee Management
           </h3>
-          <p className="text-xs text-[#747878] mt-0.5">
-            Customize top announcement ticker, hero banners, and promotional strips with live Right-to-Left animation.
-          </p>
         </div>
 
         {/* Section Navigation Pills - Horizontal Scroll Container */}
@@ -848,9 +845,6 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
             <div className="rounded-2xl overflow-hidden shadow-inner border border-[#2e3131]">
               <MarqueeBar items={topMarqueeItems} variant="dark" />
             </div>
-            <p className="text-[11px] text-[#747878] text-center italic">
-              Changes made below instantly reflect on both desktop header and mobile header in real time.
-            </p>
           </div>
 
           {/* Action Row */}
@@ -1056,9 +1050,6 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
               <h4 className="font-display text-sm font-bold text-[#141414]">
                 Storefront Hero Banners
               </h4>
-              <p className="text-xs text-[#747878]">
-                Add, edit or remove prominent hero promotional slides shown at the top of the storefront.
-              </p>
             </div>
 
             <button
@@ -1071,32 +1062,6 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
             </button>
           </div>
 
-          {/* Banner Sizing Guidelines Card */}
-          <div className="bg-gradient-to-r from-[#faf8f5] via-white to-[#faf8f5] rounded-2xl border border-[#eae5dc] p-4 sm:p-4.5 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#141414] text-[#fed488] flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h5 className="text-xs font-bold text-[#141414]">
-                    Recommended Banner Dimensions &amp; Specifications
-                  </h5>
-                  <span className="text-[10px] bg-[#8c7138] text-white font-bold px-2 py-0.5 rounded-full">
-                    Aspect Ratio: 2.4 : 1
-                  </span>
-                </div>
-                <p className="text-xs text-[#525252]">
-                  <strong>Desktop / HD:</strong> 1920 × 800 px &nbsp;•&nbsp; 
-                  <strong>Standard:</strong> 1200 × 500 px or 1024 × 420 px &nbsp;•&nbsp;
-                  <strong>Formats:</strong> JPG, PNG, WEBP (Max 5MB)
-                </p>
-                <p className="text-[11px] text-[#747878]">
-                  💡 <em>Mobile Tip:</em> Keep main jewelry pieces and text in the center 70% safe zone to ensure stunning look across all mobile devices.
-                </p>
-              </div>
-            </div>
-          </div>
 
           {/* Banners Grid */}
           {banners.length === 0 ? (
@@ -1162,9 +1127,6 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
                         </h4>
                         <p className="text-xs text-[#747878] font-medium mt-0.5 truncate">
                           {banner.subtitle}
-                        </p>
-                        <p className="text-[11px] text-[#444748] mt-1 line-clamp-2 leading-relaxed">
-                          {banner.description}
                         </p>
                       </div>
 
@@ -1259,9 +1221,6 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
             <div className="rounded-2xl overflow-hidden shadow-xs">
               <MarqueeBar items={bannerMarqueeItems} variant="gold" speed="fast" />
             </div>
-            <p className="text-[11px] text-[#747878] text-center italic">
-              Appears directly below the hero banner to highlight quality promises and fast courier features.
-            </p>
           </div>
 
           {/* Quick Add Form */}
@@ -1323,9 +1282,6 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
                 <ShieldCheck className="w-4 h-4 text-[#8c7138]" />
                 100% Skin Safe Guarantee Banner Configuration
               </h4>
-              <p className="text-xs text-[#747878] mt-0.5">
-                Manage dermatologically tested quality badges, hypoallergenic claims, and material specifications.
-              </p>
             </div>
             <button
               type="submit"
@@ -1448,9 +1404,6 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
                 <Zap className="w-4 h-4 text-[#8c7138]" />
                 Dedicated Sale Collection Banner Configuration
               </h4>
-              <p className="text-xs text-[#747878] mt-0.5">
-                Customize headlines, discounts, and subtitles displayed when users click "Sale" or navigate to the discount vault.
-              </p>
             </div>
             <button
               type="submit"
@@ -1520,11 +1473,8 @@ export const AdminBannersView: React.FC<AdminBannersViewProps> = ({
             <div>
               <h4 className="font-display text-base font-bold text-[#141414] flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-[#8c7138]" />
-                Sale Posters & Promotional Banners ({salePosters.length})
+                Sale Posters &amp; Promotional Banners ({salePosters.length})
               </h4>
-              <p className="text-xs text-[#747878] mt-0.5">
-                Add, remove, or edit custom promotional sale posters displayed on the storefront & sale section.
-              </p>
             </div>
             <button
               type="button"

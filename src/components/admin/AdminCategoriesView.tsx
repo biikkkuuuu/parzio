@@ -392,9 +392,6 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
               {categories.length} Collections • {products.length} Products
             </span>
           </div>
-          <p className="text-xs text-[#747878] pl-10">
-            Organize products into jewelry collections, assign 1-click badges (New Launch, Best Seller, New Collection), or add new categories.
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap pl-10 lg:pl-0">

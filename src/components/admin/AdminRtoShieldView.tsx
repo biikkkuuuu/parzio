@@ -92,9 +92,6 @@ export const AdminRtoShieldView: React.FC<AdminRtoShieldViewProps> = ({ onTrigge
           <h3 className="font-display text-xl sm:text-2xl font-bold mt-1 text-white">
             Pre-Dispatch Fraud &amp; Bogus Address Prevention
           </h3>
-          <p className="text-xs text-white/70 mt-1 max-w-2xl">
-            Automatically scans delivery addresses, unverified phone numbers, and repeat COD refuse patterns across 26,000+ Indian pincodes to protect store profit margins.
-          </p>
         </div>
 
         <div className="bg-white/10 p-4 rounded-2xl border border-white/15 text-center flex-shrink-0">
@@ -116,9 +113,6 @@ export const AdminRtoShieldView: React.FC<AdminRtoShieldViewProps> = ({ onTrigge
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
                 Monitored High-RTO Indian Pincodes ({pincodes.length})
               </h4>
-              <p className="text-xs text-[#747878] mt-0.5">
-                Add, edit rules, or remove verified postal codes from the pre-dispatch watchlist.
-              </p>
             </div>
           </div>
 
@@ -219,9 +213,6 @@ export const AdminRtoShieldView: React.FC<AdminRtoShieldViewProps> = ({ onTrigge
               <PhoneCall className="w-4 h-4 text-[#8c7138]" />
               COD to UPI Converter
             </h4>
-            <p className="text-xs text-[#444748] leading-relaxed">
-              Send an automated WhatsApp payment link offering customer an extra <strong>₹20 instant cashback</strong> if they prepay before order packing.
-            </p>
 
             <form onSubmit={handleSendPrepaidIncentive} className="space-y-3">
               <div>
@@ -247,15 +238,12 @@ export const AdminRtoShieldView: React.FC<AdminRtoShieldViewProps> = ({ onTrigge
             </form>
           </div>
 
-          {/* Verification Protocol Rule */}
-          <div className="p-5 rounded-3xl bg-[#faf8f5] border border-[#eae5dc] text-xs space-y-2">
+          <div className="p-4 rounded-3xl bg-[#faf8f5] border border-[#eae5dc] text-xs flex items-center justify-between">
             <h5 className="font-bold text-[#141414] flex items-center gap-1.5">
               <Lock className="w-3.5 h-3.5 text-[#8c7138]" />
-              Automated OTP Rule
+              Automated OTP Rule (&gt; ₹1,500)
             </h5>
-            <p className="text-[#747878] text-[11px] leading-relaxed">
-              All COD orders exceeding ₹1,500 automatically receive an IVR call or WhatsApp confirmation before inventory packing.
-            </p>
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider">Active</span>
           </div>
 
         </div>
