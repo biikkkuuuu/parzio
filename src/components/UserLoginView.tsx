@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, ShieldCheck, CheckCircle2, Sparkles, Truck, RefreshCw, Lock, Clock, Edit2 } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Edit2 } from 'lucide-react';
 import { smsService } from '../services/smsService';
 import { userService, UserProfile } from '../services/userService';
 
@@ -39,7 +39,7 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
     }
   }, [phone]);
 
-  // Timer countdown
+  // Resend Timer countdown
   useEffect(() => {
     let interval: any = null;
     if (step === 'otp' && resendTimer > 0) {
@@ -54,7 +54,7 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
     };
   }, [step, resendTimer]);
 
-  // Step 1: Send OTP to Mobile via Fast2SMS (Zero Captcha, Real SMS)
+  // Step 1: Send OTP to Mobile (Instant Fast2SMS, Zero Captcha)
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanPhone = phone.replace(/\D/g, '').slice(-10);
@@ -76,7 +76,7 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
       setOtpValues(['', '', '', '', '', '']);
       setTimeout(() => {
         otpInputRefs.current[0]?.focus();
-      }, 200);
+      }, 150);
     } else {
       setError(res.error || 'Failed to send OTP code. Please retry.');
     }
@@ -102,7 +102,7 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
     }
   };
 
-  // Step 3: Verify OTP and Login
+  // Step 3: Verify OTP
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const entered = otpValues.join('');
@@ -119,11 +119,11 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
 
     if (!verifyRes.success) {
       setIsLoading(false);
-      setError(verifyRes.error || 'Incorrect OTP code. Please check your SMS and retry.');
+      setError(verifyRes.error || 'Incorrect OTP code. Please retry.');
       return;
     }
 
-    // OTP Verified! Check for existing profile in cloud or local cache
+    // OTP Verified! Check for existing profile
     const uid = `user_${cleanPhone}`;
     let profile = existingUser;
     if (!profile) {
@@ -137,10 +137,15 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
       }
     }
 
-    const hasValidExistingName = profile && profile.name && profile.name.trim() && profile.name !== 'Valued Customer' && profile.name !== 'Guest User';
+    const hasValidExistingName =
+      profile &&
+      profile.name &&
+      profile.name.trim() &&
+      profile.name !== 'Valued Customer' &&
+      profile.name !== 'Guest User';
 
     if (hasValidExistingName && profile) {
-      // OLD / RETURNING USER: Retain their existing name and login immediately!
+      // RETURNING USER: Login immediately with their existing name!
       const userProf: UserProfile = {
         ...profile,
         uid: profile.uid || uid,
@@ -149,11 +154,11 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
       };
 
       localStorage.setItem('parzio_user_profile', JSON.stringify(userProf));
-      userService.updateLastLogin(userProf.uid).catch((e) => console.warn('Login update err:', e));
+      userService.updateLastLogin(userProf.uid).catch(() => {});
       setIsLoading(false);
       onSuccess(userProf);
     } else {
-      // NEW USER: Transition to Name step to ask their name!
+      // NEW USER: Ask for Name
       setPendingUid(uid);
       setIsLoading(false);
       setStep('name');
@@ -164,7 +169,7 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
   const handleSaveName = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError('Please enter your full name to complete your profile.');
+      setError('Please enter your name to complete signup.');
       return;
     }
 
@@ -182,23 +187,19 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
         lastLogin: new Date().toISOString()
       };
 
-      // Save locally
       localStorage.setItem('parzio_user_profile', JSON.stringify(userProf));
-
-      // Save to cloud in background
-      userService.saveUserProfile(userProf.uid, userProf.phone, userProf.name).catch((err) => console.warn('Save profile err:', err));
-      userService.updateLastLogin(userProf.uid).catch((err) => console.warn('Update login err:', err));
+      userService.saveUserProfile(userProf.uid, userProf.phone, userProf.name).catch(() => {});
+      userService.updateLastLogin(userProf.uid).catch(() => {});
 
       onSuccess(userProf);
     } catch (saveErr: any) {
-      console.error('Save new user name error:', saveErr);
-      setError(saveErr.message || 'Could not save profile name.');
+      setError(saveErr.message || 'Could not save profile.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // OTP Input Changes
+  // OTP Input Handlers
   const handleOtpChange = (index: number, val: string) => {
     const char = val.replace(/\D/g, '').slice(-1);
     const newArr = [...otpValues];
@@ -218,293 +219,218 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-[#141414] flex flex-col justify-between animate-fadeIn">
-
-      {/* Top Header Navigation */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-[#faf8f5] text-[#141414] flex flex-col justify-between">
+      {/* Clean Flipkart-Style Top Header */}
+      <header className="bg-white border-b border-[#eae5dc] px-4 sm:px-8 py-4">
+        <div className="max-w-md mx-auto flex items-center justify-between">
           <button
             type="button"
             onClick={onBack}
-            className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#555] hover:text-[#141414] transition-colors cursor-pointer group"
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#666] hover:text-[#141414] transition-colors cursor-pointer"
           >
-            <span className="p-1.5 rounded-full bg-[#f4efea] group-hover:bg-[#eae5dc] transition-colors">
-              <ArrowLeft className="w-4 h-4 text-[#141414]" />
-            </span>
-            <span>Back to Store</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
           </button>
 
-          <div className="text-center">
-            <h1 className="text-lg sm:text-xl font-extrabold tracking-[0.2em] uppercase font-serif text-[#141414]">
-              PARZIO
-            </h1>
-            <span className="text-[9px] uppercase tracking-widest text-[#8c7138] font-bold block -mt-0.5">
-              Customer Account
-            </span>
-          </div>
+          <span className="text-base font-extrabold tracking-[0.2em] uppercase font-serif text-[#141414]">
+            PARZIO
+          </span>
 
-          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 bg-emerald-50/80 border border-emerald-200/60 px-2.5 py-1 rounded-full">
-            <Lock className="w-3 h-3 text-emerald-700" />
-            <span className="hidden sm:inline">256-Bit SSL</span>
-            <span>Secured</span>
-          </div>
+          <div className="w-12" />
         </div>
       </header>
 
-      {/* Main Content Page */}
-      <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-16">
-        <div className="w-full max-w-md">
-          {/* Card Container */}
-          <div className="bg-white rounded-3xl border border-[#eae5dc] p-6 sm:p-9 shadow-xl shadow-black/5 space-y-6">
-            
-            {/* Top Badge & Intro */}
-            <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#141414] to-[#2b2b2b] text-[#fed488] flex items-center justify-center mx-auto shadow-md">
-                {step === 'name' ? (
-                  <Sparkles className="w-7 h-7 text-[#fed488]" />
-                ) : (
-                  <ShieldCheck className="w-7 h-7 text-[#fed488]" />
-                )}
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#141414] pt-1">
-                {step === 'phone'
-                  ? 'Secure Mobile Login'
-                  : step === 'otp'
-                  ? 'Enter 6-Digit OTP'
-                  : 'Welcome to PARZIO ✨'}
-              </h2>
-              <p className="text-xs text-[#747878] leading-relaxed max-w-xs mx-auto">
-                {step === 'phone'
-                  ? existingUser
-                    ? `Welcome back, ${existingUser.name}! Enter your mobile number to continue.`
-                    : 'Enter your 10-digit mobile number to receive a secure 6-digit verification code.'
-                  : step === 'otp'
-                  ? `We sent a 6-digit verification code to +91 ${phone.replace(/\D/g, '').slice(-10)}`
-                  : 'Please tell us your full name to set up your membership & delivery updates.'}
-              </p>
+      {/* Main Flipkart-Style Card Container */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md bg-white rounded-2xl border border-[#eae5dc] p-6 sm:p-8 shadow-sm space-y-6">
+          
+          {/* Header Title */}
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#141414]">
+              {step === 'phone'
+                ? 'Login or Signup'
+                : step === 'otp'
+                ? 'Verify OTP'
+                : 'Welcome to PARZIO'}
+            </h1>
+            <p className="text-xs text-[#717478] mt-1.5 leading-relaxed">
+              {step === 'phone'
+                ? existingUser
+                  ? `Welcome back, ${existingUser.name}! Enter your mobile number to continue.`
+                  : 'Get access to your Orders, Wishlist and Member Offers'
+                : step === 'otp'
+                ? `Please enter the 6-digit OTP sent to +91 ${phone.replace(/\D/g, '').slice(-10)}`
+                : 'Enter your full name to complete your profile'}
+            </p>
+          </div>
+
+          {/* Error Banner */}
+          {error && (
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+              {error}
             </div>
+          )}
 
-            {/* Error Message */}
-            {error && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold text-center animate-fadeIn">
-                {error}
-              </div>
-            )}
-
-            {/* STEP 1: Phone Form */}
-            {step === 'phone' && (
-              <form onSubmit={handleSendOtp} className="space-y-4">
-                {/* Returning User Recognized Badge */}
-                {existingUser && (
-                  <div className="p-3 bg-[#fdfaf3] border border-[#d4af37]/40 rounded-2xl flex items-center gap-2.5 text-xs text-[#8c7138] animate-fadeIn">
-                    <Sparkles className="w-4 h-4 text-[#d4af37] shrink-0" />
-                    <span>Welcome back, <strong className="text-[#141414] font-bold">{existingUser.name}</strong>!</span>
-                  </div>
-                )}
-
-                {/* Phone Input (Required) */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#141414] mb-1.5">
-                    Mobile Number <span className="text-rose-600">*</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-[#8c7138] font-mono text-sm font-bold select-none">
-                      +91
-                    </span>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      placeholder="98765 43210"
-                      maxLength={10}
-                      autoFocus
-                      required
-                      disabled={isLoading}
-                      className="w-full pl-14 pr-4 py-3 bg-[#faf8f5] border border-[#eae5dc] rounded-2xl text-sm sm:text-base font-mono font-bold tracking-wider text-[#141414] focus:outline-none focus:border-[#8c7138] focus:bg-white transition-all placeholder:text-[#a8a39b]"
-                    />
-                  </div>
-                  <p className="text-[10px] text-[#747878] mt-1 pl-1">
-                    An SMS verification code will be sent to this number.
-                  </p>
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full py-3.5 px-6 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 shadow-md shadow-black/10 cursor-pointer flex items-center justify-center gap-2 active:scale-98 disabled:opacity-60"
-                >
-                  {isLoading ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-[#fed488]" />
-                      <span>Sending OTP Code...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Get 6-Digit OTP</span>
-                      <span className="text-[#fed488]">→</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
-
-            {/* STEP 2: OTP Verification Form */}
-            {step === 'otp' && (
-              <form onSubmit={handleVerifyOtp} className="space-y-5 animate-fadeIn">
-                {/* Phone edit banner */}
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] text-xs">
-                  <span className="font-mono font-bold text-[#141414]">+91 {phone.replace(/\D/g, '').slice(-10)}</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStep('phone');
-                      setError(null);
-                    }}
-                    className="text-[#8c7138] font-bold hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    <Edit2 className="w-3 h-3" />
-                    <span>Change</span>
-                  </button>
-                </div>
-
-                {/* 6 Digit Input Boxes */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-center text-[#555] mb-3">
-                    Enter Verification Code
-                  </label>
-                  <div className="flex justify-center gap-2 sm:gap-3">
-                    {otpValues.map((digit, idx) => (
-                      <input
-                        key={idx}
-                        ref={(el) => {
-                          otpInputRefs.current[idx] = el;
-                        }}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        value={digit}
-                        onChange={(e) => handleOtpChange(idx, e.target.value)}
-                        onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                        disabled={isLoading}
-                        className="w-11 h-13 text-center text-xl font-bold bg-[#faf8f5] border-2 border-[#eae5dc] rounded-2xl focus:border-[#8c7138] focus:bg-white outline-none transition-all shadow-xs"
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Resend Timer & Button */}
-                <div className="text-center text-xs space-y-1">
-                  <div className="flex items-center justify-center gap-1.5 text-[#747878]">
-                    <Clock className="w-3.5 h-3.5 text-[#8c7138]" />
-                    {resendTimer > 0 ? (
-                      <span>Resend OTP code in <strong>{resendTimer}s</strong></span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleResendOtp}
-                        disabled={isLoading}
-                        className="font-bold text-[#8c7138] hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <RefreshCw className="w-3 h-3" />
-                        <span>Resend 6-Digit Code</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Verify Button */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full py-3.5 px-6 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 shadow-md shadow-black/10 cursor-pointer flex items-center justify-center gap-2 active:scale-98 disabled:opacity-60"
-                >
-                  {isLoading ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-[#fed488]" />
-                      <span>Verifying Code...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 text-[#fed488]" />
-                      <span>Verify OTP &amp; Continue</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
-
-            {/* STEP 3: New User Name Setup */}
-            {step === 'name' && (
-              <form onSubmit={handleSaveName} className="space-y-5 animate-fadeIn">
-                {/* Verified Mobile Confirmation Banner */}
-                <div className="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-2xl flex items-center justify-between text-xs">
-                  <span className="font-mono font-bold text-[#141414]">+91 {phone.replace(/\D/g, '').slice(-10)}</span>
-                  <span className="flex items-center gap-1 text-emerald-700 font-bold">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    Phone Verified
+          {/* STEP 1: Phone Form */}
+          {step === 'phone' && (
+            <form onSubmit={handleSendOtp} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-[#717478] mb-1.5">
+                  Mobile Number
+                </label>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 text-sm font-semibold text-[#141414] font-mono select-none">
+                    +91
                   </span>
-                </div>
-
-                {/* Name Input */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#141414] mb-1.5">
-                    Your Full Name <span className="text-rose-600">*</span>
-                  </label>
                   <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Vikash Rana"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    placeholder="Enter 10-digit number"
+                    maxLength={10}
                     autoFocus
                     required
                     disabled={isLoading}
-                    className="w-full px-4 py-3 bg-[#faf8f5] border border-[#eae5dc] rounded-2xl text-sm font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138] focus:bg-white transition-all placeholder:text-[#a8a39b]"
+                    className="w-full pl-13 pr-4 py-3 bg-white border border-[#d1ccc4] focus:border-[#141414] rounded-xl text-base font-medium font-mono text-[#141414] outline-none transition-colors placeholder:text-[#a8a39b]"
                   />
-                  <p className="text-[10px] text-[#747878] mt-1 pl-1">
-                    This name will appear on your deliveries, invoices &amp; membership.
-                  </p>
                 </div>
+              </div>
 
-                {/* Submit Profile Button */}
+              <p className="text-[11px] text-[#888] leading-relaxed">
+                By continuing, you agree to PARZIO&apos;s <span className="underline">Terms of Use</span> and <span className="underline">Privacy Policy</span>.
+              </p>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3.5 px-6 rounded-xl bg-[#141414] hover:bg-[#2b2b2b] text-white text-sm font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-98 disabled:opacity-60"
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#fed488]" />
+                    <span>Sending OTP...</span>
+                  </>
+                ) : (
+                  <span>CONTINUE</span>
+                )}
+              </button>
+            </form>
+          )}
+
+          {/* STEP 2: OTP Verification Form */}
+          {step === 'otp' && (
+            <form onSubmit={handleVerifyOtp} className="space-y-5 animate-fadeIn">
+              {/* Phone display with Change link */}
+              <div className="flex items-center justify-between text-xs py-1">
+                <span className="font-mono font-semibold text-[#141414]">+91 {phone.replace(/\D/g, '').slice(-10)}</span>
                 <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full py-3.5 px-6 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 shadow-md shadow-black/10 cursor-pointer flex items-center justify-center gap-2 active:scale-98 disabled:opacity-60"
+                  type="button"
+                  onClick={() => {
+                    setStep('phone');
+                    setError(null);
+                  }}
+                  className="text-[#8c7138] font-bold hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  {isLoading ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-[#fed488]" />
-                      <span>Saving Profile...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Complete Profile &amp; Continue</span>
-                      <span className="text-[#fed488]">→</span>
-                    </>
-                  )}
+                  <Edit2 className="w-3 h-3" />
+                  <span>Change</span>
                 </button>
-              </form>
-            )}
+              </div>
 
-            {/* Value Highlights */}
-            <div className="pt-2 border-t border-[#f4efea] grid grid-cols-2 gap-3 text-[11px] text-[#555]">
-              <div className="flex items-center gap-2">
-                <Truck className="w-3.5 h-3.5 text-[#8c7138] shrink-0" />
-                <span>Live Order Tracking</span>
+              {/* 6 Digit Input Boxes */}
+              <div className="flex justify-between gap-2">
+                {otpValues.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={(el) => {
+                      otpInputRefs.current[idx] = el;
+                    }}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                    disabled={isLoading}
+                    className="w-11 sm:w-12 h-13 text-center text-xl font-bold bg-[#faf8f5] border border-[#d1ccc4] focus:border-[#141414] focus:bg-white rounded-xl outline-none transition-all"
+                  />
+                ))}
               </div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-[#8c7138] shrink-0" />
-                <span>100% Anti-Tarnish</span>
+
+              {/* Resend Timer */}
+              <div className="text-xs text-[#717478]">
+                {resendTimer > 0 ? (
+                  <span>Resend OTP in <strong>{resendTimer}s</strong></span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={isLoading}
+                    className="font-bold text-[#8c7138] hover:underline cursor-pointer"
+                  >
+                    Resend OTP
+                  </button>
+                )}
               </div>
-            </div>
-          </div>
+
+              {/* Verify Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3.5 px-6 rounded-xl bg-[#141414] hover:bg-[#2b2b2b] text-white text-sm font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-98 disabled:opacity-60"
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#fed488]" />
+                    <span>Verifying...</span>
+                  </>
+                ) : (
+                  <span>VERIFY &amp; CONTINUE</span>
+                )}
+              </button>
+            </form>
+          )}
+
+          {/* STEP 3: New User Name Onboarding */}
+          {step === 'name' && (
+            <form onSubmit={handleSaveName} className="space-y-4 animate-fadeIn">
+              <div>
+                <label className="block text-xs font-medium text-[#717478] mb-1.5">
+                  Full Name <span className="text-rose-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name (e.g. Vikash Rana)"
+                  autoFocus
+                  required
+                  disabled={isLoading}
+                  className="w-full px-4 py-3 bg-white border border-[#d1ccc4] focus:border-[#141414] rounded-xl text-base font-medium text-[#141414] outline-none transition-colors placeholder:text-[#a8a39b]"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3.5 px-6 rounded-xl bg-[#141414] hover:bg-[#2b2b2b] text-white text-sm font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-98 disabled:opacity-60"
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#fed488]" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <span>CONTINUE</span>
+                )}
+              </button>
+            </form>
+          )}
+
         </div>
       </main>
 
-      {/* Footer Info */}
-      <footer className="py-4 text-center text-xs text-[#8c887e] border-t border-[#eae5dc] bg-white">
-        <p>© PARZIO Luxury demi-fine jewellery. 100% Skin Safe &amp; Hypoallergenic.</p>
+      <footer className="py-4 text-center text-[11px] text-[#999]">
+        PARZIO Jewellery © 2026. All rights reserved.
       </footer>
     </div>
   );
