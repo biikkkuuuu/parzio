@@ -683,19 +683,16 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
             <div className="w-9 h-9 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] flex items-center justify-center text-[#8c7138] shadow-2xs">
               <Tag className="w-4.5 h-4.5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-display text-lg font-bold text-[#141414]">
-                  Coupons &amp; Custom Client Vouchers
-                </h3>
-                <span className="text-[10px] bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc] px-2.5 py-0.5 rounded-full font-bold">
-                  {coupons.length} Total
-                </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display text-lg font-bold text-[#141414]">
+                    Coupons &amp; Custom Client Vouchers
+                  </h3>
+                  <span className="text-[10px] bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc] px-2.5 py-0.5 rounded-full font-bold">
+                    {coupons.length} Total
+                  </span>
+                </div>
               </div>
-              <p className="text-xs text-[#747878] mt-0.5">
-                Create secret single-use client vouchers for Meesho / WhatsApp buyers or manage public website discounts.
-              </p>
-            </div>
           </div>
         </div>
 
@@ -761,20 +758,6 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
         </button>
       </div>
 
-      {/* Secret Vouchers Quick Guide Box */}
-      <div className="bg-gradient-to-r from-[#faf8f5] via-white to-[#faf8f5] rounded-3xl border border-[#eae5dc] p-4 sm:p-5 flex items-start gap-3.5 shadow-2xs">
-        <div className="w-9 h-9 rounded-2xl bg-[#8c7138] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-          <Info className="w-4.5 h-4.5" />
-        </div>
-        <div className="text-xs space-y-1">
-          <p className="font-bold text-[#141414]">
-            How Secret Customer Vouchers Work for Marketplace Sales:
-          </p>
-          <p className="text-[#747878] leading-relaxed">
-            Create a custom code (e.g. <strong>PAR123</strong>) with your chosen discount (e.g. ₹100 OFF) and minimum order (e.g. ₹499). Send this code to your WhatsApp or Meesho buyer. It will <strong>never</strong> appear on the public website offers page, and can be configured as a 1-time single use code!
-          </p>
-        </div>
-      </div>
 
       {/* Coupons Grid */}
       {filteredCoupons.length === 0 ? (
@@ -890,13 +873,10 @@ export const AdminCouponsView: React.FC<AdminCouponsViewProps> = ({
                   </div>
                 </div>
 
-                {/* Offer Headline & Description */}
+                {/* Offer Headline */}
                 <h4 className="font-display text-sm font-bold text-[#141414] leading-snug">
                   {coupon.title || `Special Offer on Orders Above ₹${coupon.minOrderValue}`}
                 </h4>
-                <p className="text-xs text-[#747878] mt-1 leading-relaxed line-clamp-2">
-                  {coupon.description || `Use code ${coupon.code} on checkout.`}
-                </p>
               </div>
 
               {/* Inline Delete Confirmation Bar (NO POPUP) */}

@@ -282,9 +282,6 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#141414] tracking-tight">
             {tabLabels[activeTab]}
           </h1>
-          <p className="text-xs sm:text-sm text-[#747878] mt-1">
-            {tabDescriptions[activeTab]}
-          </p>
         </div>
 
         {activeTab === 'overview' && (
