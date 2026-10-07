@@ -165,19 +165,23 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   // Setup Recaptcha
   const setupRecaptcha = () => {
     if (!auth) return null;
-    if (!window.recaptchaVerifier) {
-      try {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          size: 'invisible',
-          callback: () => {
-            // reCAPTCHA solved
-          }
-        });
-      } catch (err) {
-        console.error("Recaptcha init error", err);
+    try {
+      if ((window as any).recaptchaVerifier) {
+        try {
+          (window as any).recaptchaVerifier.clear();
+        } catch {}
       }
+      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved
+        }
+      });
+      return (window as any).recaptchaVerifier;
+    } catch (err) {
+      console.error("Recaptcha init error", err);
+      return null;
     }
-    return window.recaptchaVerifier;
   };
 
   // Recalculate verified total from live product database (Fixes SEC-04)
@@ -260,8 +264,53 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       return;
     }
 
-    // 2. Cash on Delivery
-    finalizeOrder(true);
+    // 2. Cash on Delivery - Require 6-digit phone verification to prevent fake orders
+    sendCodVerificationOtp();
+  };
+
+  // Send COD Verification OTP via Firebase Phone Auth
+  const sendCodVerificationOtp = async () => {
+    setIsSendingOtp(true);
+    setOtpError(null);
+    try {
+      if (!auth) {
+        throw new Error('Authentication service is initializing. Please retry in a moment.');
+      }
+      const appVerifier = setupRecaptcha();
+      if (!appVerifier) {
+        throw new Error('Security verification could not be initialized. Please refresh.');
+      }
+      const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+      const formattedPhone = `+91${cleanPhone}`;
+      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+      setConfirmationResult(confirmation);
+      setStep('otp');
+      setResendTimer(30);
+      setIsResendDisabled(true);
+      setOtpValues(['', '', '', '', '', '']);
+      setOtpError(null);
+      setOtpSentNotification(true);
+      setTimeout(() => setOtpSentNotification(false), 4500);
+      setTimeout(() => {
+        otpInputRefs.current[0]?.focus();
+      }, 200);
+    } catch (err: any) {
+      console.error('Failed to send COD verification OTP:', err);
+      let errMsg = 'Failed to send OTP code. Please check your mobile number and retry.';
+      if (err.code === 'auth/invalid-phone-number') {
+        errMsg = 'Invalid phone number. Please enter a valid 10-digit number.';
+      } else if (err.code === 'auth/too-many-requests') {
+        errMsg = 'Too many requests. Please wait a few moments before trying again.';
+      } else if (err.code === 'auth/quota-exceeded') {
+        errMsg = 'Daily SMS limit reached. Please contact support.';
+      } else if (err.message) {
+        errMsg = err.message;
+      }
+      alert(`COD Verification: ${errMsg}`);
+      setOtpError(errMsg);
+    } finally {
+      setIsSendingOtp(false);
+    }
   };
 
   // Launch Official Razorpay Live Payment Gateway
@@ -390,16 +439,17 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
   // Resend OTP
   const handleResendOtp = async () => {
-    if (isResendDisabled) return;
+    if (isResendDisabled || isSendingOtp) return;
     
     setIsSendingOtp(true);
     setOtpError(null);
     
     try {
       const appVerifier = setupRecaptcha();
-      if (!appVerifier) throw new Error("Recaptcha failed");
+      if (!appVerifier) throw new Error("Recaptcha verification could not be initialized");
       
-      const formattedPhone = phone.startsWith('+91') ? phone : `+91${phone}`;
+      const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+      const formattedPhone = `+91${cleanPhone}`;
       const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
       
       setConfirmationResult(result);
@@ -409,6 +459,9 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       setOtpError(null);
       setOtpSentNotification(true);
       setTimeout(() => setOtpSentNotification(false), 4500);
+      setTimeout(() => {
+        otpInputRefs.current[0]?.focus();
+      }, 200);
     } catch (error: any) {
       console.error("Resend OTP error", error);
       setOtpError(error.message || "Failed to resend OTP.");
@@ -491,7 +544,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   return (
     <div className="min-h-screen w-full bg-white flex flex-col font-sans animate-fadeIn">
       {/* Hidden element for Firebase Recaptcha */}
-      <div id="recaptcha-container" className="hidden"></div>
+      <div id="recaptcha-container"></div>
 
       {/* Full-Width Header */}
       <div className="w-full border-b border-[#eae5dc] bg-white relative z-20">
@@ -923,8 +976,6 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
           {/* STEP 3: COD OTP Verification */}
           {step === 'otp' && (
             <form onSubmit={handleVerifyOtp} className="space-y-4 animate-fadeIn">
-              <div id="recaptcha-container"></div>
-              
               {/* Back Button */}
               <button
                 type="button"
