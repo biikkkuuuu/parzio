@@ -249,31 +249,6 @@ export const AccountView: React.FC<AccountViewProps> = ({
           </button>
         </div>
 
-        {/* Store Owner Quick Admin Access Banner */}
-        {onOpenAtelierOps && (
-          <div className="bg-gradient-to-r from-[#141414] via-[#241f17] to-[#141414] text-white p-3.5 sm:p-4 rounded-2xl border border-[#8c7138]/40 shadow-sm flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-[#8c7138]/20 border border-[#fed488]/40 flex items-center justify-center text-[#fed488] shrink-0">
-                <LayoutDashboard className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-white">Store Admin Panel</span>
-                  <span className="text-[10px] bg-[#fed488] text-[#141414] px-1.5 py-0.2 rounded font-extrabold uppercase">Owner</span>
-                </div>
-                <p className="text-[11px] text-neutral-300 truncate">Manage Orders, Inventory, Secret Coupons &amp; Banners</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={onOpenAtelierOps}
-              className="px-3.5 py-2 rounded-full bg-[#fed488] hover:bg-white text-[#141414] text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer active:scale-95 flex items-center gap-1.5"
-            >
-              <span>Open Admin</span>
-              <span>→</span>
-            </button>
-          </div>
-        )}
 
         {/* Row 1: Profile Header Card (4 cols on lg) + Quick Action Tiles (8 cols on lg) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
@@ -499,19 +474,6 @@ export const AccountView: React.FC<AccountViewProps> = ({
               </div>
             </div>
 
-            {/* Admin Control Panel Switch */}
-            {onOpenAtelierOps && (
-              <div className="pt-1">
-                <button
-                  type="button"
-                  onClick={onOpenAtelierOps}
-                  className="w-full py-2.5 rounded-xl bg-[#141414] text-[#fed488] font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#8c7138] hover:text-white transition-all shadow-xs cursor-pointer active:scale-98"
-                >
-                  <LayoutDashboard className="w-4 h-4" />
-                  <span>Open Admin Panel (Operations Hub)</span>
-                </button>
-              </div>
-            )}
 
             {/* 5. Flipkart-Style Log Out / Log In Button */}
             <div className="pt-1">

@@ -70,16 +70,18 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                     Contact Us
                   </button>
                 </li>
-                {onOpenAtelierOps && (
-                  <li>
-                    <button
-                      onClick={onOpenAtelierOps}
-                      className="hover:text-[#c5a059] transition-colors cursor-pointer text-left text-gray-400"
-                    >
-                      Admin Panel
-                    </button>
-                  </li>
-                )}
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onOpenAtelierOps) onOpenAtelierOps();
+                      else window.location.hash = '#/admin';
+                    }}
+                    className="hover:text-[#c5a059] transition-colors cursor-pointer text-left text-gray-400"
+                  >
+                    Admin Login
+                  </button>
+                </li>
               </ul>
             </div>
 
@@ -186,7 +188,20 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
 
           {/* Bottom Bar: Copyright on Left, Tagline on Right */}
           <div className="pt-3.5 flex flex-col sm:flex-row items-center justify-between gap-1.5 text-[10px] sm:text-[11px] text-gray-400">
-            <p>© 2025 Parzio. All Rights Reserved.</p>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <p>© 2025 Parzio. All Rights Reserved.</p>
+              <span className="text-gray-600">•</span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenAtelierOps) onOpenAtelierOps();
+                  else window.location.hash = '#/admin';
+                }}
+                className="hover:text-[#fed488] text-gray-500 transition-colors cursor-pointer"
+              >
+                Admin Login
+              </button>
+            </div>
             <p className="font-serif italic text-gray-300">
               Beautiful Products. Happier You. <span className="text-[#c5a059]">♡</span>
             </p>
