@@ -50,9 +50,11 @@ interface AtelierOpsHubProps {
   onAddProduct: (product: Product) => void;
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
+  onDeleteAllProducts?: () => void;
   onAddCategory?: (category: CategoryItem) => void;
   onEditCategory?: (oldName: string, updatedCategory: CategoryItem) => void;
   onDeleteCategory?: (categoryName: string) => void;
+  onDeleteAllCategories?: () => void;
   onUpdateStock: (productId: string, newStock: number) => void;
   onToggleLive: (productId: string) => void;
   emergencyConfig: EmergencyShutdownConfig;
@@ -94,9 +96,11 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
   onAddProduct,
   onEditProduct,
   onDeleteProduct,
+  onDeleteAllProducts,
   onAddCategory,
   onEditCategory,
   onDeleteCategory,
+  onDeleteAllCategories,
   onUpdateStock,
   onToggleLive,
   emergencyConfig,
@@ -347,6 +351,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
             onOpenNewProductModal={() => setIsNewProductModalOpen(true)}
             onEditProduct={onEditProduct}
             onDeleteProduct={onDeleteProduct}
+            onDeleteAllProducts={onDeleteAllProducts}
             onUpdateStock={onUpdateStock}
             onToggleLive={onToggleLive}
             onTriggerToast={triggerToast}
@@ -369,6 +374,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
               if (onDeleteCategory) onDeleteCategory(catName);
               triggerToast(`Removed category "${catName}".`);
             }}
+            onDeleteAllCategories={onDeleteAllCategories}
             onAddProduct={onAddProduct}
             onEditProduct={onEditProduct}
             onDeleteProduct={(prodId) => {

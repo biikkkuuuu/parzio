@@ -21,6 +21,7 @@ interface AdminInventoryViewProps {
   onOpenNewProductModal: () => void;
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
+  onDeleteAllProducts?: () => void;
   onUpdateStock: (productId: string, newStock: number) => void;
   onToggleLive: (productId: string) => void;
   onTriggerToast: (msg: string) => void;
@@ -32,6 +33,7 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
   onOpenNewProductModal,
   onEditProduct,
   onDeleteProduct,
+  onDeleteAllProducts,
   onUpdateStock,
   onToggleLive,
   onTriggerToast
@@ -39,9 +41,10 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   
-  // Modals for Edit and Delete
+  // Modals for Edit, Delete Single, and Delete All
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isConfirmingDeleteAll, setIsConfirmingDeleteAll] = useState(false);
 
   const filterCategories = useMemo(() => {
     const set = new Set<string>(['ALL']);
@@ -89,9 +92,20 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
             </span>
           )}
 
+          {products.length > 0 && onDeleteAllProducts && (
+            <button
+              onClick={() => setIsConfirmingDeleteAll(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 text-xs font-bold uppercase tracking-wider transition-all shadow-sm active:scale-95 cursor-pointer"
+              title="Delete all products from store catalog & cloud"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete All ({products.length})</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenNewProductModal}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#141414] text-white hover:bg-[#8c7138] text-xs font-bold uppercase tracking-wider transition-all shadow-sm active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#141414] text-white hover:bg-[#8c7138] text-xs font-bold uppercase tracking-wider transition-all shadow-sm active:scale-95 cursor-pointer"
           >
             <Plus className="w-4 h-4 text-[#fed488]" />
             <span>Add New Product</span>
@@ -350,7 +364,7 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 onClick={() => setProductToDelete(null)}
-                className="px-4 py-2 rounded-full border border-[#eae5dc] text-xs font-semibold hover:bg-[#faf8f5]"
+                className="px-4 py-2 rounded-full border border-[#eae5dc] text-xs font-semibold hover:bg-[#faf8f5] cursor-pointer"
               >
                 Cancel
               </button>
@@ -360,9 +374,47 @@ export const AdminInventoryView: React.FC<AdminInventoryViewProps> = ({
                   onTriggerToast(`Removed "${productToDelete.name}" from storefront.`);
                   setProductToDelete(null);
                 }}
-                className="px-5 py-2 rounded-full bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold"
+                className="px-5 py-2 rounded-full bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold cursor-pointer"
               >
                 Delete Product
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete ALL Products Confirmation Modal */}
+      {isConfirmingDeleteAll && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-[#eae5dc] shadow-2xl space-y-4 animate-fadeIn">
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="text-center">
+              <h4 className="font-bold text-base text-[#141414]">Delete All {products.length} Products?</h4>
+              <p className="text-xs text-[#747878] mt-1">
+                Are you sure you want to completely wipe all products from the store catalog and Google Cloud database?
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => setIsConfirmingDeleteAll(false)}
+                className="px-4 py-2 rounded-full border border-[#eae5dc] text-xs font-semibold hover:bg-[#faf8f5] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (onDeleteAllProducts) {
+                    await onDeleteAllProducts();
+                  }
+                  setIsConfirmingDeleteAll(false);
+                }}
+                className="px-5 py-2 rounded-full bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shadow-md shadow-rose-900/10 cursor-pointer active:scale-95"
+              >
+                Yes, Delete All
               </button>
             </div>
           </div>

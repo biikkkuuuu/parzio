@@ -74,7 +74,7 @@ import { Smartphone, Monitor, ShieldCheck, AlertOctagon } from 'lucide-react';
 
 // One-time cache clear so all visitors and admin sessions start clean without legacy mock catalog
 if (typeof window !== 'undefined') {
-  const CLEAN_CATALOG_KEY = 'parzio_clean_catalog_2026_v2';
+  const CLEAN_CATALOG_KEY = 'parzio_clean_catalog_2026_v4';
   if (!localStorage.getItem(CLEAN_CATALOG_KEY)) {
     localStorage.removeItem('parzio_products');
     localStorage.removeItem('parzio_categories');
@@ -387,6 +387,12 @@ export default function App() {
     showToast(`Category "${catName}" removed.`);
   };
 
+  const handleDeleteAllCategories = async () => {
+    setCategories([]);
+    await dbService.deleteAllCategories();
+    showToast('All categories removed from catalog & cloud.');
+  };
+
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(() => {
     if (initialRoute.type === 'product' && initialRoute.id) {
       return dbService.getProducts().find((p) => p.id === initialRoute.id) || null;
@@ -676,6 +682,14 @@ export default function App() {
     setWishlistIds((prev) => prev.filter((id) => id !== productId));
     dbService.deleteProduct(productId);
     showToast('Product removed from live storefront catalog.');
+  };
+
+  const handleDeleteAllProducts = async () => {
+    setProducts([]);
+    setCartItems([]);
+    setWishlistIds([]);
+    await dbService.deleteAllProducts();
+    showToast('All products deleted from catalog & cloud.');
   };
 
   const handleUpdateStock = (productId: string, newStock: number) => {
@@ -1160,10 +1174,12 @@ export default function App() {
             onAddProduct={handleAddProduct}
             onEditProduct={handleEditProduct}
             onDeleteProduct={handleDeleteProduct}
+            onDeleteAllProducts={handleDeleteAllProducts}
             categories={categories}
             onAddCategory={handleAddCategory}
             onEditCategory={handleEditCategory}
             onDeleteCategory={handleDeleteCategory}
+            onDeleteAllCategories={handleDeleteAllCategories}
             onUpdateStock={handleUpdateStock}
             onToggleLive={handleToggleLive}
             emergencyConfig={emergencyConfig}
@@ -1342,6 +1358,7 @@ export default function App() {
           <main className="pb-16 md:pb-0">
             <SalesSection
               products={products}
+              categories={categories}
               onAddToCart={handleAddToCart}
               onOpenProductModal={handleSelectProduct}
               bannerConfig={saleBannerConfig}

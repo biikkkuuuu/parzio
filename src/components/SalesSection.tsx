@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Product, SaleBannerConfig, SalePoster } from '../types';
+import { Product, CategoryItem, SaleBannerConfig, SalePoster } from '../types';
 import { ArrowUp, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 
 interface SalesSectionProps {
   products: Product[];
+  categories?: CategoryItem[];
   onAddToCart: (product: Product) => void;
   onOpenProductModal: (product: Product) => void;
   bannerConfig?: SaleBannerConfig;
@@ -17,11 +18,11 @@ const DEFAULT_SALE_CONFIG: SaleBannerConfig = {
   subtitle: '316L Surgical Grade Stainless Steel • 100% Anti-Tarnish, Waterproof & Hypoallergenic'
 };
 
-const SALE_CATEGORIES = ['ALL SALE', 'NECKLACES', 'BRACELETS', 'EARRINGS', 'RINGS', 'ANKLETS'];
 const PRODUCTS_PER_PAGE = 12;
 
 export const SalesSection: React.FC<SalesSectionProps> = ({
   products,
+  categories = [],
   onAddToCart,
   onOpenProductModal,
   bannerConfig = DEFAULT_SALE_CONFIG,
@@ -33,6 +34,23 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
   const isFirstPageMount = useRef(true);
 
   const bConfig = bannerConfig || DEFAULT_SALE_CONFIG;
+
+  const saleCategories = useMemo(() => {
+    const set = new Set<string>();
+    if (categories && categories.length > 0) {
+      categories.forEach((c) => {
+        if (c.name && c.name.trim()) set.add(c.name.trim().toUpperCase());
+      });
+    } else {
+      products.forEach((p) => {
+        if (p.category && p.category.trim()) set.add(p.category.trim().toUpperCase());
+      });
+    }
+    const list = Array.from(set);
+    return list.length > 0 ? ['ALL SALE', ...list] : [];
+  }, [categories, products]);
+
+  const activeCat = saleCategories.includes(selectedCategory) ? selectedCategory : 'ALL SALE';
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -46,7 +64,7 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
   // Reset to page 1 whenever category filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory]);
+  }, [activeCat]);
 
   // Reliable scroll to top of sales product grid whenever page changes (after DOM update)
   useEffect(() => {
@@ -73,11 +91,11 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
   }, [currentPage]);
 
   const filteredSaleProducts = useMemo(() => {
-    if (selectedCategory === 'ALL SALE') return products;
+    if (activeCat === 'ALL SALE') return products;
     return products.filter(
-      (p) => p.category.toUpperCase() === selectedCategory.toUpperCase()
+      (p) => (p.category || '').trim().toUpperCase() === activeCat
     );
-  }, [products, selectedCategory]);
+  }, [products, activeCat]);
 
   const totalPages = Math.ceil(filteredSaleProducts.length / PRODUCTS_PER_PAGE) || 1;
   const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
@@ -95,24 +113,26 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
   return (
     <div className="relative bg-[#f4eee6] min-h-screen pb-16">
 
-      {/* Category Chips Bar */}
-      <div className="sticky top-[44px] sm:top-[56px] z-30 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-3 py-2.5 overflow-x-auto no-scrollbar shadow-xs">
-        <div className="flex items-center gap-2 min-w-max max-w-4xl mx-auto justify-start sm:justify-center">
-          {SALE_CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
-                selectedCategory === cat
-                  ? 'bg-[#9e7144] text-white shadow-xs'
-                  : 'bg-[#faf8f5] text-[#747878] hover:bg-[#eae5dc] border border-[#eae5dc]'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+      {/* Category Chips Bar (Dynamic only when categories exist) */}
+      {saleCategories.length > 0 && (
+        <div className="sticky top-[44px] sm:top-[56px] z-30 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-3 py-2.5 overflow-x-auto no-scrollbar shadow-xs">
+          <div className="flex items-center gap-2 min-w-max max-w-4xl mx-auto justify-start sm:justify-center">
+            {saleCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
+                  activeCat === cat
+                    ? 'bg-[#9e7144] text-white shadow-xs'
+                    : 'bg-[#faf8f5] text-[#747878] hover:bg-[#eae5dc] border border-[#eae5dc]'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 2-Column to 4-Column Product Grid */}
       <div id="sales-product-grid" className="max-w-6xl mx-auto pt-4">

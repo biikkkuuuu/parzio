@@ -152,7 +152,8 @@ export const dbService = {
       const snapshot = await getDocs(q);
       const products: Product[] = [];
       snapshot.forEach((docSnap) => {
-        products.push(docSnap.data() as Product);
+        const data = docSnap.data();
+        products.push({ ...data, id: data.id || docSnap.id } as Product);
       });
       this.saveProducts(products);
       return products;
@@ -169,7 +170,8 @@ export const dbService = {
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const products: Product[] = [];
         snapshot.forEach((docSnap) => {
-          products.push(docSnap.data() as Product);
+          const data = docSnap.data();
+          products.push({ ...data, id: data.id || docSnap.id } as Product);
         });
         this.saveProducts(products);
         onProductsChange(products);
@@ -208,8 +210,34 @@ export const dbService = {
     if (db && isFirebaseConfigured()) {
       try {
         await deleteDoc(doc(db, 'products', productId));
+        // Thorough check: also search and delete any doc in products collection matching ID
+        const snapshot = await getDocs(collection(db, 'products'));
+        const deletePromises: Promise<any>[] = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          if (docSnap.id === productId || data.id === productId) {
+            deletePromises.push(deleteDoc(doc(db, 'products', docSnap.id)));
+          }
+        });
+        await Promise.all(deletePromises);
       } catch (e) {
         console.error('Failed to delete product from Firebase:', e);
+      }
+    }
+  },
+
+  async deleteAllProducts(): Promise<void> {
+    this.saveProducts([]);
+    if (db && isFirebaseConfigured()) {
+      try {
+        const snapshot = await getDocs(collection(db, 'products'));
+        const deletePromises: Promise<any>[] = [];
+        snapshot.forEach((docSnap) => {
+          deletePromises.push(deleteDoc(doc(db, 'products', docSnap.id)));
+        });
+        await Promise.all(deletePromises);
+      } catch (e) {
+        console.error('Failed to delete all products from Firebase:', e);
       }
     }
   },
@@ -240,7 +268,8 @@ export const dbService = {
       const snapshot = await getDocs(collection(db, 'categories'));
       const categories: CategoryItem[] = [];
       snapshot.forEach((docSnap) => {
-        categories.push(docSnap.data() as CategoryItem);
+        const data = docSnap.data();
+        categories.push({ ...data, id: data.id || docSnap.id } as CategoryItem);
       });
       this.saveCategories(categories);
       return categories;
@@ -256,7 +285,8 @@ export const dbService = {
       const unsubscribe = onSnapshot(collection(db, 'categories'), (snapshot) => {
         const categories: CategoryItem[] = [];
         snapshot.forEach((docSnap) => {
-          categories.push(docSnap.data() as CategoryItem);
+          const data = docSnap.data();
+          categories.push({ ...data, id: data.id || docSnap.id } as CategoryItem);
         });
         this.saveCategories(categories);
         onCategoriesChange(categories);
@@ -287,17 +317,51 @@ export const dbService = {
   },
 
   async deleteCategory(catName: string): Promise<void> {
+    const target = catName.trim().toLowerCase();
     const categories = this.getCategories().filter(
-      (c) => c.name.toLowerCase() !== catName.toLowerCase()
+      (c) => c.name.trim().toLowerCase() !== target
     );
     this.saveCategories(categories);
 
     if (db && isFirebaseConfigured()) {
       try {
-        const catId = 'cat-' + catName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const catId = 'cat-' + target.replace(/[^a-z0-9]/g, '-');
         await deleteDoc(doc(db, 'categories', catId));
+        // Thorough check: delete any document in categories collection matching name or ID
+        const snapshot = await getDocs(collection(db, 'categories'));
+        const deletePromises: Promise<any>[] = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const docName = (data.name || '').trim().toLowerCase();
+          const dId = docSnap.id.toLowerCase();
+          if (
+            dId === catId ||
+            dId === target ||
+            docName === target ||
+            (data.id && data.id.toLowerCase() === catId)
+          ) {
+            deletePromises.push(deleteDoc(doc(db, 'categories', docSnap.id)));
+          }
+        });
+        await Promise.all(deletePromises);
       } catch (e) {
         console.error('Failed to delete category from Firebase:', e);
+      }
+    }
+  },
+
+  async deleteAllCategories(): Promise<void> {
+    this.saveCategories([]);
+    if (db && isFirebaseConfigured()) {
+      try {
+        const snapshot = await getDocs(collection(db, 'categories'));
+        const deletePromises: Promise<any>[] = [];
+        snapshot.forEach((docSnap) => {
+          deletePromises.push(deleteDoc(doc(db, 'categories', docSnap.id)));
+        });
+        await Promise.all(deletePromises);
+      } catch (e) {
+        console.error('Failed to delete all categories from Firebase:', e);
       }
     }
   },
