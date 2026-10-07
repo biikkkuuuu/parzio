@@ -988,9 +988,6 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                 <p className="text-xs text-[#747878] mt-1.5">
                   We've sent a 6-digit code to <strong>+91 {phone}</strong>
                 </p>
-                <p className="text-[11px] text-[#8c7138] mt-1 font-medium bg-[#faf8f5] py-1 px-3 rounded-full inline-block border border-[#eae5dc]">
-                  ⚡ SMS usually arrives in 15–30s (Instant verify: <strong className="font-mono">123456</strong>)
-                </p>
               </div>
 
               {/* OTP Form */}

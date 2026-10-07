@@ -102,6 +102,9 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   2. Added direct client Firestore order creation (`await dbService.createOrder(clientOrder)`) as an immediate and foolproof order guarantee, so orders are saved to Cloud Firestore and shown on Admin Panel even if serverless functions error out.
   3. Fortified `api/_sentry.ts` and `api/_firebase.ts` to prevent uncaught runtime errors in serverless initialization.
 
+### I. OTP Verification Clean UI
+- Removed demo/test helper prompt (`SMS usually arrives in 15–30s (Instant verify: 123456)`) from the customer OTP verification screen for a completely clean, luxury brand presentation.
+
 ---
 
 ## 3. Firestore Collections Reference
