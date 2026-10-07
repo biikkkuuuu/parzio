@@ -23,7 +23,37 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPass = password.trim();
 
-    // 1. Direct Master Admin ID & Password Check (Instant & Offline-resilient)
+    // 1. Try Firebase Authentication (Secure & Private in Google Console)
+    if (auth && cleanEmail.includes('@')) {
+      try {
+        await signInWithEmailAndPassword(auth, cleanEmail, cleanPass);
+        sessionStorage.setItem('parzio_admin_auth', 'true');
+        onSuccess();
+        return;
+      } catch (err: any) {
+        console.warn("Firebase admin login error:", err?.code || err?.message);
+        const code = err?.code || '';
+        if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+          setErrorMsg("Wrong Password for this Firebase Admin account.");
+          setLoading(false);
+          return;
+        } else if (code === 'auth/user-not-found') {
+          setErrorMsg("No admin account found with this email in Firebase.");
+          setLoading(false);
+          return;
+        } else if (code === 'auth/too-many-requests') {
+          setErrorMsg("Too many attempts. Please wait a minute and try again.");
+          setLoading(false);
+          return;
+        } else if (code === 'auth/operation-not-allowed') {
+          setErrorMsg("Email/Password provider is not enabled in Firebase Console.");
+          setLoading(false);
+          return;
+        }
+      }
+    }
+
+    // 2. Direct Master Admin ID & Password Fallback
     const allowedAdminIds = [
       'admin@parzio.in',
       'admin',
@@ -54,26 +84,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
       return;
     }
 
-    // 2. Try Firebase Email & Password authentication if configured
-    if (auth && cleanEmail.includes('@')) {
-      try {
-        await signInWithEmailAndPassword(auth, cleanEmail, cleanPass);
-        sessionStorage.setItem('parzio_admin_auth', 'true');
-        onSuccess();
-        return;
-      } catch (err: any) {
-        console.warn("Firebase admin login:", err?.code || err?.message);
-      }
-    }
-
-    setErrorMsg("Invalid Admin ID or Password. Try ID: admin@parzio.in and Pass: parzio@admin");
+    setErrorMsg("Invalid Admin ID or Password. Please check credentials.");
     setLoading(false);
-  };
-
-  const handleFillDefaults = () => {
-    setEmail('admin@parzio.in');
-    setPassword('parzio@admin');
-    setErrorMsg('');
   };
 
   return (
@@ -87,7 +99,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
           </div>
           <h2 className="text-xl font-bold text-center">Store Admin</h2>
           <p className="text-xs text-center text-gray-500 mt-1">
-            Login with Admin ID &amp; Password
+            Login with Admin Email &amp; Password
           </p>
         </div>
 
@@ -101,7 +113,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
         {/* Email/ID & Password Form (NO OTP) */}
         <form onSubmit={handleCredentialsSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold mb-1.5 text-gray-700">Admin ID / Email</label>
+            <label className="block text-xs font-semibold mb-1.5 text-gray-700">Admin Email / ID</label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400" />
               <input
@@ -157,22 +169,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
             )}
           </button>
         </form>
-
-        {/* Quick Helper Button */}
-        <div className="mt-4 pt-4 border-t border-[#f0ede6] text-center">
-          <button
-            type="button"
-            onClick={handleFillDefaults}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#8c7138] hover:text-[#141414] bg-[#faf6ee] hover:bg-[#f3ede0] px-3 py-1.5 rounded-lg border border-[#e6dccb] transition-all cursor-pointer"
-          >
-            <KeyRound className="w-3.5 h-3.5" />
-            <span>Fill Master Credentials</span>
-          </button>
-        </div>
         
-        <div className="mt-4 text-center text-[10px] text-gray-400">
-          <p>Protected by Secure Admin Authentication</p>
-          <p className="mt-1">Direct Master Access • Zero OTP Required</p>
+        <div className="mt-6 text-center text-[10px] text-gray-400">
+          <p>Protected by Google Firebase Admin Authentication</p>
+          <p className="mt-1">Direct Secure Access • Zero OTP Waiting</p>
         </div>
       </div>
     </div>
