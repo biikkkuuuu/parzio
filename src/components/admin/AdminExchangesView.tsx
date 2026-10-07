@@ -16,12 +16,28 @@ import {
 } from 'lucide-react';
 
 interface AdminExchangesViewProps {
+  exchanges?: ExchangeRequest[];
+  onAddExchange?: (req: ExchangeRequest) => void;
+  onEditExchange?: (req: ExchangeRequest) => void;
+  onDeleteExchange?: (id: string) => void;
   onTriggerToast: (msg: string) => void;
 }
 
-export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTriggerToast }) => {
-  const [exchanges, setExchanges] = useState<ExchangeRequest[]>(INITIAL_EXCHANGES);
+export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({
+  exchanges: propExchanges,
+  onAddExchange,
+  onEditExchange,
+  onDeleteExchange,
+  onTriggerToast
+}) => {
+  const [exchanges, setExchanges] = useState<ExchangeRequest[]>(propExchanges || INITIAL_EXCHANGES);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (propExchanges) {
+      setExchanges(propExchanges);
+    }
+  }, [propExchanges]);
   
   // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,6 +78,11 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
   };
 
   const handleApprove = (id: string) => {
+    const target = exchanges.find((e) => e.id === id);
+    if (target) {
+      const updated = { ...target, status: 'Approved & Pickup Scheduled' as const };
+      if (onEditExchange) onEditExchange(updated);
+    }
     setExchanges((prev) =>
       prev.map((e) =>
         e.id === id ? { ...e, status: 'Approved & Pickup Scheduled' } : e
@@ -71,6 +92,11 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
   };
 
   const handleReject = (id: string) => {
+    const target = exchanges.find((e) => e.id === id);
+    if (target) {
+      const updated = { ...target, status: 'Rejected' as const };
+      if (onEditExchange) onEditExchange(updated);
+    }
     setExchanges((prev) =>
       prev.map((e) =>
         e.id === id ? { ...e, status: 'Rejected' } : e
@@ -80,6 +106,11 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
   };
 
   const handleDispatchReplacement = (id: string) => {
+    const target = exchanges.find((e) => e.id === id);
+    if (target) {
+      const updated = { ...target, status: 'Replacement Dispatched' as const };
+      if (onEditExchange) onEditExchange(updated);
+    }
     setExchanges((prev) =>
       prev.map((e) =>
         e.id === id ? { ...e, status: 'Replacement Dispatched' } : e
@@ -93,21 +124,19 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
     if (!customerName.trim()) return;
 
     if (editingExchange) {
+      const updatedReq: ExchangeRequest = {
+        ...editingExchange,
+        orderId,
+        customerName: customerName.trim(),
+        phone: phone.trim(),
+        productName: productName.trim(),
+        reason,
+        requestedExchangeItem: requestedExchangeItem.trim(),
+        status
+      };
+      if (onEditExchange) onEditExchange(updatedReq);
       setExchanges((prev) =>
-        prev.map((e) =>
-          e.id === editingExchange.id
-            ? {
-                ...e,
-                orderId,
-                customerName: customerName.trim(),
-                phone: phone.trim(),
-                productName: productName.trim(),
-                reason,
-                requestedExchangeItem: requestedExchangeItem.trim(),
-                status
-              }
-            : e
-        )
+        prev.map((e) => (e.id === editingExchange.id ? updatedReq : e))
       );
       onTriggerToast(`Exchange ticket #${editingExchange.id} updated.`);
     } else {
@@ -123,6 +152,7 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
         date: new Date().toISOString().slice(0, 10),
         evidencePhoto: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80'
       };
+      if (onAddExchange) onAddExchange(newReq);
       setExchanges([newReq, ...exchanges]);
       onTriggerToast(`Created Exchange Request #${newReq.id}!`);
     }
@@ -131,6 +161,7 @@ export const AdminExchangesView: React.FC<AdminExchangesViewProps> = ({ onTrigge
   };
 
   const handleDelete = (id: string) => {
+    if (onDeleteExchange) onDeleteExchange(id);
     setExchanges((prev) => prev.filter((e) => e.id !== id));
     onTriggerToast('Exchange ticket deleted.');
     setExchangeToDelete(null);

@@ -1,19 +1,41 @@
 import React, { useState } from 'react';
 import { RotateCcw, CheckCircle2, ShieldCheck, Truck, Sparkles } from 'lucide-react';
-import { OrderItem } from '../types';
+import { OrderItem, ExchangeRequest } from '../types';
 
 interface ExchangeViewProps {
   orders: OrderItem[];
+  onAddExchange?: (req: ExchangeRequest) => void;
 }
 
-export const ExchangeView: React.FC<ExchangeViewProps> = ({ orders }) => {
+export const ExchangeView: React.FC<ExchangeViewProps> = ({ orders, onAddExchange }) => {
   const [selectedOrder, setSelectedOrder] = useState<string>(orders[0]?.id || '');
   const [reason, setReason] = useState('Ring Size Adjustment');
   const [notes, setNotes] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [ticketNumber, setTicketNumber] = useState('EXCH-4092');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const matchedOrder = orders.find((o) => o.id === selectedOrder);
+    const orderNum = selectedOrder || '99201';
+    const newTicketId = `EXCH-${Math.floor(1000 + Math.random() * 9000)}`;
+    setTicketNumber(newTicketId);
+
+    if (onAddExchange) {
+      onAddExchange({
+        id: newTicketId,
+        orderId: orderNum,
+        customerName: matchedOrder?.customerName || 'Customer',
+        phone: matchedOrder?.customerPhone || '9876543210',
+        pincode: matchedOrder?.shippingPincode || '400001',
+        productName: matchedOrder?.productName || 'Parzio Jewelry Item',
+        requestedItem: notes ? `Exchange note: ${notes}` : 'Replacement Unit',
+        reason: (reason as any) || 'Ring Size Mismatch',
+        status: 'Pending Review',
+        createdAt: new Date().toISOString()
+      });
+    }
+
     setSubmitted(true);
   };
 
@@ -41,7 +63,7 @@ export const ExchangeView: React.FC<ExchangeViewProps> = ({ orders }) => {
             Exchange Request Initiated!
           </h3>
           <p className="text-xs text-[#444748]">
-            We have generated return ticket <strong>#EXCH-4092</strong> for order{' '}
+            We have generated return ticket <strong>#{ticketNumber}</strong> for order{' '}
             <strong>#{selectedOrder}</strong>. Our courier partner will pick up the piece in its original velvet pouch within 24–48 hours.
           </p>
           <div className="p-3 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] text-[11px] font-semibold text-[#8c7138]">

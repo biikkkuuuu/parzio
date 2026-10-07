@@ -10,20 +10,64 @@ import {
   Sparkles
 } from 'lucide-react';
 
+import { GlobalStoreSettings } from '../../services/dbService';
+
 interface AdminSettingsViewProps {
+  settings?: GlobalStoreSettings;
+  onUpdateSettings?: (settings: GlobalStoreSettings) => void;
   onTriggerToast: (msg: string) => void;
 }
 
-export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerToast }) => {
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState('500');
-  const [codFee, setCodFee] = useState('0');
-  const [blueDartKey, setBlueDartKey] = useState('BLUEDART_PROD_LIVE_88329');
-  const [delhiveryKey, setDelhiveryKey] = useState('DELHIVERY_TOKEN_SEC_99182');
-  const [whatsappApi, setWhatsappApi] = useState('META_WHATSAPP_CLOUD_PROD_4412');
+export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({
+  settings,
+  onUpdateSettings,
+  onTriggerToast
+}) => {
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(
+    settings ? String(settings.freeShippingThreshold) : '500'
+  );
+  const [codFee, setCodFee] = useState(settings ? String(settings.codFee) : '0');
+  const [blueDartKey, setBlueDartKey] = useState(
+    settings ? settings.blueDartKey : 'BLUEDART_PROD_LIVE_88329'
+  );
+  const [delhiveryKey, setDelhiveryKey] = useState(
+    settings ? settings.delhiveryKey : 'DELHIVERY_TOKEN_SEC_99182'
+  );
+  const [whatsappApi, setWhatsappApi] = useState(
+    settings ? settings.whatsappApi : 'META_WHATSAPP_CLOUD_PROD_4412'
+  );
+  const [allowReversePickup, setAllowReversePickup] = useState(
+    settings ? settings.allowReversePickup : true
+  );
+  const [acceptCod, setAcceptCod] = useState(
+    settings ? settings.acceptCod : true
+  );
+
+  React.useEffect(() => {
+    if (settings) {
+      setFreeShippingThreshold(String(settings.freeShippingThreshold));
+      setCodFee(String(settings.codFee));
+      setBlueDartKey(settings.blueDartKey);
+      setDelhiveryKey(settings.delhiveryKey);
+      setWhatsappApi(settings.whatsappApi);
+      setAllowReversePickup(settings.allowReversePickup);
+      setAcceptCod(settings.acceptCod);
+    }
+  }, [settings]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    onTriggerToast('Store settings & logistics keys securely saved!');
+    const updated: GlobalStoreSettings = {
+      freeShippingThreshold: Number(freeShippingThreshold) || 500,
+      codFee: Number(codFee) || 0,
+      blueDartKey: blueDartKey.trim(),
+      delhiveryKey: delhiveryKey.trim(),
+      whatsappApi: whatsappApi.trim(),
+      allowReversePickup,
+      acceptCod,
+    };
+    if (onUpdateSettings) onUpdateSettings(updated);
+    onTriggerToast('Store settings & logistics keys securely saved to cloud database!');
   };
 
   return (
@@ -157,15 +201,23 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
               <div className="inline-flex items-center gap-1 bg-white p-0.5 rounded-full border border-[#eae5dc]">
                 <button
                   type="button"
-                  onClick={() => onTriggerToast('Reverse Pickup Policy set to YES (Allowed)')}
-                  className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-700 text-white shadow-xs cursor-pointer"
+                  onClick={() => setAllowReversePickup(true)}
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer ${
+                    allowReversePickup
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'text-[#747878] hover:text-[#141414]'
+                  }`}
                 >
                   Yes
                 </button>
                 <button
                   type="button"
-                  onClick={() => onTriggerToast('Reverse Pickup Policy set to NO (Disallowed)')}
-                  className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#747878] hover:text-[#141414] cursor-pointer"
+                  onClick={() => setAllowReversePickup(false)}
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer ${
+                    !allowReversePickup
+                      ? 'bg-rose-700 text-white shadow-xs'
+                      : 'text-[#747878] hover:text-[#141414]'
+                  }`}
                 >
                   No
                 </button>
@@ -179,15 +231,23 @@ export const AdminSettingsView: React.FC<AdminSettingsViewProps> = ({ onTriggerT
               <div className="inline-flex items-center gap-1 bg-white p-0.5 rounded-full border border-[#eae5dc]">
                 <button
                   type="button"
-                  onClick={() => onTriggerToast('Cash On Delivery set to YES (Enabled)')}
-                  className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-700 text-white shadow-xs cursor-pointer"
+                  onClick={() => setAcceptCod(true)}
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer ${
+                    acceptCod
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'text-[#747878] hover:text-[#141414]'
+                  }`}
                 >
                   Yes
                 </button>
                 <button
                   type="button"
-                  onClick={() => onTriggerToast('Cash On Delivery set to NO (Prepaid Only)')}
-                  className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#747878] hover:text-[#141414] cursor-pointer"
+                  onClick={() => setAcceptCod(false)}
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer ${
+                    !acceptCod
+                      ? 'bg-rose-700 text-white shadow-xs'
+                      : 'text-[#747878] hover:text-[#141414]'
+                  }`}
                 >
                   No
                 </button>

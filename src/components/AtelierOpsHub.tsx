@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { OrderItem, OrderStatus, Product, CategoryItem, AdminTab, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon } from '../types';
+import { OrderItem, OrderStatus, Product, CategoryItem, AdminTab, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon, ExchangeRequest } from '../types';
+import { PincodeItem, GlobalStoreSettings } from '../services/dbService';
 import { AdminAnalyticsView } from './admin/AdminAnalyticsView';
 import { AdminOrdersView } from './admin/AdminOrdersView';
 import { AdminInventoryView } from './admin/AdminInventoryView';
@@ -70,6 +71,14 @@ interface AtelierOpsHubProps {
   onUpdateSaleBannerConfig: (config: SaleBannerConfig) => void;
   coupons?: Coupon[];
   onUpdateCoupons?: (coupons: Coupon[]) => void;
+  exchanges?: ExchangeRequest[];
+  onAddExchange?: (req: ExchangeRequest) => void;
+  onEditExchange?: (req: ExchangeRequest) => void;
+  onDeleteExchange?: (id: string) => void;
+  pincodes?: PincodeItem[];
+  onUpdatePincodes?: (pincodes: PincodeItem[]) => void;
+  storeSettings?: GlobalStoreSettings;
+  onUpdateStoreSettings?: (settings: GlobalStoreSettings) => void;
 }
 
 export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
@@ -105,7 +114,15 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
   onUpdateSkinSafeConfig,
   onUpdateSaleBannerConfig,
   coupons,
-  onUpdateCoupons
+  onUpdateCoupons,
+  exchanges,
+  onAddExchange,
+  onEditExchange,
+  onDeleteExchange,
+  pincodes,
+  onUpdatePincodes,
+  storeSettings,
+  onUpdateStoreSettings
 }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
@@ -363,11 +380,21 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
         )}
 
         {activeTab === 'rto-shield' && (
-          <AdminRtoShieldView onTriggerToast={triggerToast} />
+          <AdminRtoShieldView
+            pincodes={pincodes}
+            onUpdatePincodes={onUpdatePincodes}
+            onTriggerToast={triggerToast}
+          />
         )}
 
         {activeTab === 'exchanges' && (
-          <AdminExchangesView onTriggerToast={triggerToast} />
+          <AdminExchangesView
+            exchanges={exchanges}
+            onAddExchange={onAddExchange}
+            onEditExchange={onEditExchange}
+            onDeleteExchange={onDeleteExchange}
+            onTriggerToast={triggerToast}
+          />
         )}
 
         {activeTab === 'coupons' && (
@@ -379,7 +406,11 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
         )}
 
         {activeTab === 'settings' && (
-          <AdminSettingsView onTriggerToast={triggerToast} />
+          <AdminSettingsView
+            settings={storeSettings}
+            onUpdateSettings={onUpdateStoreSettings}
+            onTriggerToast={triggerToast}
+          />
         )}
       </main>
 

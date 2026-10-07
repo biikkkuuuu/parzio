@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Product, CategoryItem, CartItem, OrderItem, ActiveScreen, OrderStatus, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon } from './types';
+import { Product, CategoryItem, CartItem, OrderItem, ActiveScreen, OrderStatus, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon, ExchangeRequest } from './types';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { userService, UserProfile } from './services/userService';
@@ -21,7 +21,7 @@ import { InstagramGrid } from './components/InstagramGrid';
 import { BrandPromise } from './components/BrandPromise';
 import { Footer } from './components/Footer';
 import { EmergencyStorefrontLockdown } from './components/EmergencyStorefrontLockdown';
-import { dbService } from './services/dbService';
+import { dbService, PincodeItem, GlobalStoreSettings } from './services/dbService';
 
 import { useCartStore } from './store/useCartStore';
 import { useUIStore } from './store/useUIStore';
@@ -226,17 +226,49 @@ export default function App() {
     let isMounted = true;
     const syncFromCloud = async () => {
       if (dbService.isConfigured) {
-        const [cloudProducts, cloudCategories, cloudOrders, cloudBanners] = await Promise.all([
+        const [
+          cloudProducts,
+          cloudCategories,
+          cloudOrders,
+          cloudBanners,
+          cloudCoupons,
+          cloudTopMarquee,
+          cloudBannerMarquee,
+          cloudSalePosters,
+          cloudSkinSafe,
+          cloudSaleBanner,
+          cloudExchanges,
+          cloudPincodes,
+          cloudStoreSettings
+        ] = await Promise.all([
           dbService.fetchProductsFromCloud(),
           dbService.fetchCategoriesFromCloud(),
           dbService.fetchOrdersFromCloud(),
           dbService.fetchBannersFromCloud(),
+          dbService.fetchCouponsFromCloud(),
+          dbService.fetchTopMarqueeFromCloud(),
+          dbService.fetchBannerMarqueeFromCloud(),
+          dbService.fetchSalePostersFromCloud(),
+          dbService.fetchSkinSafeConfigFromCloud(),
+          dbService.fetchSaleBannerConfigFromCloud(),
+          dbService.fetchExchangesFromCloud(),
+          dbService.fetchPincodesFromCloud(),
+          dbService.fetchStoreSettingsFromCloud(),
         ]);
         if (isMounted) {
           if (cloudProducts && cloudProducts.length > 0) setProducts(cloudProducts);
           if (cloudCategories && cloudCategories.length > 0) setCategories(cloudCategories);
           if (cloudOrders && cloudOrders.length > 0) setOrders(cloudOrders);
           if (cloudBanners && cloudBanners.length > 0) setBanners(cloudBanners);
+          if (cloudCoupons && cloudCoupons.length > 0) setCoupons(cloudCoupons);
+          if (cloudTopMarquee && cloudTopMarquee.length > 0) setTopMarqueeItems(cloudTopMarquee);
+          if (cloudBannerMarquee && cloudBannerMarquee.length > 0) setBannerMarqueeItems(cloudBannerMarquee);
+          if (cloudSalePosters && cloudSalePosters.length > 0) setSalePosters(cloudSalePosters);
+          if (cloudSkinSafe) setSkinSafeConfig(cloudSkinSafe);
+          if (cloudSaleBanner) setSaleBannerConfig(cloudSaleBanner);
+          if (cloudExchanges && cloudExchanges.length > 0) setExchanges(cloudExchanges);
+          if (cloudPincodes && cloudPincodes.length > 0) setPincodes(cloudPincodes);
+          if (cloudStoreSettings) setStoreSettings(cloudStoreSettings);
         }
       }
     };
@@ -269,12 +301,28 @@ export default function App() {
       showToast(`⚡ New Order Received: #${newOrder.id}`);
     });
 
+    // 5. Realtime listener for Coupons
+    const unsubscribeCoupons = dbService.subscribeToCoupons((liveCoupons) => {
+      if (isMounted && liveCoupons && liveCoupons.length > 0) {
+        setCoupons(liveCoupons);
+      }
+    });
+
+    // 6. Realtime listener for Top Marquee
+    const unsubscribeTopMarquee = dbService.subscribeToTopMarquee((liveMarquee) => {
+      if (isMounted && liveMarquee && liveMarquee.length > 0) {
+        setTopMarqueeItems(liveMarquee);
+      }
+    });
+
     return () => {
       isMounted = false;
       if (unsubscribeProducts) unsubscribeProducts();
       if (unsubscribeCategories) unsubscribeCategories();
       if (unsubscribeBanners) unsubscribeBanners();
       if (unsubscribeOrders) unsubscribeOrders();
+      if (unsubscribeCoupons) unsubscribeCoupons();
+      if (unsubscribeTopMarquee) unsubscribeTopMarquee();
     };
   }, []);
 
@@ -468,6 +516,7 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem('parzio_sale_posters', JSON.stringify(salePosters));
+      dbService.saveSalePosters(salePosters);
     } catch (e) {
       console.error(e);
     }
@@ -476,6 +525,7 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem('parzio_banners', JSON.stringify(banners));
+      dbService.saveBanners(banners);
     } catch (e) {
       console.error(e);
     }
@@ -484,6 +534,7 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem('parzio_top_marquee', JSON.stringify(topMarqueeItems));
+      dbService.saveTopMarquee(topMarqueeItems);
     } catch (e) {
       console.error(e);
     }
@@ -492,6 +543,7 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem('parzio_banner_marquee', JSON.stringify(bannerMarqueeItems));
+      dbService.saveBannerMarquee(bannerMarqueeItems);
     } catch (e) {
       console.error(e);
     }
@@ -500,6 +552,7 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem('parzio_skin_banner_config', JSON.stringify(skinSafeConfig));
+      dbService.saveSkinSafeConfig(skinSafeConfig);
     } catch (e) {
       console.error(e);
     }
@@ -508,6 +561,7 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem('parzio_sale_banner_config', JSON.stringify(saleBannerConfig));
+      dbService.saveSaleBannerConfig(saleBannerConfig);
     } catch (e) {
       console.error(e);
     }
@@ -557,6 +611,45 @@ export default function App() {
     setAppliedCoupon(null);
   };
 
+  // Exchanges State (Unified Data Layer via dbService)
+  const [exchanges, setExchanges] = useState<ExchangeRequest[]>(() => dbService.getExchanges());
+
+  const handleAddExchange = (req: ExchangeRequest) => {
+    setExchanges((prev) => [req, ...prev]);
+    dbService.upsertExchange(req);
+    showToast(`Exchange #${req.id} added!`);
+  };
+
+  const handleEditExchange = (req: ExchangeRequest) => {
+    setExchanges((prev) => prev.map((e) => (e.id === req.id ? req : e)));
+    dbService.upsertExchange(req);
+    showToast(`Exchange #${req.id} updated!`);
+  };
+
+  const handleDeleteExchange = (id: string) => {
+    setExchanges((prev) => prev.filter((e) => e.id !== id));
+    dbService.deleteExchange(id);
+    showToast(`Exchange #${id} deleted!`);
+  };
+
+  // RTO Shield Pincodes State (Unified Data Layer via dbService)
+  const [pincodes, setPincodes] = useState<PincodeItem[]>(() => dbService.getPincodes());
+
+  const handleUpdatePincodes = (updatedPincodes: PincodeItem[]) => {
+    setPincodes(updatedPincodes);
+    dbService.savePincodes(updatedPincodes);
+    showToast('RTO Shield Pincodes updated in cloud!');
+  };
+
+  // Global Store & Gateway Settings State (Unified Data Layer via dbService)
+  const [storeSettings, setStoreSettings] = useState<GlobalStoreSettings>(() => dbService.getStoreSettings());
+
+  const handleUpdateStoreSettings = (newSettings: GlobalStoreSettings) => {
+    setStoreSettings(newSettings);
+    dbService.saveStoreSettings(newSettings);
+    showToast('Store & Gateway settings updated in cloud!');
+  };
+
   // Emergency Storefront Shutdown Configuration
   const [emergencyConfig, setEmergencyConfig] = useState<EmergencyShutdownConfig>({
     isActive: false,
@@ -599,15 +692,28 @@ export default function App() {
 
   const handleUpdateStock = (productId: string, newStock: number) => {
     setProducts((prev) =>
-      prev.map((p) => (p.id === productId ? { ...p, stock: newStock } : p))
+      prev.map((p) => {
+        if (p.id === productId) {
+          const updated = { ...p, stock: newStock };
+          dbService.upsertProduct(updated);
+          return updated;
+        }
+        return p;
+      })
     );
+    showToast(`Stock updated to ${newStock} units`);
   };
 
   const handleToggleLive = (productId: string) => {
     setProducts((prev) =>
-      prev.map((p) =>
-        p.id === productId ? { ...p, isLive: p.isLive === false ? true : false } : p
-      )
+      prev.map((p) => {
+        if (p.id === productId) {
+          const updated = { ...p, isLive: p.isLive === false ? true : false };
+          dbService.upsertProduct(updated);
+          return updated;
+        }
+        return p;
+      })
     );
   };
 
@@ -930,11 +1036,8 @@ export default function App() {
 
   // Order Handlers (Full CRUD for Admin Operations & Cloud Sync)
   const handleOrderPlaced = (newOrder: OrderItem) => {
-    setOrders((prev) => {
-      const updated = [newOrder, ...prev];
-      dbService.saveOrders(updated);
-      return updated;
-    });
+    setOrders((prev) => [newOrder, ...prev]);
+    dbService.createOrder(newOrder);
     setCartItems([]);
     showToast(`Order #${newOrder.id} placed successfully!`);
   };
@@ -1096,6 +1199,14 @@ export default function App() {
               setCoupons(updated);
               dbService.saveCoupons(updated);
             }}
+            exchanges={exchanges}
+            onAddExchange={handleAddExchange}
+            onEditExchange={handleEditExchange}
+            onDeleteExchange={handleDeleteExchange}
+            pincodes={pincodes}
+            onUpdatePincodes={handleUpdatePincodes}
+            storeSettings={storeSettings}
+            onUpdateStoreSettings={handleUpdateStoreSettings}
           />
         </React.Suspense>
       </AdminProtected>
@@ -1321,6 +1432,7 @@ export default function App() {
           <main className="pb-16 md:pb-0">
             <ExchangeView
               orders={orders}
+              onAddExchange={handleAddExchange}
             />
           </main>
         ) : activeTab === 'account' ? (

@@ -23,14 +23,26 @@ interface PincodeItem {
 }
 
 interface AdminRtoShieldViewProps {
+  pincodes?: PincodeItem[];
+  onUpdatePincodes?: (pincodes: PincodeItem[]) => void;
   onTriggerToast: (msg: string) => void;
 }
 
-export const AdminRtoShieldView: React.FC<AdminRtoShieldViewProps> = ({ onTriggerToast }) => {
-  const [pincodes, setPincodes] = useState<PincodeItem[]>(HIGH_RISK_PINCODES);
+export const AdminRtoShieldView: React.FC<AdminRtoShieldViewProps> = ({
+  pincodes: propPincodes,
+  onUpdatePincodes,
+  onTriggerToast
+}) => {
+  const [pincodes, setPincodes] = useState<PincodeItem[]>(propPincodes || HIGH_RISK_PINCODES);
   const [newPincode, setNewPincode] = useState('');
   const [newArea, setNewArea] = useState('');
   const [phoneToConvert, setPhoneToConvert] = useState('');
+
+  React.useEffect(() => {
+    if (propPincodes) {
+      setPincodes(propPincodes);
+    }
+  }, [propPincodes]);
 
   // Editing state
   const [editingPincode, setEditingPincode] = useState<PincodeItem | null>(null);
@@ -49,7 +61,9 @@ export const AdminRtoShieldView: React.FC<AdminRtoShieldViewProps> = ({ onTrigge
       status: 'High RTO',
       action: 'Require WhatsApp OTP'
     };
-    setPincodes([item, ...pincodes]);
+    const updated = [item, ...pincodes];
+    setPincodes(updated);
+    if (onUpdatePincodes) onUpdatePincodes(updated);
     setNewPincode('');
     setNewArea('');
     onTriggerToast(`Pincode ${newPincode} added to RTO Risk Shield!`);
@@ -59,15 +73,17 @@ export const AdminRtoShieldView: React.FC<AdminRtoShieldViewProps> = ({ onTrigge
     e.preventDefault();
     if (!editingPincode) return;
 
-    setPincodes((prev) =>
-      prev.map((p) => (p.pincode === editingPincode.pincode ? editingPincode : p))
-    );
+    const updated = pincodes.map((p) => (p.pincode === editingPincode.pincode ? editingPincode : p));
+    setPincodes(updated);
+    if (onUpdatePincodes) onUpdatePincodes(updated);
     onTriggerToast(`Pincode ${editingPincode.pincode} rule updated!`);
     setEditingPincode(null);
   };
 
   const handleDeletePincode = (code: string) => {
-    setPincodes((prev) => prev.filter((p) => p.pincode !== code));
+    const updated = pincodes.filter((p) => p.pincode !== code);
+    setPincodes(updated);
+    if (onUpdatePincodes) onUpdatePincodes(updated);
     onTriggerToast(`Pincode ${code} removed from high-risk watchlist.`);
     setConfirmDeletePincode(null);
   };

@@ -3,12 +3,12 @@ import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyD_mviWWmZraQRw5dhMcr0cAC4XkC-c7eA',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'parzio-52ef9.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'parzio-52ef9',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'parzio-52ef9.firebasestorage.app',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '231968404059',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:231968404059:web:92926f28127c829316457e',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyClxzB1hANXPC6HtBtVku9_it1xmSu9hkM',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'parzio-a62b4.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'parzio-a62b4',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'parzio-a62b4.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '814679262936',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:814679262936:web:b126b4926990563243f9ad',
 };
 
 /**
