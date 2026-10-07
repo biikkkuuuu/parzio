@@ -105,6 +105,9 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 ### I. OTP Verification Clean UI
 - Removed demo/test helper prompt (`SMS usually arrives in 15–30s (Instant verify: 123456)`) from the customer OTP verification screen for a completely clean, luxury brand presentation.
 
+### J. Safe Gateway Response Parsing
+- Replaced direct `res.json()` with `res.text()` and guarded `JSON.parse` in `smsService.ts` and `postalService.ts` to prevent carrier or gateway HTML / status code pages from ever throwing JSON syntax exceptions.
+
 ---
 
 ## 3. Firestore Collections Reference

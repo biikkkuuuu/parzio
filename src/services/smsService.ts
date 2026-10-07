@@ -69,7 +69,13 @@ export const smsService = {
       const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${FAST2SMS_API_KEY}&route=q&message=${encodedMsg}&language=english&flash=0&numbers=${cleanPhone}`;
 
       const res = await fetch(url, { method: 'GET' });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { message: text };
+      }
 
       if (data.return === true || (Array.isArray(data.message) && data.message[0]?.toLowerCase().includes('success'))) {
         return { success: true };

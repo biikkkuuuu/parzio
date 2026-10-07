@@ -26,7 +26,13 @@ export async function lookupPincode(pincode: string): Promise<PostalInfo | null>
 
     if (!res.ok) return null;
 
-    const data = await res.json();
+    const resText = await res.text();
+    let data: any = null;
+    try {
+      data = JSON.parse(resText);
+    } catch {
+      return null;
+    }
     if (
       Array.isArray(data) &&
       data[0]?.Status === 'Success' &&
