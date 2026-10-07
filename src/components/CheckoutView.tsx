@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CartItem, OrderItem } from '../types';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { smsService } from '../services/smsService';
 import { UserProfile } from '../services/userService';
 import {
   X,
@@ -79,8 +78,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   const [otpSentNotification, setOtpSentNotification] = useState<boolean>(false);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Firebase Phone Auth State
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  // OTP Sending State
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   // Submission State
@@ -162,29 +160,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
 
 
-  // Setup Recaptcha
-  const setupRecaptcha = () => {
-    if (!auth) return null;
-    try {
-      if ((window as any).recaptchaVerifier) {
-        return (window as any).recaptchaVerifier;
-      }
-      const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
-        callback: () => {
-          // reCAPTCHA solved
-        }
-      });
-      (window as any).recaptchaVerifier = verifier;
-      return verifier;
-    } catch (err: any) {
-      console.warn("Recaptcha init notice:", err);
-      if ((window as any).recaptchaVerifier) {
-        return (window as any).recaptchaVerifier;
-      }
-      return null;
-    }
-  };
+
 
   // Recalculate verified total from live product database (Fixes SEC-04)
   const getVerifiedTotal = () => {
@@ -270,22 +246,15 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
     sendCodVerificationOtp();
   };
 
-  // Send COD Verification OTP via Firebase Phone Auth
+  // Send COD Verification OTP via Fast2SMS (Zero Captcha)
   const sendCodVerificationOtp = async () => {
     setIsSendingOtp(true);
     setOtpError(null);
-    try {
-      if (!auth) {
-        throw new Error('Authentication service is initializing. Please retry in a moment.');
-      }
-      const appVerifier = setupRecaptcha();
-      if (!appVerifier) {
-        throw new Error('Security verification could not be initialized. Please refresh.');
-      }
-      const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-      const formattedPhone = `+91${cleanPhone}`;
-      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-      setConfirmationResult(confirmation);
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    const res = await smsService.sendOtp(cleanPhone);
+    setIsSendingOtp(false);
+
+    if (res.success) {
       setStep('otp');
       setResendTimer(30);
       setIsResendDisabled(true);
@@ -296,22 +265,8 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       setTimeout(() => {
         otpInputRefs.current[0]?.focus();
       }, 200);
-    } catch (err: any) {
-      console.error('Failed to send COD verification OTP:', err);
-      let errMsg = 'Failed to send OTP code. Please check your mobile number and retry.';
-      if (err.code === 'auth/invalid-phone-number') {
-        errMsg = 'Invalid phone number. Please enter a valid 10-digit number.';
-      } else if (err.code === 'auth/too-many-requests') {
-        errMsg = 'Too many requests. Please wait a few moments before trying again.';
-      } else if (err.code === 'auth/quota-exceeded') {
-        errMsg = 'Daily SMS limit reached. Please contact support.';
-      } else if (err.message) {
-        errMsg = err.message;
-      }
-      alert(`COD Verification: ${errMsg}`);
-      setOtpError(errMsg);
-    } finally {
-      setIsSendingOtp(false);
+    } else {
+      setOtpError(res.error || 'Failed to send OTP code. Please retry.');
     }
   };
 
@@ -420,21 +375,16 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       return;
     }
 
-    if (!confirmationResult) {
-      setOtpError('OTP session expired. Please resend.');
-      return;
-    }
-
     setIsSubmitting(true);
     setOtpError(null);
 
-    try {
-      await confirmationResult.confirm(entered);
-      // Phone is verified!
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    const verifyRes = smsService.verifyOtp(cleanPhone, entered);
+
+    if (verifyRes.success) {
       finalizeOrder(true);
-    } catch (error: any) {
-      console.error("OTP Verification Error:", error);
-      setOtpError('Invalid OTP code. Please try again.');
+    } else {
+      setOtpError(verifyRes.error || 'Invalid OTP code. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -446,29 +396,19 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
     setIsSendingOtp(true);
     setOtpError(null);
     
-    try {
-      const appVerifier = setupRecaptcha();
-      if (!appVerifier) throw new Error("Recaptcha verification could not be initialized");
-      
-      const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-      const formattedPhone = `+91${cleanPhone}`;
-      const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-      
-      setConfirmationResult(result);
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    const res = await smsService.sendOtp(cleanPhone);
+    setIsSendingOtp(false);
+
+    if (res.success) {
       setResendTimer(30);
       setIsResendDisabled(true);
       setOtpValues(['', '', '', '', '', '']);
-      setOtpError(null);
       setOtpSentNotification(true);
       setTimeout(() => setOtpSentNotification(false), 4500);
-      setTimeout(() => {
-        otpInputRefs.current[0]?.focus();
-      }, 200);
-    } catch (error: any) {
-      console.error("Resend OTP error", error);
-      setOtpError(error.message || "Failed to resend OTP.");
-    } finally {
-      setIsSendingOtp(false);
+      otpInputRefs.current[0]?.focus();
+    } else {
+      setOtpError(res.error || 'Failed to resend OTP.');
     }
   };
 

@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, ShieldCheck, CheckCircle2, Sparkles, Truck, RefreshCw, Lock, Clock, Edit2 } from 'lucide-react';
-import { auth } from '../lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { smsService } from '../services/smsService';
 import { userService, UserProfile } from '../services/userService';
 
 interface UserLoginViewProps {
@@ -20,7 +19,6 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
 
   // OTP State
   const [otpValues, setOtpValues] = useState<string[]>(['', '', '', '', '', '']);
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [resendTimer, setResendTimer] = useState<number>(30);
   const [canResend, setCanResend] = useState<boolean>(false);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -56,31 +54,7 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
     };
   }, [step, resendTimer]);
 
-  // Setup reCAPTCHA for Login
-  const setupLoginRecaptcha = () => {
-    if (!auth) return null;
-    try {
-      if ((window as any).loginRecaptchaVerifier) {
-        return (window as any).loginRecaptchaVerifier;
-      }
-      const verifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', {
-        size: 'invisible',
-        callback: () => {
-          // reCAPTCHA solved
-        }
-      });
-      (window as any).loginRecaptchaVerifier = verifier;
-      return verifier;
-    } catch (err: any) {
-      console.warn('Login reCAPTCHA initialization note:', err);
-      if ((window as any).loginRecaptchaVerifier) {
-        return (window as any).loginRecaptchaVerifier;
-      }
-      return null;
-    }
-  };
-
-  // Step 1: Send OTP to Mobile
+  // Step 1: Send OTP to Mobile via Fast2SMS (Zero Captcha, Real SMS)
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanPhone = phone.replace(/\D/g, '').slice(-10);
@@ -92,19 +66,10 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
     setIsLoading(true);
     setError(null);
 
-    try {
-      if (!auth) {
-        throw new Error('Authentication service is initializing. Please retry in a moment.');
-      }
+    const res = await smsService.sendOtp(cleanPhone);
+    setIsLoading(false);
 
-      const appVerifier = setupLoginRecaptcha();
-      if (!appVerifier) {
-        throw new Error('Could not initialize security verification. Please refresh.');
-      }
-
-      const formattedPhone = `+91${cleanPhone}`;
-      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-      setConfirmationResult(confirmation);
+    if (res.success) {
       setStep('otp');
       setResendTimer(30);
       setCanResend(false);
@@ -112,21 +77,8 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
       setTimeout(() => {
         otpInputRefs.current[0]?.focus();
       }, 200);
-    } catch (err: any) {
-      console.error('Send Login OTP error:', err);
-      let msg = 'Failed to send OTP code. Please check your mobile number and retry.';
-      if (err.code === 'auth/invalid-phone-number') {
-        msg = 'Invalid phone number. Please enter a valid 10-digit number.';
-      } else if (err.code === 'auth/too-many-requests') {
-        msg = 'Too many requests. Please wait a few moments before trying again.';
-      } else if (err.code === 'auth/quota-exceeded') {
-        msg = 'Daily SMS limit reached. Please contact support.';
-      } else if (err.message) {
-        msg = err.message;
-      }
-      setError(msg);
-    } finally {
-      setIsLoading(false);
+    } else {
+      setError(res.error || 'Failed to send OTP code. Please retry.');
     }
   };
 
@@ -136,23 +88,17 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
     setIsLoading(true);
     setError(null);
 
-    try {
-      const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-      const appVerifier = setupLoginRecaptcha();
-      if (!appVerifier) throw new Error('Security check failed');
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    const res = await smsService.sendOtp(cleanPhone);
+    setIsLoading(false);
 
-      const formattedPhone = `+91${cleanPhone}`;
-      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-      setConfirmationResult(confirmation);
+    if (res.success) {
       setResendTimer(30);
       setCanResend(false);
       setOtpValues(['', '', '', '', '', '']);
       otpInputRefs.current[0]?.focus();
-    } catch (err: any) {
-      console.error('Resend OTP error:', err);
-      setError(err.message || 'Failed to resend code.');
-    } finally {
-      setIsLoading(false);
+    } else {
+      setError(res.error || 'Failed to resend code.');
     }
   };
 
@@ -165,65 +111,52 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
       return;
     }
 
-    if (!confirmationResult) {
-      setError('OTP session expired. Please request a new code.');
-      setStep('phone');
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
 
-    try {
-      const userCredential = await confirmationResult.confirm(entered);
-      const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-      const uid = userCredential.user?.uid || `user_${cleanPhone}`;
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    const verifyRes = smsService.verifyOtp(cleanPhone, entered);
 
-      // Check for existing profile in cloud or local cache
-      let profile = existingUser;
-      if (!profile) {
-        try {
-          profile = await Promise.race([
-            userService.getUserProfile(cleanPhone),
-            new Promise<null>((resolve) => setTimeout(() => resolve(null), 1200))
-          ]);
-        } catch (profileErr) {
-          console.warn('Profile fetch warning:', profileErr);
-        }
-      }
-
-      const hasValidExistingName = profile && profile.name && profile.name.trim() && profile.name !== 'Valued Customer' && profile.name !== 'Guest User';
-
-      if (hasValidExistingName && profile) {
-        // OLD / RETURNING USER: Retain their existing name and login immediately!
-        const userProf: UserProfile = {
-          ...profile,
-          uid: uid || profile.uid,
-          phone: `+91${cleanPhone}`,
-          name: profile.name
-        };
-
-        localStorage.setItem('parzio_user_profile', JSON.stringify(userProf));
-        userService.updateLastLogin(userProf.uid).catch((e) => console.warn('Login update err:', e));
-        onSuccess(userProf);
-      } else {
-        // NEW USER: Transition to Name step to ask their name!
-        setPendingUid(uid);
-        setStep('name');
-      }
-    } catch (err: any) {
-      console.error('Verify OTP error:', err);
-      let errMsg = 'Invalid verification code. Please check the code sent to your phone and try again.';
-      if (err.code === 'auth/invalid-verification-code') {
-        errMsg = 'Incorrect 6-digit code. Please enter the correct code.';
-      } else if (err.code === 'auth/code-expired') {
-        errMsg = 'This OTP has expired. Please click Resend to get a fresh code.';
-      } else if (err.message) {
-        errMsg = err.message;
-      }
-      setError(errMsg);
-    } finally {
+    if (!verifyRes.success) {
       setIsLoading(false);
+      setError(verifyRes.error || 'Incorrect OTP code. Please check your SMS and retry.');
+      return;
+    }
+
+    // OTP Verified! Check for existing profile in cloud or local cache
+    const uid = `user_${cleanPhone}`;
+    let profile = existingUser;
+    if (!profile) {
+      try {
+        profile = await Promise.race([
+          userService.getUserProfile(cleanPhone),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 1200))
+        ]);
+      } catch (profileErr) {
+        console.warn('Profile fetch warning:', profileErr);
+      }
+    }
+
+    const hasValidExistingName = profile && profile.name && profile.name.trim() && profile.name !== 'Valued Customer' && profile.name !== 'Guest User';
+
+    if (hasValidExistingName && profile) {
+      // OLD / RETURNING USER: Retain their existing name and login immediately!
+      const userProf: UserProfile = {
+        ...profile,
+        uid: profile.uid || uid,
+        phone: `+91${cleanPhone}`,
+        name: profile.name
+      };
+
+      localStorage.setItem('parzio_user_profile', JSON.stringify(userProf));
+      userService.updateLastLogin(userProf.uid).catch((e) => console.warn('Login update err:', e));
+      setIsLoading(false);
+      onSuccess(userProf);
+    } else {
+      // NEW USER: Transition to Name step to ask their name!
+      setPendingUid(uid);
+      setIsLoading(false);
+      setStep('name');
     }
   };
 
@@ -286,8 +219,6 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
 
   return (
     <div className="min-h-screen bg-[#faf8f5] text-[#141414] flex flex-col justify-between animate-fadeIn">
-      {/* Invisible Recaptcha Anchor */}
-      <div id="login-recaptcha-container"></div>
 
       {/* Top Header Navigation */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
