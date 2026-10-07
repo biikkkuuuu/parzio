@@ -8,7 +8,6 @@ import {
   X
 } from 'lucide-react';
 import { Product } from '../types';
-import { VAULT_PRODUCTS } from '../data/products';
 
 interface WishlistViewProps {
   wishlistProducts: Product[];

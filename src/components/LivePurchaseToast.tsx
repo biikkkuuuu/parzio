@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, X, CheckCircle } from 'lucide-react';
-import { VAULT_PRODUCTS } from '../data/products';
+import { dbService } from '../services/dbService';
 
 export const LivePurchaseToast: React.FC = () => {
   const [visible, setVisible] = useState(false);
-  const [purchase, setPurchase] = useState({
-    name: 'Ananya S.',
-    city: 'Mumbai',
-    product: VAULT_PRODUCTS[0],
-    timeAgo: '2 mins ago'
-  });
+  const [purchase, setPurchase] = useState<any>(null);
 
   const recentPurchases = [
     { name: 'Riya K.', city: 'New Delhi', productIdx: 0, time: '3 mins ago' },
@@ -21,18 +16,35 @@ export const LivePurchaseToast: React.FC = () => {
   ];
 
   useEffect(() => {
+    const products = dbService.getProducts();
+    if (!products || products.length === 0) return;
+
     // Initial delay before first toast
     const initialTimer = setTimeout(() => {
-      setVisible(true);
+      const prods = dbService.getProducts();
+      if (prods && prods.length > 0) {
+        setPurchase({
+          name: 'Ananya S.',
+          city: 'Mumbai',
+          product: prods[0],
+          timeAgo: '2 mins ago'
+        });
+        setVisible(true);
+      }
     }, 4000);
 
     // Periodic rotation every 25 seconds
     const interval = setInterval(() => {
+      const prods = dbService.getProducts();
+      if (!prods || prods.length === 0) {
+        setVisible(false);
+        return;
+      }
       const random = recentPurchases[Math.floor(Math.random() * recentPurchases.length)];
       setPurchase({
         name: random.name,
         city: random.city,
-        product: VAULT_PRODUCTS[random.productIdx % VAULT_PRODUCTS.length],
+        product: prods[random.productIdx % prods.length],
         timeAgo: random.time
       });
       setVisible(true);
@@ -49,7 +61,7 @@ export const LivePurchaseToast: React.FC = () => {
     };
   }, []);
 
-  if (!visible) return null;
+  if (!visible || !purchase || !purchase.product) return null;
 
   return (
     <div className="fixed bottom-20 md:bottom-6 left-4 sm:left-6 z-40 max-w-xs sm:max-w-sm animate-slideRight">

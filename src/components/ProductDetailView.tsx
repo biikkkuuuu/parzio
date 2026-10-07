@@ -17,7 +17,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Product } from '../types';
-import { VAULT_PRODUCTS } from '../data/products';
+import { dbService } from '../services/dbService';
 
 interface ProductDetailViewProps {
   product: Product;
@@ -87,13 +87,14 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   };
 
   // Related products
-  const relatedProducts = VAULT_PRODUCTS.filter(
+  const allProducts = dbService.getProducts();
+  const relatedProducts = allProducts.filter(
     (p) => p.id !== product.id && p.category === product.category
   ).slice(0, 4);
 
   const finalRelated = relatedProducts.length >= 2
     ? relatedProducts
-    : VAULT_PRODUCTS.filter((p) => p.id !== product.id).slice(0, 4);
+    : allProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
   const handleShare = () => {
     if (navigator.clipboard) {

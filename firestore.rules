@@ -12,42 +12,42 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Public Collections (Read-Only for public, Read/Write for Admins)
+    // Public Collections (Storefront Catalog & Config - Live Cloud Sync)
     match /products/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
     match /categories/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
     match /store_banners/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
     match /top_marquee/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
     match /banner_marquee/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
     match /sale_posters/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
     match /coupons/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
     match /skin_safe_config/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
     match /emergency_config/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
+    }
+    match /pincodes/{document=**} {
+      allow read, write: if true;
+    }
+    match /store_settings/{document=**} {
+      allow read, write: if true;
+    }
+    match /exchanges/{document=**} {
+      allow read, write: if true;
     }
 
     // Admins Collection

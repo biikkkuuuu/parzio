@@ -80,10 +80,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
     <div className="min-h-screen bg-[#fbf9f6] flex flex-col items-center justify-center p-6 text-[#141414]">
       <div className="max-w-sm w-full bg-white p-8 rounded-3xl shadow-xl border border-[#eae5dc]">
         
-        {/* Header */}
+        {/* Clean Header without redundant Logo */}
         <div className="flex flex-col items-center mb-6">
-          <Logo />
-          <div className="mt-5 flex items-center justify-center w-12 h-12 rounded-2xl mb-3 shadow-xs bg-[#141414] text-[#fed488]">
+          <div className="flex items-center justify-center w-12 h-12 rounded-2xl mb-3 shadow-xs bg-[#141414] text-[#fed488]">
             <Lock className="w-6 h-6" />
           </div>
           <h2 className="text-xl font-bold text-center">Store Admin</h2>

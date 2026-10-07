@@ -278,7 +278,7 @@ export default function App() {
           dbService.fetchStoreSettingsFromCloud(),
         ]);
         if (isMounted) {
-          if (cloudProducts && cloudProducts.length > 0) setProducts(cloudProducts);
+          if (cloudProducts !== null) setProducts(cloudProducts);
           if (cloudCategories && cloudCategories.length > 0) setCategories(cloudCategories);
           if (cloudOrders && cloudOrders.length > 0) setOrders(cloudOrders);
           if (cloudBanners && cloudBanners.length > 0) setBanners(cloudBanners);
@@ -298,7 +298,7 @@ export default function App() {
 
     // 1. Realtime listener for Products: any add/edit/delete in admin updates all visitor tabs immediately
     const unsubscribeProducts = dbService.subscribeToProducts((liveProducts) => {
-      if (isMounted && liveProducts && liveProducts.length > 0) {
+      if (isMounted && liveProducts !== null) {
         setProducts(liveProducts);
       }
     });
@@ -1175,11 +1175,9 @@ export default function App() {
             orders={orders}
             products={products}
             onBackToStore={() => {
-              if (activeScreen === 'atelier-ops') {
-                window.history.back();
-              } else {
-                setActiveScreen('storefront');
-              }
+              setActiveScreen('storefront');
+              window.location.hash = '#/';
+              window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             onLogout={() => {
               setActiveScreen('storefront');

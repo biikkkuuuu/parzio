@@ -133,12 +133,12 @@ export const dbService = {
       const saved = localStorage.getItem(KEYS.PRODUCTS);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       }
     } catch {}
-    return VAULT_PRODUCTS;
+    return [];
   },
 
   saveProducts(products: Product[]): void {
@@ -154,21 +154,12 @@ export const dbService = {
     try {
       const q = query(collection(db, 'products'));
       const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        const products: Product[] = [];
-        snapshot.forEach((docSnap) => {
-          products.push(docSnap.data() as Product);
-        });
-        this.saveProducts(products);
-        return products;
-      } else {
-        // If Firestore products collection is empty, seed initial vault products
-        for (const p of VAULT_PRODUCTS) {
-          await setDoc(doc(db, 'products', p.id), sanitizeForFirestore(p));
-        }
-        this.saveProducts(VAULT_PRODUCTS);
-        return VAULT_PRODUCTS;
-      }
+      const products: Product[] = [];
+      snapshot.forEach((docSnap) => {
+        products.push(docSnap.data() as Product);
+      });
+      this.saveProducts(products);
+      return products;
     } catch (e) {
       console.warn('Firebase products fetch fallback to local cache:', e);
     }
@@ -180,14 +171,12 @@ export const dbService = {
     try {
       const q = query(collection(db, 'products'));
       const unsubscribe = onSnapshot(q, (snapshot) => {
-        if (!snapshot.empty) {
-          const products: Product[] = [];
-          snapshot.forEach((docSnap) => {
-            products.push(docSnap.data() as Product);
-          });
-          this.saveProducts(products);
-          onProductsChange(products);
-        }
+        const products: Product[] = [];
+        snapshot.forEach((docSnap) => {
+          products.push(docSnap.data() as Product);
+        });
+        this.saveProducts(products);
+        onProductsChange(products);
       }, (error) => {
         console.warn('Firebase products realtime listener warning:', error);
       });
