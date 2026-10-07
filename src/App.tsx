@@ -26,25 +26,47 @@ import { dbService, PincodeItem, GlobalStoreSettings } from './services/dbServic
 import { useCartStore } from './store/useCartStore';
 import { useUIStore } from './store/useUIStore';
 
-// Lazy load non-critical full screens and modals to improve bundle size and initial load performance
-const AtelierOpsHub = React.lazy(() => import('./components/AtelierOpsHub').then(m => ({ default: m.AtelierOpsHub })));
-const AdminProtected = React.lazy(() => import('./components/admin/AdminProtected').then(m => ({ default: m.AdminProtected })));
-const TrackOrderView = React.lazy(() => import('./components/TrackOrderView').then(m => ({ default: m.TrackOrderView })));
-const ExchangeView = React.lazy(() => import('./components/ExchangeView').then(m => ({ default: m.ExchangeView })));
-const AccountView = React.lazy(() => import('./components/AccountView').then(m => ({ default: m.AccountView })));
-const OffersView = React.lazy(() => import('./components/OffersView').then(m => ({ default: m.OffersView })));
-const CategoryPageView = React.lazy(() => import('./components/CategoryPageView').then(m => ({ default: m.CategoryPageView })));
-const AllCategoriesView = React.lazy(() => import('./components/AllCategoriesView').then(m => ({ default: m.AllCategoriesView })));
-const CartDrawer = React.lazy(() => import('./components/CartDrawer').then(m => ({ default: m.CartDrawer })));
-const ProductModal = React.lazy(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
-const ProductDetailView = React.lazy(() => import('./components/ProductDetailView').then(m => ({ default: m.ProductDetailView })));
-const CheckoutView = React.lazy(() => import('./components/CheckoutView').then(m => ({ default: m.CheckoutView })));
-const CartView = React.lazy(() => import('./components/CartView').then(m => ({ default: m.CartView })));
-const UserLoginView = React.lazy(() => import('./components/UserLoginView').then(m => ({ default: m.UserLoginView })));
-const UserLoginModal = React.lazy(() => import('./components/UserLoginModal').then(m => ({ default: m.UserLoginModal })));
-const WishlistView = React.lazy(() => import('./components/WishlistView').then(m => ({ default: m.WishlistView })));
-const SearchView = React.lazy(() => import('./components/SearchView').then(m => ({ default: m.SearchView })));
-const SearchModal = React.lazy(() => import('./components/SearchModal').then(m => ({ default: m.SearchModal })));
+// Helper to auto-recover when Vite deploys a new build with changed chunk hashes
+function lazyWithRetry<T extends React.ComponentType<any>>(
+  componentImport: () => Promise<{ default: T }>
+) {
+  return React.lazy(async () => {
+    try {
+      return await componentImport();
+    } catch (error: any) {
+      const msg = error?.message || '';
+      if (
+        msg.includes('dynamically imported module') ||
+        msg.includes('Importing a module script failed') ||
+        msg.includes('Loading chunk')
+      ) {
+        window.location.reload();
+        return new Promise<{ default: T }>(() => {});
+      }
+      throw error;
+    }
+  });
+}
+
+// Lazy load non-critical full screens and modals with auto-retry
+const AtelierOpsHub = lazyWithRetry(() => import('./components/AtelierOpsHub').then(m => ({ default: m.AtelierOpsHub })));
+const AdminProtected = lazyWithRetry(() => import('./components/admin/AdminProtected').then(m => ({ default: m.AdminProtected })));
+const TrackOrderView = lazyWithRetry(() => import('./components/TrackOrderView').then(m => ({ default: m.TrackOrderView })));
+const ExchangeView = lazyWithRetry(() => import('./components/ExchangeView').then(m => ({ default: m.ExchangeView })));
+const AccountView = lazyWithRetry(() => import('./components/AccountView').then(m => ({ default: m.AccountView })));
+const OffersView = lazyWithRetry(() => import('./components/OffersView').then(m => ({ default: m.OffersView })));
+const CategoryPageView = lazyWithRetry(() => import('./components/CategoryPageView').then(m => ({ default: m.CategoryPageView })));
+const AllCategoriesView = lazyWithRetry(() => import('./components/AllCategoriesView').then(m => ({ default: m.AllCategoriesView })));
+const CartDrawer = lazyWithRetry(() => import('./components/CartDrawer').then(m => ({ default: m.CartDrawer })));
+const ProductModal = lazyWithRetry(() => import('./components/ProductModal').then(m => ({ default: m.ProductModal })));
+const ProductDetailView = lazyWithRetry(() => import('./components/ProductDetailView').then(m => ({ default: m.ProductDetailView })));
+const CheckoutView = lazyWithRetry(() => import('./components/CheckoutView').then(m => ({ default: m.CheckoutView })));
+const CartView = lazyWithRetry(() => import('./components/CartView').then(m => ({ default: m.CartView })));
+const UserLoginView = lazyWithRetry(() => import('./components/UserLoginView').then(m => ({ default: m.UserLoginView })));
+const UserLoginModal = lazyWithRetry(() => import('./components/UserLoginModal').then(m => ({ default: m.UserLoginModal })));
+const WishlistView = lazyWithRetry(() => import('./components/WishlistView').then(m => ({ default: m.WishlistView })));
+const SearchView = lazyWithRetry(() => import('./components/SearchView').then(m => ({ default: m.SearchView })));
+const SearchModal = lazyWithRetry(() => import('./components/SearchModal').then(m => ({ default: m.SearchModal })));
 
 import { SalesSection } from './components/SalesSection';
 import { WhatsAppSupport } from './components/WhatsAppSupport';

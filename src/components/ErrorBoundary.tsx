@@ -25,6 +25,19 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error in PARZIO App:', error, errorInfo);
+    // Automatic recovery for stale Vite dynamic import chunk mismatches post-deployment
+    const msg = error?.message || '';
+    if (
+      msg.includes('dynamically imported module') ||
+      msg.includes('Importing a module script failed') ||
+      msg.includes('Loading chunk')
+    ) {
+      const reloadedKey = 'parzio_chunk_reload_' + window.location.hash;
+      if (!sessionStorage.getItem(reloadedKey)) {
+        sessionStorage.setItem(reloadedKey, 'true');
+        window.location.reload();
+      }
+    }
   }
 
   public render() {
