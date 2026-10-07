@@ -145,29 +145,6 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </button>
 
-          {/* Dedicated Account Button (Icon only - Sabse last me) */}
-          <button
-            onClick={() => {
-              if (userProfile) {
-                if (onOpenAccount) onOpenAccount();
-                else if (onNavigateTab) onNavigateTab('account');
-              } else {
-                if (onLoginClick) onLoginClick();
-              }
-            }}
-            className={`flex items-center gap-1 text-[#2a2a2a] hover:text-[#9e7144] transition-colors relative cursor-pointer ${
-              activeTab === 'account' ? 'text-[#9e7144]' : ''
-            }`}
-            title="Account"
-          >
-            {userProfile ? (
-              <span className="hidden sm:inline-block text-xs font-bold mr-1 truncate max-w-[80px]">
-                {userProfile.name.split(' ')[0]}
-              </span>
-            ) : null}
-            <User className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
-          </button>
-
         </div>
       </div>
 

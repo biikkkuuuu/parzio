@@ -70,25 +70,6 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
               </span>
             )}
           </button>
-
-          <button
-            onClick={() => {
-              if (userProfile) {
-                if (onOpenAccount) onOpenAccount();
-              } else {
-                if (onLoginClick) onLoginClick();
-              }
-            }}
-            className="p-1 text-[#141414] hover:text-[#8c7138] transition-colors relative flex items-center"
-            aria-label="Account"
-          >
-            {userProfile ? (
-              <span className="hidden sm:inline-block text-[10px] font-bold mr-1 max-w-[60px] truncate">
-                {userProfile.name.split(' ')[0]}
-              </span>
-            ) : null}
-            <User className="w-5 h-5 stroke-[2]" />
-          </button>
         </div>
       </div>
     </header>
