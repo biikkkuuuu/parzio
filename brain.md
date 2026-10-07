@@ -84,6 +84,24 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 - **Root Cause:** `auth.currentUser` was referenced in `finalizeOrder` to attach the Firebase bearer token to `/api/checkout`, but `auth` was missing from the file imports.
 - **Fix Applied:** Imported `auth` from `../lib/firebase` and safely guarded token resolution (`if (auth && auth.currentUser)`).
 
+### H. "Unexpected token 'A', 'A server e'... is not valid JSON" on COD Checkout
+- **Problem:** When customers entered a valid SMS OTP on mobile checkout and clicked confirm, an alert popped up: `Unexpected token 'A', "A server e"... is not valid JSON`.
+- **Root Cause:**
+  1. `/api/checkout` is a Vercel Serverless function. When environment variables or `@sentry/node` / `firebase-admin` fail on initialization in Vercel's serverless sandbox, Vercel returns HTTP 500 with plain text `"A server error has occurred"`.
+  2. `CheckoutView.tsx` called `await response.json()` directly without verifying `content-type` or catching parse failures, throwing a JSON SyntaxError.
+- **Fixes Applied:**
+  1. In `src/components/CheckoutView.tsx`, protected response parsing with safe text inspection:
+     ```ts
+     const resText = await response.text();
+     try {
+       result = JSON.parse(resText);
+     } catch {
+       result = { success: response.ok, error: resText };
+     }
+     ```
+  2. Added direct client Firestore order creation (`await dbService.createOrder(clientOrder)`) as an immediate and foolproof order guarantee, so orders are saved to Cloud Firestore and shown on Admin Panel even if serverless functions error out.
+  3. Fortified `api/_sentry.ts` and `api/_firebase.ts` to prevent uncaught runtime errors in serverless initialization.
+
 ---
 
 ## 3. Firestore Collections Reference

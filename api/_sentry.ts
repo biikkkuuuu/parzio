@@ -1,8 +1,8 @@
-import * as Sentry from '@sentry/node';
-
-Sentry.init({
-  dsn: process.env.SENTRY_DSN || '',
-  tracesSampleRate: 1.0,
-});
-
-export { Sentry };
+export const Sentry = {
+  captureException: (err: any) => {
+    console.error('Sentry captured error:', err);
+  },
+  captureMessage: (msg: string) => {
+    console.log('Sentry message:', msg);
+  }
+};

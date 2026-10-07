@@ -2,8 +2,8 @@ import * as admin from 'firebase-admin';
 
 let isInitialized = false;
 
-if (!admin.apps.length) {
-  try {
+try {
+  if (admin && !admin.apps?.length) {
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
       admin.initializeApp({
@@ -11,13 +11,13 @@ if (!admin.apps.length) {
       });
       isInitialized = true;
     }
-  } catch (error) {
-    console.warn('Firebase admin initialization optional warning:', error);
+  } else if (admin?.apps?.length) {
+    isInitialized = true;
   }
-} else {
-  isInitialized = true;
+} catch (error) {
+  console.warn('Firebase admin initialization optional warning:', error);
 }
 
-export const dbAdmin = isInitialized && admin.apps.length ? admin.firestore() : null;
-export const authAdmin = isInitialized && admin.apps.length ? admin.auth() : null;
-export const FieldValue = admin.firestore?.FieldValue || null;
+export const dbAdmin = isInitialized && admin?.apps?.length ? admin.firestore() : null;
+export const authAdmin = isInitialized && admin?.apps?.length ? admin.auth() : null;
+export const FieldValue = admin?.firestore?.FieldValue || null;
