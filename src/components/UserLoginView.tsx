@@ -10,9 +10,11 @@ interface UserLoginViewProps {
 }
 
 export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess }) => {
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
+  const [step, setStep] = useState<'phone' | 'otp' | 'name'>('phone');
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
+  const [existingUser, setExistingUser] = useState<UserProfile | null>(null);
+  const [pendingUid, setPendingUid] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,6 +24,22 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
   const [resendTimer, setResendTimer] = useState<number>(30);
   const [canResend, setCanResend] = useState<boolean>(false);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Check if returning user when 10 digits are typed
+  useEffect(() => {
+    const clean = phone.replace(/\D/g, '').slice(-10);
+    if (clean.length === 10) {
+      userService.getUserProfile(clean).then((p) => {
+        if (p && p.name && p.name.trim() && p.name !== 'Valued Customer' && p.name !== 'Guest User') {
+          setExistingUser(p);
+        } else {
+          setExistingUser(null);
+        }
+      }).catch(() => setExistingUser(null));
+    } else {
+      setExistingUser(null);
+    }
+  }, [phone]);
 
   // Timer countdown
   useEffect(() => {
@@ -161,38 +179,38 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
       const cleanPhone = phone.replace(/\D/g, '').slice(-10);
       const uid = userCredential.user?.uid || `user_${cleanPhone}`;
 
-      // Fetch existing profile with a fast 1.5s timeout fallback
-      let existingProfile: UserProfile | null = null;
-      try {
-        existingProfile = await Promise.race([
-          userService.getUserProfile(cleanPhone),
-          new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500))
-        ]);
-      } catch (profileErr) {
-        console.warn('Profile fetch warning (continuing login):', profileErr);
+      // Check for existing profile in cloud or local cache
+      let profile = existingUser;
+      if (!profile) {
+        try {
+          profile = await Promise.race([
+            userService.getUserProfile(cleanPhone),
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), 1200))
+          ]);
+        } catch (profileErr) {
+          console.warn('Profile fetch warning:', profileErr);
+        }
       }
 
-      const customerName = name.trim() || existingProfile?.name || 'Valued Customer';
+      const hasValidExistingName = profile && profile.name && profile.name.trim() && profile.name !== 'Valued Customer' && profile.name !== 'Guest User';
 
-      const userProf: UserProfile = {
-        uid: uid,
-        phone: `+91${cleanPhone}`,
-        name: customerName,
-        email: existingProfile?.email || '',
-        address: existingProfile?.address || '',
-        city: existingProfile?.city || '',
-        pincode: existingProfile?.pincode || '',
-        ordersCount: existingProfile?.ordersCount || 0
-      };
+      if (hasValidExistingName && profile) {
+        // OLD / RETURNING USER: Retain their existing name and login immediately!
+        const userProf: UserProfile = {
+          ...profile,
+          uid: uid || profile.uid,
+          phone: `+91${cleanPhone}`,
+          name: profile.name
+        };
 
-      // Save to local registry and localStorage instantly
-      localStorage.setItem('parzio_user_profile', JSON.stringify(userProf));
-
-      // Sync to cloud in background without blocking login
-      userService.saveUserProfile(userProf.uid, userProf.phone, userProf.name).catch((e) => console.warn('Background save err:', e));
-      userService.updateLastLogin(userProf.uid).catch((e) => console.warn('Background login update err:', e));
-
-      onSuccess(userProf);
+        localStorage.setItem('parzio_user_profile', JSON.stringify(userProf));
+        userService.updateLastLogin(userProf.uid).catch((e) => console.warn('Login update err:', e));
+        onSuccess(userProf);
+      } else {
+        // NEW USER: Transition to Name step to ask their name!
+        setPendingUid(uid);
+        setStep('name');
+      }
     } catch (err: any) {
       console.error('Verify OTP error:', err);
       let errMsg = 'Invalid verification code. Please check the code sent to your phone and try again.';
@@ -204,6 +222,44 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
         errMsg = err.message;
       }
       setError(errMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Step 4: Save Name for New User
+  const handleSaveName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setError('Please enter your full name to complete your profile.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+      const userProf: UserProfile = {
+        uid: pendingUid || `user_${cleanPhone}`,
+        phone: `+91${cleanPhone}`,
+        name: name.trim(),
+        ordersCount: 0,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      };
+
+      // Save locally
+      localStorage.setItem('parzio_user_profile', JSON.stringify(userProf));
+
+      // Save to cloud in background
+      userService.saveUserProfile(userProf.uid, userProf.phone, userProf.name).catch((err) => console.warn('Save profile err:', err));
+      userService.updateLastLogin(userProf.uid).catch((err) => console.warn('Update login err:', err));
+
+      onSuccess(userProf);
+    } catch (saveErr: any) {
+      console.error('Save new user name error:', saveErr);
+      setError(saveErr.message || 'Could not save profile name.');
     } finally {
       setIsLoading(false);
     }
@@ -273,15 +329,27 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
             {/* Top Badge & Intro */}
             <div className="text-center space-y-2">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#141414] to-[#2b2b2b] text-[#fed488] flex items-center justify-center mx-auto shadow-md">
-                <ShieldCheck className="w-7 h-7" />
+                {step === 'name' ? (
+                  <Sparkles className="w-7 h-7 text-[#fed488]" />
+                ) : (
+                  <ShieldCheck className="w-7 h-7 text-[#fed488]" />
+                )}
               </div>
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#141414] pt-1">
-                {step === 'phone' ? 'Secure Mobile Login' : 'Enter 6-Digit OTP'}
+                {step === 'phone'
+                  ? 'Secure Mobile Login'
+                  : step === 'otp'
+                  ? 'Enter 6-Digit OTP'
+                  : 'Welcome to PARZIO ✨'}
               </h2>
               <p className="text-xs text-[#747878] leading-relaxed max-w-xs mx-auto">
                 {step === 'phone'
-                  ? 'Enter your mobile number to receive a secure 6-digit verification code.'
-                  : `We sent a 6-digit verification code to +91 ${phone.replace(/\D/g, '').slice(-10)}`}
+                  ? existingUser
+                    ? `Welcome back, ${existingUser.name}! Enter your mobile number to continue.`
+                    : 'Enter your 10-digit mobile number to receive a secure 6-digit verification code.'
+                  : step === 'otp'
+                  ? `We sent a 6-digit verification code to +91 ${phone.replace(/\D/g, '').slice(-10)}`
+                  : 'Please tell us your full name to set up your membership & delivery updates.'}
               </p>
             </div>
 
@@ -293,22 +361,15 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
             )}
 
             {/* STEP 1: Phone Form */}
-            {step === 'phone' ? (
+            {step === 'phone' && (
               <form onSubmit={handleSendOtp} className="space-y-4">
-                {/* Name Input (Optional) */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#555] mb-1.5">
-                    Full Name <span className="text-[10px] font-normal lowercase text-[#999]">(optional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Pooja Sharma"
-                    disabled={isLoading}
-                    className="w-full px-4 py-3 bg-[#faf8f5] border border-[#eae5dc] rounded-2xl text-xs sm:text-sm font-medium text-[#141414] focus:outline-none focus:border-[#8c7138] focus:bg-white transition-all placeholder:text-[#a8a39b]"
-                  />
-                </div>
+                {/* Returning User Recognized Badge */}
+                {existingUser && (
+                  <div className="p-3 bg-[#fdfaf3] border border-[#d4af37]/40 rounded-2xl flex items-center gap-2.5 text-xs text-[#8c7138] animate-fadeIn">
+                    <Sparkles className="w-4 h-4 text-[#d4af37] shrink-0" />
+                    <span>Welcome back, <strong className="text-[#141414] font-bold">{existingUser.name}</strong>!</span>
+                  </div>
+                )}
 
                 {/* Phone Input (Required) */}
                 <div>
@@ -355,8 +416,10 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
                   )}
                 </button>
               </form>
-            ) : (
-              /* STEP 2: OTP Verification Form */
+            )}
+
+            {/* STEP 2: OTP Verification Form */}
+            {step === 'otp' && (
               <form onSubmit={handleVerifyOtp} className="space-y-5 animate-fadeIn">
                 {/* Phone edit banner */}
                 <div className="flex items-center justify-between p-3 rounded-2xl bg-[#faf8f5] border border-[#eae5dc] text-xs">
@@ -433,7 +496,60 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-[#fed488]" />
-                      <span>Verify OTP &amp; Login</span>
+                      <span>Verify OTP &amp; Continue</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* STEP 3: New User Name Setup */}
+            {step === 'name' && (
+              <form onSubmit={handleSaveName} className="space-y-5 animate-fadeIn">
+                {/* Verified Mobile Confirmation Banner */}
+                <div className="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-2xl flex items-center justify-between text-xs">
+                  <span className="font-mono font-bold text-[#141414]">+91 {phone.replace(/\D/g, '').slice(-10)}</span>
+                  <span className="flex items-center gap-1 text-emerald-700 font-bold">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    Phone Verified
+                  </span>
+                </div>
+
+                {/* Name Input */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#141414] mb-1.5">
+                    Your Full Name <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Vikash Rana"
+                    autoFocus
+                    required
+                    disabled={isLoading}
+                    className="w-full px-4 py-3 bg-[#faf8f5] border border-[#eae5dc] rounded-2xl text-sm font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138] focus:bg-white transition-all placeholder:text-[#a8a39b]"
+                  />
+                  <p className="text-[10px] text-[#747878] mt-1 pl-1">
+                    This name will appear on your deliveries, invoices &amp; membership.
+                  </p>
+                </div>
+
+                {/* Submit Profile Button */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3.5 px-6 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 shadow-md shadow-black/10 cursor-pointer flex items-center justify-center gap-2 active:scale-98 disabled:opacity-60"
+                >
+                  {isLoading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-[#fed488]" />
+                      <span>Saving Profile...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Complete Profile &amp; Continue</span>
+                      <span className="text-[#fed488]">→</span>
                     </>
                   )}
                 </button>
