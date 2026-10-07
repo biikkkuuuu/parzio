@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { CartItem, OrderItem } from '../types';
 import { smsService } from '../services/smsService';
 import { UserProfile } from '../services/userService';
+import { auth } from '../lib/firebase';
 import {
   X,
   CheckCircle2,
@@ -427,8 +428,12 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
     try {
       let token = '';
-      if (auth.currentUser) {
-        token = await auth.currentUser.getIdToken(true);
+      if (auth && auth.currentUser) {
+        try {
+          token = await auth.currentUser.getIdToken(true);
+        } catch (tokenErr) {
+          console.warn('Firebase token retrieval notice:', tokenErr);
+        }
       }
 
       const response = await fetch('/api/checkout', {
