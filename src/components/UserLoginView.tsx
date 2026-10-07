@@ -42,25 +42,22 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
   const setupLoginRecaptcha = () => {
     if (!auth) return null;
     try {
-      const container = document.getElementById('login-recaptcha-container');
-      if (container) {
-        container.innerHTML = '';
-      }
       if ((window as any).loginRecaptchaVerifier) {
-        try {
-          (window as any).loginRecaptchaVerifier.clear();
-        } catch {}
-        (window as any).loginRecaptchaVerifier = null;
+        return (window as any).loginRecaptchaVerifier;
       }
-      (window as any).loginRecaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', {
+      const verifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', {
         size: 'invisible',
         callback: () => {
           // reCAPTCHA solved
         }
       });
-      return (window as any).loginRecaptchaVerifier;
-    } catch (err) {
-      console.error('Login reCAPTCHA initialization error:', err);
+      (window as any).loginRecaptchaVerifier = verifier;
+      return verifier;
+    } catch (err: any) {
+      console.warn('Login reCAPTCHA initialization note:', err);
+      if ((window as any).loginRecaptchaVerifier) {
+        return (window as any).loginRecaptchaVerifier;
+      }
       return null;
     }
   };

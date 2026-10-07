@@ -166,25 +166,22 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   const setupRecaptcha = () => {
     if (!auth) return null;
     try {
-      const container = document.getElementById('recaptcha-container');
-      if (container) {
-        container.innerHTML = '';
-      }
       if ((window as any).recaptchaVerifier) {
-        try {
-          (window as any).recaptchaVerifier.clear();
-        } catch {}
-        (window as any).recaptchaVerifier = null;
+        return (window as any).recaptchaVerifier;
       }
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+      const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
         callback: () => {
           // reCAPTCHA solved
         }
       });
-      return (window as any).recaptchaVerifier;
-    } catch (err) {
-      console.error("Recaptcha init error", err);
+      (window as any).recaptchaVerifier = verifier;
+      return verifier;
+    } catch (err: any) {
+      console.warn("Recaptcha init notice:", err);
+      if ((window as any).recaptchaVerifier) {
+        return (window as any).recaptchaVerifier;
+      }
       return null;
     }
   };
