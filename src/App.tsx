@@ -544,72 +544,29 @@ export default function App() {
     }
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('parzio_sale_posters', JSON.stringify(salePosters));
-      dbService.saveSalePosters(salePosters);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [salePosters]);
+  const handleUpdateSalePosters = (posters: SalePoster[]) => {
+    setSalePosters(posters);
+    dbService.saveSalePosters(posters);
+  };
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('parzio_banners', JSON.stringify(banners));
-      dbService.saveBanners(banners);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [banners]);
+  const handleUpdateSkinSafeConfig = (config: SkinSafeConfig) => {
+    setSkinSafeConfig(config);
+    dbService.saveSkinSafeConfig(config);
+  };
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('parzio_top_marquee', JSON.stringify(topMarqueeItems));
-      dbService.saveTopMarquee(topMarqueeItems);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [topMarqueeItems]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('parzio_banner_marquee', JSON.stringify(bannerMarqueeItems));
-      dbService.saveBannerMarquee(bannerMarqueeItems);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [bannerMarqueeItems]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('parzio_skin_banner_config', JSON.stringify(skinSafeConfig));
-      dbService.saveSkinSafeConfig(skinSafeConfig);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [skinSafeConfig]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('parzio_sale_banner_config', JSON.stringify(saleBannerConfig));
-      dbService.saveSaleBannerConfig(saleBannerConfig);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [saleBannerConfig]);
+  const handleUpdateSaleBannerConfig = (config: SaleBannerConfig) => {
+    setSaleBannerConfig(config);
+    dbService.saveSaleBannerConfig(config);
+  };
 
   // Coupons State (Unified Data Layer via dbService)
   const [coupons, setCoupons] = useState<Coupon[]>(() => dbService.getCoupons());
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('parzio_coupons', JSON.stringify(coupons));
-      dbService.saveCoupons(coupons);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [coupons]);
+  const handleUpdateCoupons = (updatedCoupons: Coupon[]) => {
+    setCoupons(updatedCoupons);
+    dbService.saveCoupons(updatedCoupons);
+  };
 
   const handleApplyCoupon = (coupon: Coupon) => {
     setAppliedCoupon(coupon);
@@ -1220,14 +1177,11 @@ export default function App() {
             onUpdateTopMarquee={handleUpdateTopMarquee}
             onUpdateBannerMarquee={handleUpdateBannerMarquee}
             onUpdateBanners={handleUpdateBanners}
-            onUpdateSalePosters={setSalePosters}
-            onUpdateSkinSafeConfig={setSkinSafeConfig}
-            onUpdateSaleBannerConfig={setSaleBannerConfig}
+            onUpdateSalePosters={handleUpdateSalePosters}
+            onUpdateSkinSafeConfig={handleUpdateSkinSafeConfig}
+            onUpdateSaleBannerConfig={handleUpdateSaleBannerConfig}
             coupons={coupons}
-            onUpdateCoupons={(updated) => {
-              setCoupons(updated);
-              dbService.saveCoupons(updated);
-            }}
+            onUpdateCoupons={handleUpdateCoupons}
             exchanges={exchanges}
             onAddExchange={handleAddExchange}
             onEditExchange={handleEditExchange}

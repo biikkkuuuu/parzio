@@ -53,45 +53,50 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
     setImageLoadError(false);
     setIsProcessing(true);
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        // High quality bounded dimensions for fast storage
-        const maxDimension = aspectRatio === 'banner' ? 1400 : 1000;
-        let { width, height } = img;
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
 
-        if (width > maxDimension || height > maxDimension) {
-          if (width > height) {
-            height = Math.round((height * maxDimension) / width);
-            width = maxDimension;
-          } else {
-            width = Math.round((width * maxDimension) / height);
-            height = maxDimension;
-          }
-        }
+    img.onload = () => {
+      // High quality bounded dimensions for fast cloud sync and zero memory pressure
+      const maxDimension = aspectRatio === 'banner' ? 1200 : aspectRatio === 'poster' ? 900 : 800;
+      let { width, height } = img;
 
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
-          onChange(compressedDataUrl);
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
         } else {
-          // Fallback to original data URL
-          onChange(e.target?.result as string);
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
         }
-        setIsProcessing(false);
-      };
-      img.onerror = () => {
-        setErrorMessage('Unable to process image file. Try another photo.');
-        setIsProcessing(false);
-      };
-      img.src = e.target?.result as string;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.78);
+        onChange(compressedDataUrl);
+      } else {
+        onChange(objectUrl);
+      }
+      URL.revokeObjectURL(objectUrl);
+      img.onload = null;
+      img.onerror = null;
+      setIsProcessing(false);
     };
-    reader.readAsDataURL(file);
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      img.onload = null;
+      img.onerror = null;
+      setErrorMessage('Unable to process image file. Try another photo.');
+      setIsProcessing(false);
+    };
+
+    img.src = objectUrl;
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -267,8 +272,8 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
                 src={value}
                 alt="Banner Graphic"
                 className="w-full h-full object-cover object-center"
-                onError={() => setImageLoadError(true)}
-                onLoad={() => setImageLoadError(false)}
+                onError={() => setImageLoadError((prev) => (!prev ? true : prev))}
+                onLoad={() => setImageLoadError((prev) => (prev ? false : prev))}
               />
               {isProcessing && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
@@ -342,8 +347,8 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
                 src={value}
                 alt="Graphic Preview"
                 className="w-full h-full object-cover object-center"
-                onError={() => setImageLoadError(true)}
-                onLoad={() => setImageLoadError(false)}
+                onError={() => setImageLoadError((prev) => (!prev ? true : prev))}
+                onLoad={() => setImageLoadError((prev) => (prev ? false : prev))}
               />
               {isProcessing && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
