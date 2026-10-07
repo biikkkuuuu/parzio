@@ -536,7 +536,7 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
         <div className="space-y-6">
           {categories.map((category) => {
             let catProducts = products.filter(
-              (p) => p.category.toLowerCase() === category.name.toLowerCase()
+              (p) => (p.category || '').trim().toLowerCase() === (category.name || '').trim().toLowerCase()
             );
 
             // Apply tag filter if active
@@ -747,7 +747,7 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {categories.map((category) => {
             const categoryProducts = products.filter(
-              (p) => p.category.toLowerCase() === category.name.toLowerCase()
+              (p) => (p.category || '').trim().toLowerCase() === (category.name || '').trim().toLowerCase()
             );
             const isExpanded = expandedCategory === category.name;
 

@@ -50,17 +50,22 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [description, setDescription] = useState('Anti-tarnish, sweat-proof, perfume-safe demi-fine jewelry designed for daily luxury.');
 
   const allCategories = useMemo(() => {
-    const set = new Set<string>(DEFAULT_CATEGORIES);
-    if (categories) {
+    const set = new Set<string>();
+    if (categories && categories.length > 0) {
       categories.forEach((c) => {
         const catName = typeof c === 'string' ? c : c.name;
-        if (catName) set.add(catName);
+        if (catName && catName.trim()) set.add(catName.trim());
       });
+    } else {
+      DEFAULT_CATEGORIES.forEach((c) => set.add(c));
     }
-    customCategories.forEach((c) => set.add(c));
-    if (category) set.add(category);
+    customCategories.forEach((c) => {
+      if (c && c.trim()) set.add(c.trim());
+    });
+    if (defaultCategory && defaultCategory.trim()) set.add(defaultCategory.trim());
+    if (category && category.trim()) set.add(category.trim());
     return Array.from(set);
-  }, [categories, customCategories, category]);
+  }, [categories, customCategories, defaultCategory, category]);
 
   useEffect(() => {
     if (initialProduct) {
@@ -82,7 +87,8 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       setDescription(initialProduct.description);
     } else {
       setName('');
-      setCategory(defaultCategory || 'Necklaces');
+      const firstCat = defaultCategory || (categories && categories.length > 0 ? (typeof categories[0] === 'string' ? categories[0] : categories[0].name) : 'Necklaces');
+      setCategory(firstCat);
       setPrice('99');
       setOriginalPrice('1499');
       setSku(`PRZ-${Date.now().toString().slice(-5)}`);
@@ -95,7 +101,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       setBadge('₹99 VAULT SPECIAL');
       setDescription('Anti-tarnish, sweat-proof, perfume-safe demi-fine jewelry designed for daily luxury.');
     }
-  }, [initialProduct, isOpen, defaultCategory]);
+  }, [initialProduct, isOpen, defaultCategory, categories]);
 
   if (!isOpen) return null;
 
@@ -105,16 +111,20 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      alert('Please enter a product title before saving.');
+      return;
+    }
 
     const mainImg = image.trim() || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80';
     const validExtraImages = extraImages.filter((img) => Boolean(img && img.trim()));
     const allProductImages = [mainImg, ...validExtraImages];
+    const effectiveCategory = category.trim() || defaultCategory || (allCategories[0] || 'General');
 
     const savedProduct: Product = {
       id: initialProduct?.id || `prod-custom-${Date.now()}`,
       name: name.trim(),
-      category,
+      category: effectiveCategory,
       price: numPrice,
       originalPrice: numOrig,
       savePercent,

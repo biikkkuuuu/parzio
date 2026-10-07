@@ -464,6 +464,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
       <AdminProductModal
         isOpen={isNewProductModalOpen}
         onClose={() => setIsNewProductModalOpen(false)}
+        defaultCategory={categories && categories.length > 0 ? categories[0].name : undefined}
         categories={categories}
         onSaveProduct={(newProd) => {
           onAddProduct(newProd);

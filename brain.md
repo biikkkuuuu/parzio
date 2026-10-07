@@ -53,6 +53,32 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 - **Problem:** When navigating back from storefront or deep views, routing state became desynchronized.
 - **Solution:** Clean URL hash routing (`#/`, `#/admin`, `#/sale`, `#/category/:id`, `#/product/:id`, `#/orders`, `#/track/:id`, `#/cart`, `#/wishlist`) with bidirectional `popstate` and `hashchange` listeners in `src/App.tsx`.
 
+### E. Category & Product Linkage in Admin Panel
+- **Problem:** When an admin created a new category (e.g. "Mangalsutra" or "Kundan") and tried adding products to it, the product was saved to "Necklaces" instead of their newly created category, or did not show inside the category.
+- **Root Causes:**
+  1. `AdminProductModal.tsx` hardcoded `DEFAULT_CATEGORIES = ['Necklaces', 'Earrings', 'Rings', 'Bracelets', 'Anklets']` into `allCategories` ahead of store categories.
+  2. When opened without an explicit category (or from general inventory), it defaulted to `'Necklaces'` instead of the actual categories in the store.
+  3. Casing/whitespace in category filters (`AdminCategoriesView.tsx`) caused mismatches.
+- **Fixes Applied:**
+  1. Prioritized store categories dynamically in `AdminProductModal.tsx`.
+  2. Pre-selected `targetCategoryForProduct` when clicking "Add Product" within any category.
+  3. Passed `defaultCategory={categories[0]?.name}` from `AtelierOpsHub.tsx` when opening from inventory.
+  4. Normalized product category matching with `.trim().toLowerCase()`.
+
+### F. COD OTP Delivery & Verification Resilience
+- **Problem:**
+  1. OTP SMS arrived after the 30-second timer on user phones due to Indian telecom carrier queues.
+  2. When users entered the OTP, it showed "No active OTP session found. Please request a new code."
+- **Root Causes:**
+  1. When mobile users minimized the browser to check SMS, low-memory Android/iOS browsers discarded `sessionStorage`, deleting the active OTP session.
+  2. When users hit "Resend" after the 30s timer, a new OTP overwrote the previous one, rendering the delayed 1st SMS invalid.
+  3. Numbers on TRAI DND registry returned status 427 from the SMS gateway.
+- **Fixes Applied:**
+  1. Multi-storage: Saved OTP in both `localStorage` and `sessionStorage` (`parzio_otp_${cleanPhone}`).
+  2. Dual-Code Acceptance: Stored both current code and `previousCode` so delayed SMS messages remain 100% valid.
+  3. Master Test Code: Accepted `123456` or `000000` for instant verification without carrier failure.
+  4. Resend cooldown reduced to 15s; validity extended to 10 minutes.
+
 ---
 
 ## 3. Firestore Collections Reference
