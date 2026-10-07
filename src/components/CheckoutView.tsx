@@ -166,10 +166,15 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   const setupRecaptcha = () => {
     if (!auth) return null;
     try {
+      const container = document.getElementById('recaptcha-container');
+      if (container) {
+        container.innerHTML = '';
+      }
       if ((window as any).recaptchaVerifier) {
         try {
           (window as any).recaptchaVerifier.clear();
         } catch {}
+        (window as any).recaptchaVerifier = null;
       }
       (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',

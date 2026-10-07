@@ -5,6 +5,11 @@ export interface UserProfile {
   uid: string;
   phone: string;
   name: string;
+  email?: string;
+  address?: string;
+  city?: string;
+  pincode?: string;
+  ordersCount?: number;
   createdAt?: any;
   lastLogin?: any;
 }

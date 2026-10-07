@@ -42,10 +42,15 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
   const setupLoginRecaptcha = () => {
     if (!auth) return null;
     try {
+      const container = document.getElementById('login-recaptcha-container');
+      if (container) {
+        container.innerHTML = '';
+      }
       if ((window as any).loginRecaptchaVerifier) {
         try {
           (window as any).loginRecaptchaVerifier.clear();
         } catch {}
+        (window as any).loginRecaptchaVerifier = null;
       }
       (window as any).loginRecaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', {
         size: 'invisible',
@@ -159,8 +164,17 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
       const cleanPhone = phone.replace(/\D/g, '').slice(-10);
       const uid = userCredential.user?.uid || `user_${cleanPhone}`;
 
-      // Fetch or create profile in Firestore
-      const existingProfile = await userService.getUserProfile(cleanPhone);
+      // Fetch existing profile with a fast 1.5s timeout fallback
+      let existingProfile: UserProfile | null = null;
+      try {
+        existingProfile = await Promise.race([
+          userService.getUserProfile(cleanPhone),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500))
+        ]);
+      } catch (profileErr) {
+        console.warn('Profile fetch warning (continuing login):', profileErr);
+      }
+
       const customerName = name.trim() || existingProfile?.name || 'Valued Customer';
 
       const userProf: UserProfile = {
@@ -174,14 +188,25 @@ export const UserLoginView: React.FC<UserLoginViewProps> = ({ onBack, onSuccess 
         ordersCount: existingProfile?.ordersCount || 0
       };
 
-      await userService.saveUserProfile(userProf.uid, userProf.phone, userProf.name);
-      await userService.updateLastLogin(userProf.uid);
-
+      // Save to local registry and localStorage instantly
       localStorage.setItem('parzio_user_profile', JSON.stringify(userProf));
+
+      // Sync to cloud in background without blocking login
+      userService.saveUserProfile(userProf.uid, userProf.phone, userProf.name).catch((e) => console.warn('Background save err:', e));
+      userService.updateLastLogin(userProf.uid).catch((e) => console.warn('Background login update err:', e));
+
       onSuccess(userProf);
     } catch (err: any) {
       console.error('Verify OTP error:', err);
-      setError('Invalid verification code. Please check the code sent to your phone and try again.');
+      let errMsg = 'Invalid verification code. Please check the code sent to your phone and try again.';
+      if (err.code === 'auth/invalid-verification-code') {
+        errMsg = 'Incorrect 6-digit code. Please enter the correct code.';
+      } else if (err.code === 'auth/code-expired') {
+        errMsg = 'This OTP has expired. Please click Resend to get a fresh code.';
+      } else if (err.message) {
+        errMsg = err.message;
+      }
+      setError(errMsg);
     } finally {
       setIsLoading(false);
     }
