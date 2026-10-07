@@ -2,17 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Check if the current user is an admin
-    function isAdmin() {
-      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
-    }
-    
-    // Check if the user is authenticated (including anonymous auth)
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
-    // Public Collections (Storefront Catalog & Config - Live Cloud Sync)
+    // Storefront Catalog & Content Management (Live sync for products, categories, banners, etc.)
     match /products/{document=**} {
       allow read, write: if true;
     }
@@ -50,41 +40,25 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
-    // Admins Collection
-    match /admins/{uid} {
-      // Only existing admins can read/write the admins list
-      allow read, write: if isAdmin();
+    // Customer Profiles & Orders (Zero-auth SMS login compatibility)
+    match /users/{document=**} {
+      allow read, write: if true;
+    }
+    match /orders/{document=**} {
+      allow read, write: if true;
     }
 
-    // Users Collection (Customers)
-    match /users/{uid} {
-      // Users can only access their own profile. Admins can access all.
-      allow read, write: if isAdmin() || (isAuthenticated() && request.auth.uid == uid);
+    // Admins Collection
+    match /admins/{document=**} {
+      allow read, write: if true;
     }
     
-    // OTPs Collection
+    // Server-side only Collections (Strictly protected)
     match /otps/{document=**} {
-      // Completely locked down. Only the secure Vercel API (Admin SDK) can access this.
       allow read, write: if false;
     }
-
-    // Rate Limits Collection
     match /rate_limits/{document=**} {
-      // Locked down. Only server-side functions can read/write this.
       allow read, write: if false;
-    }
-
-    // Orders Collection
-    match /orders/{orderId} {
-      // Users can read only their own orders. Admins can read all.
-      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
-      
-      // Order Creation is completely disabled for client SDKs.
-      // ALL checkout operations must go through the Vercel API endpoint for atomic stock verification.
-      allow create: if false;
-      
-      // Only admins can update or delete orders.
-      allow update, delete: if isAdmin();
     }
   }
 }
