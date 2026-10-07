@@ -79,6 +79,11 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   3. Master Test Code: Accepted `123456` or `000000` for instant verification without carrier failure.
   4. Resend cooldown reduced to 15s; validity extended to 10 minutes.
 
+### G. "ReferenceError: auth is not defined" in CheckoutView
+- **Problem:** When finalizing COD orders in `CheckoutView.tsx`, the application threw a runtime error `auth is not defined`.
+- **Root Cause:** `auth.currentUser` was referenced in `finalizeOrder` to attach the Firebase bearer token to `/api/checkout`, but `auth` was missing from the file imports.
+- **Fix Applied:** Imported `auth` from `../lib/firebase` and safely guarded token resolution (`if (auth && auth.currentUser)`).
+
 ---
 
 ## 3. Firestore Collections Reference
