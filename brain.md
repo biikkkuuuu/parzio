@@ -121,6 +121,21 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 - Removed all FAQ and Q&A interview-style blocks from the storefront and customer care menus.
 - Replaced lengthy definition essays in `Footer.tsx` (About Us, Shipping, Returns) and `ProductDetailView.tsx` with short, crisp, luxury brand bullet points.
 
+### N. Guest Address Cleanup, Compact Personal Details & Govt-Compliant Privacy Policy
+- **Fake Saved Addresses in Guest View:**
+  - `DEFAULT_ADDRESSES` in `AccountView.tsx` previously contained hardcoded mock items (`Pooja Sharma`) which were automatically loaded into `localStorage['parzio_saved_addresses']` for all users, including non-logged-in guest users.
+  - Reset `DEFAULT_ADDRESSES` to an empty array `[]` and added an active filter during state initialization to purge any legacy mock data (`addr-1`, `addr-2`, `Pooja Sharma`).
+  - Added a clean empty state card (`No saved delivery addresses`) with an "+ Add Address" action.
+- **Compact Personal Details Subview:**
+  - Removed unnecessary vertical padding/margins and eliminated non-essential filler text (`Registered phone number is your verified login identity...`).
+  - Compacted the form container for a tight, refined mobile experience.
+- **Indian Govt E-Commerce & DPDP Compliant Privacy Policy:**
+  - Replaced the placeholder card with an authentic, structured Indian regulatory compliance policy covering:
+    - Information Technology Act, 2000 & Digital Personal Data Protection (DPDP) Act, 2023.
+    - Consumer Protection (E-Commerce) Rules, 2020 (Rule 5(9) Grievance Officer statutory disclosure with official contact details for Jitendra Pandit, Giridih, Jharkhand).
+    - 256-bit SSL encrypted payment processing through RBI-authorized payment aggregators (no raw CVV/card storage).
+    - Strict non-disclosure to unauthorized third parties and secure courier dispatch protocol.
+
 ---
 
 ## 3. Firestore Collections Reference

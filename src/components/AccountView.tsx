@@ -49,30 +49,7 @@ interface AddressItem {
   isDefault: boolean;
 }
 
-const DEFAULT_ADDRESSES: AddressItem[] = [
-  {
-    id: 'addr-1',
-    name: 'Pooja Sharma',
-    type: 'HOME',
-    phone: '+91 98765 43210',
-    address: 'Flat 402, Lotus Towers, Andheri West',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    pincode: '400053',
-    isDefault: true
-  },
-  {
-    id: 'addr-2',
-    name: 'Pooja Sharma',
-    type: 'WORK',
-    phone: '+91 98765 43210',
-    address: 'Mindspace IT Park, Building 4, Malad West',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    pincode: '400064',
-    isDefault: false
-  }
-];
+const DEFAULT_ADDRESSES: AddressItem[] = [];
 
 export const AccountView: React.FC<AccountViewProps> = ({
   orders,
@@ -101,13 +78,21 @@ export const AccountView: React.FC<AccountViewProps> = ({
   const userEmail = userProfile ? `${userName.toLowerCase().replace(/\s+/g, '')}@parzio.in` : '';
   const [showLogoutToast, setShowLogoutToast] = useState(false);
 
-  // Addresses State with LocalStorage Persistence
+  // Addresses State with LocalStorage Persistence & Mock Filter
   const [addresses, setAddresses] = useState<AddressItem[]>(() => {
     try {
       const saved = localStorage.getItem('parzio_saved_addresses');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: AddressItem[] = JSON.parse(saved);
+        return parsed.filter(
+          (a) =>
+            a.id !== 'addr-1' &&
+            a.id !== 'addr-2' &&
+            !a.name.toLowerCase().includes('pooja sharma')
+        );
+      }
     } catch {}
-    return DEFAULT_ADDRESSES;
+    return [];
   });
 
   useEffect(() => {
@@ -390,7 +375,11 @@ export const AccountView: React.FC<AccountViewProps> = ({
                       <h4 className="text-xs font-semibold text-[#141414] group-hover:text-[#8c7138] transition-colors">
                         Saved Delivery Addresses
                       </h4>
-                      <p className="text-[10px] text-[#717478]">{addresses.length} addresses saved</p>
+                      <p className="text-[10px] text-[#717478]">
+                        {addresses.length > 0
+                          ? `${addresses.length} ${addresses.length === 1 ? 'address' : 'addresses'} saved`
+                          : 'No saved addresses'}
+                      </p>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138]" />
@@ -753,28 +742,27 @@ export const AccountView: React.FC<AccountViewProps> = ({
       {/* 1. Edit Profile Page */}
       {activeModal === 'profile' && (
         <div className="fixed inset-0 z-50 bg-[#faf8f5] overflow-y-auto animate-fadeIn flex flex-col">
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
-            <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3">
+            <div className="max-w-md mx-auto flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setActiveModal(null)}
-                className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-bold text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 text-[#141414]" />
-                <span>Back to Account</span>
+                <span>Back</span>
               </button>
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#8c7138]">Personal Information</h3>
             </div>
           </header>
 
-          <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
-            <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 border border-[#eae5dc] shadow-xl shadow-black/5 space-y-5">
-              <div className="border-b border-[#f0f1f3] pb-3">
-                <h3 className="text-base font-bold text-[#141414]">Edit Personal Details</h3>
-                <p className="text-xs text-[#717478]">Update your name and delivery contact profile</p>
+          <main className="flex-1 flex items-start justify-center p-3 sm:p-5 pt-4">
+            <div className="w-full max-w-md bg-white rounded-2xl p-5 border border-[#eae5dc] shadow-sm space-y-3.5">
+              <div className="border-b border-[#f0f1f3] pb-2">
+                <h3 className="text-sm font-bold text-[#141414]">Edit Personal Details</h3>
               </div>
 
-              <div className="space-y-4 text-xs">
+              <div className="space-y-3 text-xs">
                 <div>
                   <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">Full Name</label>
                   <input
@@ -782,39 +770,38 @@ export const AccountView: React.FC<AccountViewProps> = ({
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     placeholder="Enter your name"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                    className="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
                   />
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[10px] font-bold text-[#717478] uppercase">Registered Mobile Number</label>
-                    <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded flex items-center gap-1">
+                    <label className="text-[10px] font-bold text-[#717478] uppercase">Registered Mobile</label>
+                    <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
                       🔒 Permanent ID
                     </span>
                   </div>
                   <input
                     type="text"
-                    value={userPhone}
+                    value={userPhone || 'Not Registered'}
                     readOnly
                     disabled
-                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-[#eae5dc] font-mono font-semibold text-neutral-500 cursor-not-allowed select-none"
+                    className="w-full px-3 py-2 rounded-xl bg-neutral-100 border border-[#eae5dc] font-mono text-xs text-neutral-500 cursor-not-allowed select-none"
                   />
-                  <p className="text-[10px] text-[#8c7138] mt-1">
-                    Registered phone number is your verified login identity and cannot be changed.
-                  </p>
                 </div>
 
-                <div>
-                  <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    value={userEmail}
-                    readOnly
-                    disabled
-                    className="w-full px-4 py-2.5 rounded-xl bg-neutral-100 border border-[#eae5dc] font-semibold text-neutral-500 cursor-not-allowed select-none"
-                  />
-                </div>
+                {userEmail && (
+                  <div>
+                    <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      value={userEmail}
+                      readOnly
+                      disabled
+                      className="w-full px-3 py-2 rounded-xl bg-neutral-100 border border-[#eae5dc] text-xs text-neutral-500 cursor-not-allowed select-none"
+                    />
+                  </div>
+                )}
               </div>
 
               <button
@@ -837,7 +824,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                   }
                   setActiveModal(null);
                 }}
-                className="w-full py-3 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-colors cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-[#141414] hover:bg-[#8c7138] text-white font-bold text-xs uppercase tracking-wider shadow-xs transition-colors cursor-pointer"
               >
                 Save Details
               </button>
@@ -1113,51 +1100,59 @@ export const AccountView: React.FC<AccountViewProps> = ({
 
                 {/* Saved Address List */}
                 <div className="space-y-3 pt-1">
-                  {addresses.map((addr) => (
-                    <div
-                      key={addr.id}
-                      className={`p-4 rounded-2xl border text-xs space-y-2 relative transition-all ${
-                        addr.isDefault ? 'border-[#8c7138] bg-[#faf7f2]' : 'border-[#e4e6eb] bg-white'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-[#141414] flex items-center gap-2">
-                          {addr.name}
-                          <span className="px-2 py-0.5 rounded-full bg-neutral-200 text-[9px] font-bold uppercase text-neutral-700">
-                            {addr.type}
+                  {addresses.length === 0 ? (
+                    <div className="text-center py-8 bg-[#faf8f5] rounded-2xl border border-[#eae5dc] text-xs text-[#717478] space-y-1">
+                      <MapPin className="w-6 h-6 text-[#8c7138]/50 mx-auto mb-1" />
+                      <p className="font-bold text-[#141414]">No saved delivery addresses</p>
+                      <p className="text-[11px] text-[#717478]">Click "+ Add New Address" above or add during checkout.</p>
+                    </div>
+                  ) : (
+                    addresses.map((addr) => (
+                      <div
+                        key={addr.id}
+                        className={`p-4 rounded-2xl border text-xs space-y-2 relative transition-all ${
+                          addr.isDefault ? 'border-[#8c7138] bg-[#faf7f2]' : 'border-[#e4e6eb] bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#141414] flex items-center gap-2">
+                            {addr.name}
+                            <span className="px-2 py-0.5 rounded-full bg-neutral-200 text-[9px] font-bold uppercase text-neutral-700">
+                              {addr.type}
+                            </span>
                           </span>
-                        </span>
 
-                        <div className="flex items-center gap-3">
-                          {addr.isDefault ? (
-                            <span className="text-[10px] font-bold text-[#8c7138] uppercase">Default</span>
-                          ) : (
+                          <div className="flex items-center gap-3">
+                            {addr.isDefault ? (
+                              <span className="text-[10px] font-bold text-[#8c7138] uppercase">Default</span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleSetDefaultAddress(addr.id)}
+                                className="text-[10px] font-bold text-neutral-500 hover:text-[#8c7138] underline cursor-pointer"
+                              >
+                                Set Default
+                              </button>
+                            )}
                             <button
                               type="button"
-                              onClick={() => handleSetDefaultAddress(addr.id)}
-                              className="text-[10px] font-bold text-neutral-500 hover:text-[#8c7138] underline cursor-pointer"
+                              onClick={() => setConfirmDeleteAddressId(addr.id)}
+                              className="text-neutral-400 hover:text-rose-600 cursor-pointer p-1 transition-colors"
+                              title="Delete address"
                             >
-                              Set Default
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => setConfirmDeleteAddressId(addr.id)}
-                            className="text-neutral-400 hover:text-rose-600 cursor-pointer p-1 transition-colors"
-                            title="Delete address"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          </div>
                         </div>
-                      </div>
 
-                      <p className="text-xs text-[#141414] leading-relaxed">
-                        {addr.address}
-                        {addr.postOffice ? `, Post: ${addr.postOffice}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
-                      </p>
-                      <p className="text-[#717478] font-medium">Phone: {addr.phone}</p>
-                    </div>
-                  ))}
+                        <p className="text-xs text-[#141414] leading-relaxed">
+                          {addr.address}
+                          {addr.postOffice ? `, Post: ${addr.postOffice}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
+                        </p>
+                        <p className="text-[#717478] font-medium">Phone: {addr.phone}</p>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -1168,46 +1163,45 @@ export const AccountView: React.FC<AccountViewProps> = ({
       {/* 4. Help Center Page */}
       {activeModal === 'help' && (
         <div className="fixed inset-0 z-50 bg-[#faf8f5] overflow-y-auto animate-fadeIn flex flex-col">
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
-            <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3">
+            <div className="max-w-md mx-auto flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setActiveModal(null)}
-                className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-bold text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 text-[#141414]" />
-                <span>Back to Account</span>
+                <span>Back</span>
               </button>
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#8c7138]">Help Center</h3>
             </div>
           </header>
 
-          <main className="flex-1 max-w-md w-full mx-auto p-4 sm:p-8">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eae5dc] shadow-xl shadow-black/5 space-y-5">
-              <div className="border-b border-[#f0f1f3] pb-3">
-                <h3 className="text-base font-bold text-[#141414]">PARZIO 24×7 Help Center</h3>
-                <p className="text-xs text-[#717478]">Direct concierge support &amp; order assistance</p>
+          <main className="flex-1 max-w-md w-full mx-auto p-4 sm:p-6">
+            <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#eae5dc] shadow-sm space-y-4">
+              <div className="border-b border-[#f0f1f3] pb-2.5">
+                <h3 className="text-sm font-bold text-[#141414]">PARZIO 24×7 Help Center</h3>
+                <p className="text-[11px] text-[#717478]">Direct concierge support &amp; order assistance</p>
               </div>
 
-              <div className="space-y-4 text-xs text-[#444748]">
-                <div className="p-4 bg-[#faf7f2] rounded-2xl border border-[#eae5dc] space-y-1.5">
-                  <p className="font-bold text-sm text-[#141414]">Quick WhatsApp Concierge</p>
-                  <p className="text-xs text-[#717478]">Get instant response from our stylist support team</p>
+              <div className="space-y-3 text-xs text-[#444748]">
+                <div className="p-3.5 bg-[#faf7f2] rounded-xl border border-[#eae5dc] space-y-1">
+                  <p className="font-bold text-xs text-[#141414]">WhatsApp Support</p>
+                  <p className="text-[11px] text-[#717478]">Instant assistance for order and delivery tracking</p>
                   <a
                     href="https://wa.me/917033656752"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:underline pt-1.5"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:underline pt-1"
                   >
                     <Phone className="w-3.5 h-3.5" />
-                    <span>Chat on WhatsApp: +91 7033656752</span>
+                    <span>+91 7033656752</span>
                   </a>
                 </div>
 
-                <div className="space-y-2 pt-1 leading-relaxed">
-                  <p className="font-bold text-[#141414]">Frequently Asked Questions:</p>
-                  <p>• <strong>Delivery Time:</strong> 2–4 business days across India</p>
-                  <p>• <strong>Anti-Tarnish Proof:</strong> 316L Surgical Steel shower &amp; perfume safe</p>
+                <div className="space-y-1.5 text-[11px] leading-relaxed">
+                  <p>• <strong>Delivery:</strong> 2–4 business days via BlueDart / Delhivery</p>
+                  <p>• <strong>Warranty:</strong> 316L Surgical Steel shower &amp; perfume safe</p>
                   <p>• <strong>Returns:</strong> 7-day hassle-free doorstep reverse pickup</p>
                 </div>
               </div>
@@ -1216,31 +1210,78 @@ export const AccountView: React.FC<AccountViewProps> = ({
         </div>
       )}
 
-      {/* 5. Privacy Page */}
+      {/* 5. Privacy Policy Page (Govt of India E-Commerce & DPDP Act Compliant) */}
       {activeModal === 'privacy' && (
         <div className="fixed inset-0 z-50 bg-[#faf8f5] overflow-y-auto animate-fadeIn flex flex-col">
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3">
             <div className="max-w-2xl mx-auto flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setActiveModal(null)}
-                className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-bold text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 text-[#141414]" />
-                <span>Back to Account</span>
+                <span>Back</span>
               </button>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8c7138]">Trust &amp; Privacy</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8c7138]">Privacy Policy</h3>
             </div>
           </header>
 
-          <main className="flex-1 max-w-md w-full mx-auto p-4 sm:p-8">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eae5dc] shadow-xl shadow-black/5 space-y-4">
-              <div className="border-b border-[#f0f1f3] pb-3">
-                <h3 className="text-base font-bold text-[#141414]">PARZIO Trust &amp; Privacy Policy</h3>
+          <main className="flex-1 max-w-2xl w-full mx-auto p-4 sm:p-6">
+            <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#eae5dc] shadow-sm space-y-4 text-xs text-[#333]">
+              <div className="border-b border-[#f0f1f3] pb-2.5">
+                <h2 className="text-base font-bold text-[#141414]">PARZIO Privacy &amp; Data Protection Policy</h2>
+                <p className="text-[11px] text-[#717478] mt-0.5">
+                  Compliant with the Information Technology Act, 2000, Consumer Protection (E-Commerce) Rules, 2020 &amp; DPDP Act.
+                </p>
               </div>
-              <div className="text-xs text-[#444748] space-y-3 leading-relaxed">
-                <p>Your payment details, address, and phone numbers are encrypted with 256-bit bank-grade SSL security.</p>
-                <p>We do not share your personal information with third parties. All courier updates are sent safely through verified business WhatsApp channels.</p>
+
+              <div className="space-y-3 leading-relaxed">
+                <div>
+                  <h4 className="font-bold text-[#141414] text-xs mb-0.5">1. Information We Collect</h4>
+                  <p className="text-[#555]">
+                    When you place an order or create an account, we collect necessary transactional details including your name, delivery address, pincode, mobile number, and email. We do not store credit/debit card numbers or UPI MPINs.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-[#141414] text-xs mb-0.5">2. Purpose of Data Processing</h4>
+                  <p className="text-[#555]">
+                    Your information is utilized solely for:
+                  </p>
+                  <ul className="list-disc pl-4 mt-1 space-y-0.5 text-[#555]">
+                    <li>Fulfillment and doorstep delivery of your orders via BlueDart &amp; Delhivery.</li>
+                    <li>SMS and WhatsApp dispatch notifications and live tracking.</li>
+                    <li>Processing payments, tax invoices, and 7-day doorstep returns or exchanges.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-[#141414] text-xs mb-0.5">3. Payment Security &amp; 256-Bit Encryption</h4>
+                  <p className="text-[#555]">
+                    All online payments (Razorpay &amp; UPI) are processed over end-to-end 256-bit SSL encrypted bank channels. PARZIO never accesses or stores sensitive financial credentials.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-[#141414] text-xs mb-0.5">4. Disclosure &amp; Third-Party Sharing</h4>
+                  <p className="text-[#555]">
+                    We strictly do not sell, rent, or trade your personal data with third-party advertisers. Data is shared exclusively with licensed logistics couriers for delivery purposes.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-[#141414] text-xs mb-0.5">5. Grievance Redressal Mechanism</h4>
+                  <p className="text-[#555]">
+                    In accordance with Rule 5(9) of Consumer Protection (E-Commerce) Rules, 2020:
+                  </p>
+                  <div className="p-3 bg-[#faf8f5] rounded-xl border border-[#eae5dc] mt-1.5 space-y-0.5 text-[11px]">
+                    <p><strong>Grievance Officer:</strong> Jitendra Pandit</p>
+                    <p><strong>Email:</strong> <a href="mailto:jitendrapandit1764@gmail.com" className="text-[#9e7144] font-semibold underline">jitendrapandit1764@gmail.com</a></p>
+                    <p><strong>Phone:</strong> +91 7033656752</p>
+                    <p><strong>Operating Address:</strong> Giridih, Jharkhand - 815316, India</p>
+                  </div>
+                </div>
               </div>
             </div>
           </main>
