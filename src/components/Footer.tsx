@@ -145,46 +145,59 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
               </ul>
             </div>
 
-            {/* Column 4: Available On (Compact Brand Pills) */}
+            {/* Column 4: Available On (Official Brand Vector Logos) */}
             <div className="col-span-1">
               <h3 className="text-xs font-semibold text-white mb-1.5 sm:mb-2 uppercase tracking-wider">
                 Available On
               </h3>
-              <div className="flex flex-col gap-1.5">
-                {/* Meesho */}
+              <div className="flex flex-col gap-1.5 max-w-[125px]">
+                {/* Meesho Official Logo */}
                 <a
                   href="https://www.meesho.com/Parzio?_ms=3.0.1"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 py-1 px-2.5 rounded-md bg-[#22131c] hover:bg-[#321929] border border-[#f43397]/30 hover:border-[#f43397] transition-all text-gray-200 hover:text-white text-[11px] font-medium w-fit cursor-pointer"
+                  className="py-1 px-2.5 rounded-md bg-[#22131c] hover:bg-[#321929] border border-[#f43397]/30 hover:border-[#f43397] transition-all flex items-center gap-2 cursor-pointer shadow-xs"
                   title="Shop Parzio on Meesho"
                 >
-                  <span className="w-3.5 h-3.5 rounded-full bg-[#f43397] flex items-center justify-center text-[9px] font-black text-white leading-none shrink-0">m</span>
-                  <span>Meesho</span>
+                  <svg className="h-3.5 w-auto shrink-0" viewBox="0 0 100 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="28" height="28" rx="7" fill="#f43397"/>
+                    <path d="M7 19.5V10c0-1.4 1-2.4 2.3-2.4 1.1 0 1.9.7 2.2 1.6.3-.9 1.1-1.6 2.2-1.6 1.3 0 2.3 1 2.3 2.4v9.5h-2.1v-8.5c0-.6-.4-1-.9-1s-.9.4-.9 1v8.5H10v-8.5c0-.6-.4-1-.9-1s-.9.4-.9 1v8.5H7z" fill="#FFFFFF"/>
+                    <text x="34" y="19" fontFamily="system-ui, -apple-system, sans-serif" fontSize="14" fontWeight="800" fill="#FFFFFF" letterSpacing="-0.2">
+                      meesho
+                    </text>
+                  </svg>
                 </a>
 
-                {/* Flipkart */}
+                {/* Flipkart Official Logo */}
                 <a
                   href="https://www.flipkart.com/search?q=Parzio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 py-1 px-2.5 rounded-md bg-[#0e1726] hover:bg-[#15233a] border border-[#2874f0]/30 hover:border-[#2874f0] transition-all text-gray-200 hover:text-white text-[11px] font-medium w-fit cursor-pointer"
+                  className="py-1 px-2.5 rounded-md bg-[#0e1726] hover:bg-[#15233a] border border-[#2874f0]/30 hover:border-[#2874f0] transition-all flex items-center gap-2 cursor-pointer shadow-xs"
                   title="Shop Parzio on Flipkart"
                 >
-                  <span className="w-3.5 h-3.5 rounded bg-[#2874f0] flex items-center justify-center text-[10px] font-black italic text-[#ffe500] leading-none shrink-0">f</span>
-                  <span>Flipkart</span>
+                  <svg className="h-3.5 w-auto shrink-0" viewBox="0 0 105 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 4.5h-3.2V3.2C17.8 1.4 16.4 0 14.7 0h-1.9C11.1 0 9.7 1.4 9.7 3.2v1.3H6.5C5.1 4.5 4 5.6 4 7l1.5 15.5c.1 1.4 1.3 2.5 2.7 2.5h11.5c1.4 0 2.6-1.1 2.7-2.5L24 7c0-1.4-1.1-2.5-2.5-2.5zm-9.8-1.3c0-.9.7-1.6 1.6-1.6h1.9c.9 0 1.6.7 1.6 1.6v1.3h-5.1V3.2z" fill="#2874F0"/>
+                    <path d="M14 10h-3.8c-.3 0-.6.3-.6.6v2c0 .3.3.6.6.6h1.9v1.8c0 .3.3.6.6.6h1.3c.3 0 .6-.3.6-.6V13.2h1.9c.3 0 .6-.3.6-.6v-2c0-.3-.3-.6-.6-.6H14V8.2c0-.3.3-.6.6-.6h2c.3 0 .6-.3.6-.6V5.4c0-.3-.3-.6-.6-.6H14.6c-2.1 0-3.6 1.5-3.6 3.6V10z" fill="#FFE500"/>
+                    <text x="30" y="19" fontFamily="system-ui, -apple-system, sans-serif" fontSize="14" fontWeight="800" fontStyle="italic" fill="#FFFFFF" letterSpacing="-0.3">
+                      Flipkart<tspan fill="#FFE500" fontSize="15">.</tspan>
+                    </text>
+                  </svg>
                 </a>
 
-                {/* Amazon */}
+                {/* Amazon Official Logo */}
                 <a
                   href="https://www.amazon.in/s?k=Parzio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 py-1 px-2.5 rounded-md bg-[#191c20] hover:bg-[#262b32] border border-[#ff9900]/30 hover:border-[#ff9900] transition-all text-gray-200 hover:text-white text-[11px] font-medium w-fit cursor-pointer"
+                  className="py-1 px-2.5 rounded-md bg-[#191c20] hover:bg-[#262b32] border border-[#ff9900]/30 hover:border-[#ff9900] transition-all flex items-center gap-2 cursor-pointer shadow-xs"
                   title="Shop Parzio on Amazon"
                 >
-                  <span className="w-3.5 h-3.5 rounded bg-[#ff9900] flex items-center justify-center text-[9px] font-bold text-[#141414] leading-none shrink-0">a</span>
-                  <span>Amazon</span>
+                  <svg className="h-3.5 w-auto shrink-0" viewBox="0 0 95 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.5 16.5c-1.9 1.4-4.5 2.1-6.8 2.1-5.2 0-8.3-3.1-8.3-7.8 0-4.8 3.3-8 8.6-8 2.2 0 4.6.7 6.3 1.9l-1.5 2.6c-1.3-.9-2.9-1.4-4.6-1.4-3.3 0-5.4 2-5.4 4.9 0 3 2 4.9 5.4 4.9 1.5 0 3.1-.4 4.5-1.2l1.8 2zm8.7 1.9h-3.7V3h3.7v15.4zm14.9 0h-3.6V10.5c0-2.7-1.3-4-3.5-4-2.4 0-3.9 1.6-3.9 4.4v7.5h-3.7V3h3.5v2.3c1.2-1.6 3.1-2.5 5.3-2.5 3.7 0 5.9 2.2 5.9 6.4v9.2zm14.6-7.4c0 4.6-3.1 7.7-7.8 7.7s-7.8-3.1-7.8-7.7c0-4.5 3.1-7.7 7.8-7.7 4.7 0 7.8 3.2 7.8 7.7zm-3.7 0c0-2.9-1.8-4.7-4.1-4.7s-4.1 1.8-4.1 4.7c0 2.9 1.8 4.7 4.1 4.7s4.1-1.8 4.1-4.7zm14.5 7.4h-3.7V9.1c0-2.3-1.2-3.4-3.2-3.4-2.2 0-3.7 1.5-3.7 4.1v8.4h-3.7V6h3.5v2c1.1-1.5 2.9-2.2 4.8-2.2 3.4 0 6 2 6 5.8v6.6z" fill="#FFFFFF"/>
+                    <path d="M10 20c12.4 3.3 25.9 1.5 37.1-5.5.4-.2.7.3.4.7-11.7 7.7-26.2 9.5-39.1 6-.6-.2-.2-1.2 1.6-1.2z" fill="#FF9900"/>
+                    <path d="M48.5 13.6c-.7.9-2 1.7-3 2-.3.1-.2-.3.1-.6 1.1-.7 2.4-1.5 3.1-2.1.2-.3.6.3-.2.7z" fill="#FF9900"/>
+                  </svg>
                 </a>
               </div>
             </div>
