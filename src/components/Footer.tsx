@@ -145,7 +145,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
               </ul>
             </div>
 
-            {/* Column 4: Available On (Official Brand Logos) */}
+            {/* Column 4: Available On (Exact Official App Icons) */}
             <div className="col-span-1">
               <h3 className="text-xs font-semibold text-white mb-1.5 sm:mb-2 uppercase tracking-wider">
                 Available On
@@ -156,14 +156,17 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                   href="https://www.meesho.com/Parzio?_ms=3.0.1"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center py-1.5 px-3 rounded-lg bg-[#22131c] hover:bg-[#321929] border border-[#f43397]/30 hover:border-[#f43397] transition-all w-fit min-w-[115px] h-8 cursor-pointer shadow-xs"
+                  className="flex items-center gap-2.5 py-1.5 px-2.5 rounded-xl bg-[#1e171b] hover:bg-[#2c1d27] border border-[#841a54]/40 hover:border-[#841a54] transition-all w-fit min-w-[120px] cursor-pointer shadow-xs group"
                   title="Shop Parzio on Meesho"
                 >
                   <img
                     src="/images/platforms/meesho.png"
                     alt="Meesho"
-                    className="h-4.5 w-auto object-contain"
+                    className="w-6 h-6 rounded-lg object-contain shrink-0"
                   />
+                  <span className="text-xs font-bold text-white tracking-tight group-hover:text-[#fed488] transition-colors">
+                    Meesho
+                  </span>
                 </a>
 
                 {/* Flipkart */}
@@ -171,14 +174,17 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                   href="https://www.flipkart.com/search?q=Parzio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center py-1.5 px-3 rounded-lg bg-[#0e1726] hover:bg-[#15233a] border border-[#2874f0]/30 hover:border-[#2874f0] transition-all w-fit min-w-[115px] h-8 cursor-pointer shadow-xs"
+                  className="flex items-center gap-2.5 py-1.5 px-2.5 rounded-xl bg-[#111927] hover:bg-[#1a263b] border border-[#2874f0]/40 hover:border-[#2874f0] transition-all w-fit min-w-[120px] cursor-pointer shadow-xs group"
                   title="Shop Parzio on Flipkart"
                 >
                   <img
-                    src="/images/platforms/flipkart.svg"
+                    src="/images/platforms/flipkart.png"
                     alt="Flipkart"
-                    className="h-4.5 w-auto object-contain"
+                    className="w-6 h-6 rounded-full object-contain shrink-0"
                   />
+                  <span className="text-xs font-bold text-white italic tracking-tight group-hover:text-[#fed488] transition-colors">
+                    Flipkart
+                  </span>
                 </a>
 
                 {/* Amazon */}
@@ -186,14 +192,17 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                   href="https://www.amazon.in/s?k=Parzio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center py-1.5 px-3 rounded-lg bg-[#191c20] hover:bg-[#262b32] border border-[#ff9900]/30 hover:border-[#ff9900] transition-all w-fit min-w-[115px] h-8 cursor-pointer shadow-xs"
+                  className="flex items-center gap-2.5 py-1.5 px-2.5 rounded-xl bg-[#1d1a16] hover:bg-[#2b2620] border border-[#d49e54]/40 hover:border-[#d49e54] transition-all w-fit min-w-[120px] cursor-pointer shadow-xs group"
                   title="Shop Parzio on Amazon"
                 >
                   <img
-                    src="/images/platforms/amazon.svg"
+                    src="/images/platforms/amazon.png"
                     alt="Amazon"
-                    className="h-4 w-auto object-contain"
+                    className="w-6 h-6 rounded-lg object-contain shrink-0"
                   />
+                  <span className="text-xs font-bold text-white tracking-tight group-hover:text-[#fed488] transition-colors">
+                    Amazon
+                  </span>
                 </a>
               </div>
             </div>
