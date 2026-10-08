@@ -1024,6 +1024,12 @@ export default function App() {
     setCartItems((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
+  const handleMoveToWishlist = (productId: string) => {
+    setWishlistIds((prev) => (prev.includes(productId) ? prev : [...prev, productId]));
+    handleRemoveFromCart(productId);
+    showToast('Moved item to your Wishlist ✨');
+  };
+
   // Wishlist Handlers
   const handleToggleWishlist = (productId: string) => {
     setWishlistIds((prev) => {
@@ -1039,7 +1045,7 @@ export default function App() {
   };
 
   const wishlistProducts = useMemo(() => {
-    return products.filter((p) => wishlistIds.includes(p.id));
+    return products.filter((p) => wishlistIds.includes(p.id) && p.isLive !== false);
   }, [wishlistIds, products]);
 
   // Order Handlers (Full CRUD for Admin Operations & Cloud Sync)
@@ -1226,11 +1232,11 @@ export default function App() {
           config={emergencyConfig}
           onOpenAdmin={handleOpenAtelierOps}
         />
-        {/* Toast Alert */}
+        {/* Toast Alert Bottom Snackbar */}
         {toastMessage && (
-          <div className="fixed top-14 left-1/2 -translate-x-1/2 z-[100] bg-[#141414] text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-[#8c7138] text-xs font-semibold animate-fadeIn whitespace-nowrap">
-            <span className="w-2 h-2 rounded-full bg-[#fed488]" />
-            <span>{toastMessage}</span>
+          <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[120] bg-[#141414]/95 backdrop-blur-md text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-[#8c7138]/50 text-xs font-semibold animate-fadeIn whitespace-nowrap max-w-[90vw] overflow-hidden text-ellipsis">
+            <span className="w-2 h-2 rounded-full bg-[#fed488] shrink-0" />
+            <span className="truncate">{toastMessage}</span>
           </div>
         )}
       </>
@@ -1240,11 +1246,11 @@ export default function App() {
   return (
     <React.Suspense fallback={<div className="h-screen w-full bg-[#f8f6f0] flex items-center justify-center animate-pulse"><div className="w-10 h-10 border-4 border-[#141414] border-t-transparent rounded-full animate-spin"></div></div>}>
       <div className="min-h-screen bg-[#f8f6f0] flex flex-col font-sans transition-colors duration-300">
-        {/* Toast Alert */}
+        {/* Toast Alert Bottom Snackbar */}
       {toastMessage && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-[100] bg-[#141414] text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-[#8c7138] text-xs font-semibold animate-fadeIn whitespace-nowrap">
-          <span className="w-2 h-2 rounded-full bg-[#fed488]" />
-          <span>{toastMessage}</span>
+        <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[120] bg-[#141414]/95 backdrop-blur-md text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-[#8c7138]/50 text-xs font-semibold animate-fadeIn whitespace-nowrap max-w-[90vw] overflow-hidden text-ellipsis">
+          <span className="w-2 h-2 rounded-full bg-[#fed488] shrink-0" />
+          <span className="truncate">{toastMessage}</span>
         </div>
       )}
 
@@ -1276,7 +1282,7 @@ export default function App() {
           <Header
             cartCount={cartCount}
             cartTotal={cartTotal}
-            wishlistCount={wishlistIds.length}
+            wishlistCount={wishlistProducts.length}
             onOpenCart={handleOpenCart}
             onOpenWishlist={handleOpenWishlist}
             onOpenAccount={() => handleTabChange('account')}
@@ -1465,6 +1471,7 @@ export default function App() {
               cartItems={cartItems}
               onUpdateQuantity={handleUpdateQuantity}
               onRemoveItem={handleRemoveFromCart}
+              onMoveToWishlist={handleMoveToWishlist}
               onCheckout={() => {
                 if (emergencyConfig.isActive) {
                   showToast('🚨 Storefront is under Emergency Shutdown. Checkout is temporarily paused.');
@@ -1629,6 +1636,7 @@ export default function App() {
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveFromCart}
+        onMoveToWishlist={handleMoveToWishlist}
         onCheckout={() => {
           if (emergencyConfig.isActive) {
             showToast('🚨 Storefront is under Emergency Shutdown. Checkout is temporarily paused.');

@@ -13,7 +13,8 @@ import {
   Tag,
   X,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Heart
 } from 'lucide-react';
 import { validateCoupon, calculateCouponDiscount } from '../utils/couponUtils';
 
@@ -21,6 +22,7 @@ interface CartViewProps {
   cartItems: CartItem[];
   onUpdateQuantity: (productId: string, delta: number) => void;
   onRemoveItem: (productId: string) => void;
+  onMoveToWishlist?: (productId: string) => void;
   onCheckout: () => void;
   onBackToStore: () => void;
   coupons?: Coupon[];
@@ -35,6 +37,7 @@ export const CartView: React.FC<CartViewProps> = ({
   cartItems,
   onUpdateQuantity,
   onRemoveItem,
+  onMoveToWishlist,
   onCheckout,
   onBackToStore,
   coupons = [],
@@ -207,14 +210,26 @@ export const CartView: React.FC<CartViewProps> = ({
                             </div>
                           </div>
 
-                          {/* Delete Button */}
-                          <button
-                            onClick={() => setItemToRemove({ id: product.id, name: product.name })}
-                            className="p-1.5 text-[#a3a3a3] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                            title="Remove item"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {/* Action Buttons: Wishlist & Delete */}
+                          <div className="flex items-center gap-1">
+                            {onMoveToWishlist && (
+                              <button
+                                type="button"
+                                onClick={() => onMoveToWishlist(product.id)}
+                                className="p-1.5 text-[#747878] hover:text-[#8c7138] hover:bg-[#fed488]/20 rounded-lg transition-colors cursor-pointer"
+                                title="Move to Wishlist"
+                              >
+                                <Heart className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setItemToRemove({ id: product.id, name: product.name })}
+                              className="p-1.5 text-[#a3a3a3] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                              title="Remove item"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
 
@@ -429,14 +444,20 @@ export const CartView: React.FC<CartViewProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2 border-t border-[#f0f1f3]">
-              <button
-                type="button"
-                onClick={() => setItemToRemove(null)}
-                className="flex-1 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-[#141414] font-semibold text-xs transition-colors cursor-pointer"
-              >
-                Keep in Bag
-              </button>
+            <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-[#f0f1f3]">
+              {onMoveToWishlist && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onMoveToWishlist(itemToRemove.id);
+                    setItemToRemove(null);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-[#8c7138] hover:bg-[#725a2b] text-white font-bold text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Heart className="w-3.5 h-3.5" />
+                  <span>Move to Wishlist</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => {
@@ -446,7 +467,14 @@ export const CartView: React.FC<CartViewProps> = ({
                 className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>Yes, Remove</span>
+                <span>Remove</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setItemToRemove(null)}
+                className="py-2.5 px-3 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-[#141414] font-semibold text-xs transition-colors cursor-pointer text-center"
+              >
+                Keep
               </button>
             </div>
           </div>

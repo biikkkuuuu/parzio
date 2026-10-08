@@ -157,6 +157,17 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   - Removed all floating rounded mini-cards with excessive blank surrounding background across all interactive Account subviews (`profile`, `address`, `privacy`, `help`, `coupons`).
   - Standardized all subviews to full-screen clean white layouts (`bg-white min-h-screen`) matching standard D2C / e-commerce mobile applications (Flipkart/Myntra standard).
 
+### Q. Toast Notification Positioning, Clean Quantity Controls, Wishlist Badge Sync & Move to Wishlist
+- **Wishlist Badge Count Calculation:**
+  - Standardized `wishlistCount` calculation in `App.tsx` and `Header.tsx` to derive from `wishlistProducts.length` rather than raw IDs array, preventing phantom counts from unlisted or legacy deleted IDs.
+- **Bottom Toast Snackbar:**
+  - Repositioned the dynamic `"Added ... to bag"` and alert toast notifications from top sticky header space (`top-14`) to a sleek, non-blocking floating bottom snackbar (`fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[120]`).
+- **Clean Quantity Controls on Product Cards:**
+  - Replaced awkward `1 in bag` button texts on product cards (`ProductVault.tsx`, `CategoryPageView.tsx`, `SalesSection.tsx`) with sleek, standard e-commerce quantity selectors `[-] 1 [+]`.
+- **Move to Wishlist in Shopping Bag:**
+  - Added dedicated "Move to Wishlist" action button on each cart item in both full `CartView.tsx` and slide-over `CartDrawer.tsx`.
+  - Added "Move to Wishlist" option inside the item deletion confirmation modal.
+
 ---
 
 ## 3. Firestore Collections Reference

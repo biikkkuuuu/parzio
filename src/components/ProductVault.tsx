@@ -162,7 +162,7 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                           <Minus className="w-3 h-3" />
                         </button>
                         <span className="text-xs font-bold text-white px-2">
-                          {qtyInCart} in bag
+                          {qtyInCart}
                         </span>
                         <button
                           type="button"
