@@ -445,9 +445,15 @@ export default function App() {
   const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('parzio_wishlist_ids');
-      return saved ? JSON.parse(saved) : ['prod-coin-bracelet'];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(id => id && id !== 'prod-coin-bracelet' && id !== 'hero-coin-bracelet');
+        }
+      }
+      return [];
     } catch {
-      return ['prod-coin-bracelet'];
+      return [];
     }
   });
 

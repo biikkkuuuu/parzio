@@ -126,9 +126,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             </div>
 
             {/* Description */}
-            <p className="text-xs sm:text-sm text-[#444748] mt-3 leading-relaxed">
+            <div className="text-xs sm:text-sm text-[#444748] mt-3 leading-relaxed whitespace-pre-line space-y-1 font-sans">
               {product.description}
-            </p>
+            </div>
 
             {/* Specifications list */}
             <div className="mt-4 space-y-2 text-xs border-t border-[#eae5dc] pt-3">

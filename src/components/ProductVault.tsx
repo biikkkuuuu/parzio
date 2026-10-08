@@ -1,6 +1,7 @@
 import React from 'react';
-import { Heart, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Heart, ShoppingBag, ArrowRight, Plus, Minus } from 'lucide-react';
 import { Product } from '../types';
+import { useCartStore } from '../store/useCartStore';
 
 interface ProductVaultProps {
   products: Product[];
@@ -21,6 +22,9 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
   wishlistIds,
   onOpenProductModal
 }) => {
+  const cartItems = useCartStore((state) => state.cartItems);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+
   const isFiltered = Boolean(
     activeFilter &&
     activeFilter !== 'ALL' &&
@@ -73,6 +77,9 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {displayList.map((product) => {
               const isWishlisted = wishlistIds.includes(product.id);
+              const cartItem = cartItems.find((item) => item.product.id === product.id);
+              const qtyInCart = cartItem?.quantity || 0;
+
               const discountTag = product.originalPrice
                 ? `${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF`
                 : '40% OFF';
@@ -96,7 +103,7 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                       }}
                     />
 
-                    {/* Wishlist Icon Top Right matching screenshot */}
+                    {/* Wishlist Icon Top Right */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -140,14 +147,48 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
                       </div>
                     </div>
 
-                    {/* Camel Brown Add to Cart Button matching screenshot */}
-                    <button
-                      onClick={() => onAddToCart(product)}
-                      className="w-full bg-[#9e7144] hover:bg-[#865d34] text-white py-1.5 px-2 rounded-xs text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-2xs cursor-pointer active:scale-95"
-                    >
-                      <ShoppingBag className="w-3 h-3" />
-                      <span>Add to Cart</span>
-                    </button>
+                    {/* Quantity Selector / Add to Cart Button */}
+                    {qtyInCart > 0 ? (
+                      <div className="w-full bg-[#9e7144] text-white py-1 px-1.5 rounded-xs flex items-center justify-between shadow-2xs">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(product.id, -1);
+                          }}
+                          className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 text-white font-bold transition-colors cursor-pointer active:scale-90"
+                          title="Decrease quantity"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="text-xs font-bold text-white px-2">
+                          {qtyInCart} in bag
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(product.id, 1);
+                          }}
+                          className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 text-white font-bold transition-colors cursor-pointer active:scale-90"
+                          title="Increase quantity"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddToCart(product);
+                        }}
+                        className="w-full bg-[#9e7144] hover:bg-[#865d34] text-white py-1.5 px-2 rounded-xs text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-2xs cursor-pointer active:scale-95"
+                      >
+                        <ShoppingBag className="w-3 h-3" />
+                        <span>Add to Cart</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               );

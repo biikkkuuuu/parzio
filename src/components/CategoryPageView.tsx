@@ -7,10 +7,13 @@ import {
   ShieldCheck,
   Droplets,
   RotateCcw,
-  Search
+  Search,
+  Plus,
+  Minus
 } from 'lucide-react';
 import { Product, CategoryItem } from '../types';
 import { Footer } from './Footer';
+import { useCartStore } from '../store/useCartStore';
 
 interface CategoryPageViewProps {
   categoryName: string;
@@ -40,6 +43,8 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
   onSelectProduct,
   onOpenAtelierOps
 }) => {
+  const cartItems = useCartStore((state) => state.cartItems);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
   // Sort and Filter States
   const [sortBy, setSortBy] = useState<SortOption>('featured');
   const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
@@ -268,6 +273,8 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
             {filteredAndSortedProducts.map((product) => {
               const isWishlisted = wishlistIds.includes(product.id);
+              const cartItem = cartItems.find((item) => item.product.id === product.id);
+              const qtyInCart = cartItem?.quantity || 0;
               const discountTag = product.originalPrice
                 ? `${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF`
                 : '40% OFF';
@@ -291,16 +298,6 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
                           'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=500&q=80';
                       }}
                     />
-
-                    {/* Top Badges */}
-                    <div className="absolute top-1.5 left-1.5 flex flex-col gap-1 pointer-events-none">
-                      {product.isWaterproof && (
-                        <span className="bg-[#141414]/90 text-white text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-xs tracking-wider uppercase backdrop-blur-xs flex items-center gap-0.5">
-                          <Droplets className="w-2.5 h-2.5 text-[#fed488]" />
-                          Waterproof
-                        </span>
-                      )}
-                    </div>
 
                     {/* Wishlist Button */}
                     <button
@@ -346,14 +343,48 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
                       </div>
                     </div>
 
-                    {/* Camel Brown Add to Cart Button */}
-                    <button
-                      onClick={() => onAddToCart(product)}
-                      className="bg-[#9e7144] hover:bg-[#865d34] text-white text-xs font-semibold py-1.5 sm:py-2 rounded-md transition-colors w-full flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 shadow-xs"
-                    >
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Add to Bag</span>
-                    </button>
+                    {/* Quantity Selector / Add to Cart Button */}
+                    {qtyInCart > 0 ? (
+                      <div className="w-full bg-[#9e7144] text-white py-1.5 px-2 rounded-md flex items-center justify-between shadow-xs">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(product.id, -1);
+                          }}
+                          className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 text-white font-bold transition-colors cursor-pointer active:scale-90"
+                          title="Decrease quantity"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="text-xs font-bold text-white px-2">
+                          {qtyInCart} in bag
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(product.id, 1);
+                          }}
+                          className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 text-white font-bold transition-colors cursor-pointer active:scale-90"
+                          title="Increase quantity"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddToCart(product);
+                        }}
+                        className="bg-[#9e7144] hover:bg-[#865d34] text-white text-xs font-semibold py-1.5 sm:py-2 rounded-md transition-colors w-full flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 shadow-xs"
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <span>Add to Bag</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               );

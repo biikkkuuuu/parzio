@@ -313,15 +313,20 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
                 {/* Description */}
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#747878] mb-1.5">
-                    Description &amp; Highlights
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[#747878]">
+                      Description &amp; Bullet Points
+                    </label>
+                    <span className="text-[10px] text-[#8c7138] font-medium">
+                      Supports bullets (•) and line breaks
+                    </span>
+                  </div>
                   <textarea
-                    rows={3}
+                    rows={4}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Anti-tarnish, sweat-proof, perfume-safe demi-fine jewelry designed for daily luxury."
-                    className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-4 py-3 text-xs text-[#141414] focus:outline-none focus:border-[#8c7138] focus:bg-white leading-relaxed"
+                    placeholder="• 18K Real Gold PVD Plating&#10;• 100% Anti-Tarnish &amp; Waterproof&#10;• 316L Surgical Stainless Steel&#10;• Sweat, shower &amp; daily wear safe"
+                    className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-4 py-3 text-xs text-[#141414] focus:outline-none focus:border-[#8c7138] focus:bg-white leading-relaxed font-sans"
                   />
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ArrowLeft, X, ShoppingBag, Sparkles, Filter } from 'lucide-react';
+import { Search, ArrowLeft, X, ShoppingBag, Plus, Minus } from 'lucide-react';
 import { Product } from '../types';
+import { useCartStore } from '../store/useCartStore';
 
 interface SearchViewProps {
   products: Product[];
@@ -19,6 +20,8 @@ export const SearchView: React.FC<SearchViewProps> = ({
 }) => {
   const [query, setQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState('All');
+  const cartItems = useCartStore((state) => state.cartItems);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -127,7 +130,11 @@ export const SearchView: React.FC<SearchViewProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-            {filteredProducts.map((product) => (
+            {filteredProducts.map((product) => {
+              const cartItem = cartItems.find((item) => item.product.id === product.id);
+              const qtyInCart = cartItem?.quantity || 0;
+
+              return (
               <div
                 key={product.id}
                 onClick={() => onSelectProduct(product)}
@@ -175,21 +182,50 @@ export const SearchView: React.FC<SearchViewProps> = ({
                       )}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAddToCart(product);
-                      }}
-                      className="p-2 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white transition-colors cursor-pointer active:scale-95 shadow-xs"
-                      title="Add to Bag"
-                    >
-                      <ShoppingBag className="w-3.5 h-3.5 text-[#fed488]" />
-                    </button>
+                    {qtyInCart > 0 ? (
+                      <div className="flex items-center gap-1 bg-[#141414] text-white px-2 py-1 rounded-full text-xs font-bold shadow-xs">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(product.id, -1);
+                          }}
+                          className="w-5 h-5 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 active:scale-90"
+                          title="Decrease quantity"
+                        >
+                          <Minus className="w-2.5 h-2.5" />
+                        </button>
+                        <span className="text-[11px] font-bold px-1 text-[#fed488]">{qtyInCart}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(product.id, 1);
+                          }}
+                          className="w-5 h-5 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 active:scale-90"
+                          title="Increase quantity"
+                        >
+                          <Plus className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddToCart(product);
+                        }}
+                        className="p-2 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white transition-colors cursor-pointer active:scale-95 shadow-xs"
+                        title="Add to Bag"
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5 text-[#fed488]" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>

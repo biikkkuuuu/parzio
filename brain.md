@@ -136,6 +136,19 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
     - 256-bit SSL encrypted payment processing through RBI-authorized payment aggregators (no raw CVV/card storage).
     - Strict non-disclosure to unauthorized third parties and secure courier dispatch protocol.
 
+### O. Real-Time Wishlist/Cart Badges, Direct Quantity Selector (+/-), Waterproof Overlay Removal & Description Bullet Preservation
+- **Accurate Wishlist & Cart Counters:**
+  - `wishlistIds` in `App.tsx` was previously defaulting to `['prod-coin-bracelet']`, causing an initial count of 1. It now initializes to `[]` and purges legacy dummy IDs.
+  - Wishlist and Bag header badges in `Header.tsx` only display when `count > 0`, reflecting the exact live counts.
+- **Direct Quantity Selector (+ / -) on Product Cards:**
+  - Added instant inline quantity selector (`[-] [qty in bag] [+]`) on product cards across Home (`ProductVault.tsx`), Category Pages (`CategoryPageView.tsx`), Sale (`SalesSection.tsx`), and Search (`SearchView.tsx`).
+  - Allows customers to increment, decrement, or remove items directly without needing to open the product detail page.
+  - Updated `useCartStore.ts` so `updateQuantity` automatically clears the item from cart when quantity decrements to 0.
+- **Waterproof Image Overlay Removal:**
+  - Removed the `Waterproof` badge overlay positioned over product card images in `CategoryPageView.tsx`.
+- **Product Description Bullet & Newline Preservation:**
+  - Added `whitespace-pre-line` and formatted spacing in `ProductDetailView.tsx` and `ProductModal.tsx` so bullet points (`•`, `-`, newlines) entered by admin in `AdminProductModal.tsx` and `AdminNewProductModal.tsx` render with their original line breaks instead of collapsing into a single paragraph.
+
 ---
 
 ## 3. Firestore Collections Reference

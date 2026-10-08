@@ -425,9 +425,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                   <ChevronDown className={`w-3.5 h-3.5 text-[#747878] transition-transform duration-200 ${openAccordion === 'description' ? 'rotate-180' : ''}`} />
                 </button>
                 {openAccordion === 'description' && (
-                  <div className="px-3.5 pb-3 text-xs text-[#747878] leading-relaxed">
-                    <p>{product.description}</p>
-                    <p className="mt-1.5 text-[#141414] font-medium text-[11px]">
+                  <div className="px-3.5 pb-3 text-xs text-[#555] leading-relaxed">
+                    <div className="whitespace-pre-line space-y-1 font-sans">
+                      {product.description}
+                    </div>
+                    <p className="mt-2 text-[#141414] font-medium text-[11px] pt-1.5 border-t border-[#f4efea]">
                       Crafted for continuous daily wear — sweat, shower, and pool safe.
                     </p>
                   </div>

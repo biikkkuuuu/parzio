@@ -195,14 +195,20 @@ export const AdminNewProductModal: React.FC<AdminNewProductModalProps> = ({
           </div>
 
           <div>
-            <label className="block font-bold text-[#141414] uppercase tracking-wider text-[10px] mb-1">
-              Short Description
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block font-bold text-[#141414] uppercase tracking-wider text-[10px]">
+                Description &amp; Highlights
+              </label>
+              <span className="text-[9px] text-[#8c7138] font-medium">
+                Line breaks &amp; bullets (•) preserved
+              </span>
+            </div>
             <textarea
-              rows={2}
+              rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-xs text-[#141414] focus:outline-none focus:border-[#8c7138]"
+              placeholder="• 18K Gold Plated&#10;• 100% Anti-Tarnish &amp; Waterproof&#10;• Handcrafted daily luxury"
+              className="w-full bg-[#faf8f5] border border-[#eae5dc] rounded-xl px-3 py-2 text-xs text-[#141414] focus:outline-none focus:border-[#8c7138] leading-relaxed"
             />
           </div>
 
