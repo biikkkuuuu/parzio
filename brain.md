@@ -168,6 +168,14 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   - Added dedicated "Move to Wishlist" action button on each cart item in both full `CartView.tsx` and slide-over `CartDrawer.tsx`.
   - Added "Move to Wishlist" option inside the item deletion confirmation modal.
 
+### R. Footer Single-Line Brand Header & 4-Column Balanced Grid
+- **Single-Line Logo & Brand Text:**
+  - Placed the PARZIO logo icon and brand tagline side-by-side on the same horizontal row with subtle bottom border.
+- **Available On Grid Alignment:**
+  - Reorganized footer grid into a balanced 4-column desktop layout / 2-column mobile layout (Quick Links, Customer Care, Get in Touch, Available On).
+  - Placed "Available On" directly beside "Get in Touch", utilizing previously empty right space.
+  - Stacked Meesho, Flipkart, and Amazon store badges one-by-one with dedicated compact styling.
+
 ---
 
 ## 3. Firestore Collections Reference
