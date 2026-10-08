@@ -180,7 +180,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
     a.href = url;
     a.download = `PARZIO_Dispatches_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
-    onTriggerToast('Orders exported to BlueDart dispatch manifest CSV.');
+    onTriggerToast('Orders exported to dispatch manifest CSV.');
   };
 
   // Dedicated Full Page View for Selected Order

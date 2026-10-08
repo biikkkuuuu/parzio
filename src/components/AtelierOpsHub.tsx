@@ -174,11 +174,11 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
   return (
     <div className="min-h-screen bg-[#fbf9f6] text-[#141414] font-sans antialiased selection:bg-[#fed488] selection:text-[#141414]">
       
-      {/* Toast Notification */}
+      {/* Toast Notification (Floating Bottom Snackbar) */}
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-50 bg-[#141414] text-[#fed488] px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 border border-[#8c7138] animate-bounce text-xs font-semibold">
-          <Sparkles className="w-4 h-4 text-[#fed488]" />
-          <span className="text-white">{toastMessage}</span>
+        <div className="fixed bottom-8 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#141414]/95 backdrop-blur-md text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-[#8c7138]/50 text-xs font-semibold animate-fadeIn whitespace-nowrap max-w-[90vw] overflow-hidden text-ellipsis">
+          <Sparkles className="w-4 h-4 text-[#fed488] shrink-0" />
+          <span className="truncate">{toastMessage}</span>
         </div>
       )}
 
