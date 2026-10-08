@@ -74,7 +74,7 @@ import { Smartphone, Monitor, ShieldCheck, AlertOctagon } from 'lucide-react';
 
 // One-time cache clear so all visitors and admin sessions start clean without legacy mock catalog
 if (typeof window !== 'undefined') {
-  const CLEAN_CATALOG_KEY = 'parzio_clean_catalog_2026_v4';
+  const CLEAN_CATALOG_KEY = 'parzio_clean_catalog_2026_v5';
   if (!localStorage.getItem(CLEAN_CATALOG_KEY)) {
     localStorage.removeItem('parzio_products');
     localStorage.removeItem('parzio_categories');
