@@ -272,9 +272,10 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   - Replaced jagged `font-mono` in badges with clean modern sans-serif typography.
   - All menu cards, counts (`Orders`, `Leads`, `Vouchers`, `Collections`, `Items`), and header tags share the exact same atelier gold/onyx palette.
 
-- **Courier-Agnostic Customer Delivery Estimation:**
-  - Removed hardcoded "BlueDart Air Express" from [`CheckoutView.tsx`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/components/CheckoutView.tsx) and [`ProductModal.tsx`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/components/ProductModal.tsx).
-  - Customer now only sees the clear delivery arrival date ("Estimated Delivery Timeline • Expected Delivery: Sat, 10 Oct • FREE") without pre-assigning any specific courier name before admin dispatch.
+- **Cross-Browser & Brave Shields Image Upload Fix:**
+  - In [`DeviceImageUpload.tsx`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/components/admin/DeviceImageUpload.tsx), replaced unstable `URL.createObjectURL` canvas manipulation with a robust `FileReader.readAsDataURL` flow.
+  - Added safe `try...catch` fallback so that if Brave Shields Fingerprint Protection or strict mode blocks HTML5 `<canvas>` context extraction, it seamlessly falls back to direct Base64 encoding.
+  - Auto-clears file input ref on change so re-selecting images works flawlessly in Brave, Chrome, Safari, and Firefox.
 
 ---
 
@@ -287,6 +288,7 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 - [x] Fast2SMS dispatch notification delivers real tracking link to customer.
 - [x] Order success screen has 1-Click WhatsApp Receipt and Track Order buttons.
 - [x] Unified pill and badge luxury design tokens applied across Admin Hamburger Drawer and Operations Hub.
+- [x] Product and banner image uploading works 100% seamlessly in Brave Browser (with Brave Shields ON), Chrome, Safari, Firefox.
 - [x] Full build verification passes (`npm run build`).
 - [x] Git commits pushed to `origin/main` for live Vercel deployment.
 

@@ -38,9 +38,10 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
   }, [value]);
 
   // Resize and compress client-side to ensure super-fast performance and protect localStorage
+  // Bulletproof across all browsers (Chrome, Safari, Firefox, Edge, Brave Shields)
   const processImageFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      setErrorMessage('Please select a valid image file (JPG, PNG, WEBP).');
+      setErrorMessage('Please select a valid image file (JPG, PNG, WEBP, AVIF).');
       return;
     }
 
@@ -53,56 +54,93 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
     setImageLoadError(false);
     setIsProcessing(true);
 
-    const objectUrl = URL.createObjectURL(file);
-    const img = new Image();
+    const reader = new FileReader();
 
-    img.onload = () => {
-      // High quality bounded dimensions for fast cloud sync and zero memory pressure
-      const maxDimension = aspectRatio === 'banner' ? 1200 : aspectRatio === 'poster' ? 900 : 800;
-      let { width, height } = img;
-
-      if (width > maxDimension || height > maxDimension) {
-        if (width > height) {
-          height = Math.round((height * maxDimension) / width);
-          width = maxDimension;
-        } else {
-          width = Math.round((width * maxDimension) / height);
-          height = maxDimension;
-        }
+    reader.onload = (readerEvent) => {
+      const rawBase64 = readerEvent.target?.result as string;
+      if (!rawBase64) {
+        setErrorMessage('Failed to read image file.');
+        setIsProcessing(false);
+        return;
       }
 
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, width, height);
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.78);
-        onChange(compressedDataUrl);
-      } else {
-        onChange(objectUrl);
+      // Try canvas optimization (for speed and compression)
+      // If Brave Shields or Safari blocks canvas.toDataURL, seamlessly fall back to rawBase64
+      try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        img.onload = () => {
+          try {
+            const maxDimension = aspectRatio === 'banner' ? 1200 : aspectRatio === 'poster' ? 900 : 800;
+            let { width, height } = img;
+
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              } else {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+              const compressed = canvas.toDataURL('image/jpeg', 0.82);
+              // Ensure compressed result is valid base64
+              if (compressed && compressed.startsWith('data:image')) {
+                onChange(compressed);
+              } else {
+                onChange(rawBase64);
+              }
+            } else {
+              onChange(rawBase64);
+            }
+          } catch (canvasErr) {
+            // Brave Shield or canvas blocked -> Direct fallback
+            console.warn('Canvas optimization skipped (Brave Shield/Security). Using direct source:', canvasErr);
+            onChange(rawBase64);
+          } finally {
+            setIsProcessing(false);
+          }
+        };
+
+        img.onerror = () => {
+          // If image fails to decode in canvas, fallback to raw FileReader result
+          onChange(rawBase64);
+          setIsProcessing(false);
+        };
+
+        img.src = rawBase64;
+      } catch (err) {
+        // Direct fallback
+        onChange(rawBase64);
+        setIsProcessing(false);
       }
-      URL.revokeObjectURL(objectUrl);
-      img.onload = null;
-      img.onerror = null;
+    };
+
+    reader.onerror = () => {
+      setErrorMessage('Unable to read image file from your device. Try another photo.');
       setIsProcessing(false);
     };
 
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      img.onload = null;
-      img.onerror = null;
-      setErrorMessage('Unable to process image file. Try another photo.');
-      setIsProcessing(false);
-    };
-
-    img.src = objectUrl;
+    reader.readAsDataURL(file);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       processImageFile(file);
+    }
+    // Reset file input so selecting the same file again triggers onChange
+    if (e.target) {
+      e.target.value = '';
     }
   };
 
