@@ -38,9 +38,13 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
   }, [value]);
 
   // Resize and compress client-side to ensure super-fast performance and protect localStorage
-  // Bulletproof across all browsers (Chrome, Safari, Firefox, Edge, Brave Shields)
+  // Bulletproof across all browsers (Chrome, Safari, Firefox, Edge, Brave with Shields)
   const processImageFile = (file: File) => {
-    if (!file.type.startsWith('image/')) {
+    const isImage =
+      (file.type && file.type.startsWith('image/')) ||
+      /\.(jpg|jpeg|png|webp|avif|gif|svg|jfif|pjpeg|pjp)$/i.test(file.name);
+
+    if (!isImage) {
       setErrorMessage('Please select a valid image file (JPG, PNG, WEBP, AVIF).');
       return;
     }
@@ -58,18 +62,16 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
 
     reader.onload = (readerEvent) => {
       const rawBase64 = readerEvent.target?.result as string;
-      if (!rawBase64) {
-        setErrorMessage('Failed to read image file.');
+      if (!rawBase64 || typeof rawBase64 !== 'string') {
+        setErrorMessage('Failed to read image data.');
         setIsProcessing(false);
         return;
       }
 
       // Try canvas optimization (for speed and compression)
-      // If Brave Shields or Safari blocks canvas.toDataURL, seamlessly fall back to rawBase64
+      // If Brave Shields or strict privacy mode blocks canvas extraction, fall back to rawBase64
       try {
         const img = new Image();
-        img.crossOrigin = 'anonymous';
-
         img.onload = () => {
           try {
             const maxDimension = aspectRatio === 'banner' ? 1200 : aspectRatio === 'poster' ? 900 : 800;
@@ -92,27 +94,23 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
 
             if (ctx) {
               ctx.drawImage(img, 0, 0, width, height);
-              const compressed = canvas.toDataURL('image/jpeg', 0.82);
-              // Ensure compressed result is valid base64
+              const compressed = canvas.toDataURL('image/jpeg', 0.85);
               if (compressed && compressed.startsWith('data:image')) {
                 onChange(compressed);
-              } else {
-                onChange(rawBase64);
+                setIsProcessing(false);
+                return;
               }
-            } else {
-              onChange(rawBase64);
             }
           } catch (canvasErr) {
-            // Brave Shield or canvas blocked -> Direct fallback
-            console.warn('Canvas optimization skipped (Brave Shield/Security). Using direct source:', canvasErr);
-            onChange(rawBase64);
-          } finally {
-            setIsProcessing(false);
+            console.warn('Canvas optimization blocked by browser security/Brave Shield. Using raw data:', canvasErr);
           }
+          // Direct fallback
+          onChange(rawBase64);
+          setIsProcessing(false);
         };
 
         img.onerror = () => {
-          // If image fails to decode in canvas, fallback to raw FileReader result
+          // If decoding in Image() fails, still pass raw base64
           onChange(rawBase64);
           setIsProcessing(false);
         };
@@ -138,10 +136,6 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
     if (file) {
       processImageFile(file);
     }
-    // Reset file input so selecting the same file again triggers onChange
-    if (e.target) {
-      e.target.value = '';
-    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -164,7 +158,10 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
   };
 
   const triggerFileInput = () => {
-    fileInputRef.current?.click();
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Clean before opening so picking same file triggers change
+      fileInputRef.current.click();
+    }
   };
 
   const handleRemove = (e: React.MouseEvent) => {
@@ -453,7 +450,20 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 ${
+          onPaste={(e) => {
+            const items = e.clipboardData?.items;
+            if (items) {
+              for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                  const blob = items[i].getAsFile();
+                  if (blob) processImageFile(blob);
+                  break;
+                }
+              }
+            }
+          }}
+          tabIndex={0}
+          className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 outline-none focus:border-[#8c7138] focus:ring-2 focus:ring-[#8c7138]/20 ${
             isDragging
               ? 'border-[#8c7138] bg-[#f2ece1]'
               : 'border-[#dfd7ca] hover:border-[#8c7138] bg-[#faf8f5] hover:bg-white'
@@ -475,7 +485,7 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
               or drag &amp; drop
             </p>
             <p className="text-[10px] text-[#747878] mt-0.5">
-              Supports JPG, PNG, WEBP • Max {maxSizeMB}MB • Auto-optimized
+              Supports JPG, PNG, WEBP, AVIF • Max {maxSizeMB}MB • Paste (Ctrl+V) Supported
             </p>
           </div>
         </div>
