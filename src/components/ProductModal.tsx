@@ -54,7 +54,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       checked: true,
       valid: true,
       message: isHighRisk
-        ? 'Serviceable via BlueDart • COD requires WhatsApp OTP'
+        ? 'Serviceable • COD requires WhatsApp OTP'
         : 'Express Delivery & Cash On Delivery Available!',
       date: dateString,
       isHighRisk
@@ -154,7 +154,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 <span className="text-xs font-bold text-[#141414] flex items-center gap-1">
                   <Truck className="w-3.5 h-3.5 text-[#8c7138]" /> Check Delivery &amp; COD
                 </span>
-                <span className="text-[10px] text-[#8c7138] font-bold">BlueDart Express</span>
+                <span className="text-[10px] text-[#8c7138] font-bold">Express Delivery</span>
               </div>
 
               <form onSubmit={handleCheckPincode} className="flex gap-2">

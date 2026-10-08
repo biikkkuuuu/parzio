@@ -480,7 +480,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
               <div className="pt-2.5 border-t border-[#f3efe8] flex items-center justify-between text-[11px]">
                 <span className="flex items-center gap-1 text-[#747878]">
                   <Truck className="w-3.5 h-3.5 text-[#8c7138]" />
-                  <span>{order.courier || 'BlueDart Express'}</span>
+                  <span>{order.courier || 'Pending Dispatch'}</span>
                 </span>
                 <span className="text-xs font-bold text-[#141414] group-hover:text-[#8c7138] flex items-center gap-0.5">
                   View Status &rarr;

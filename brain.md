@@ -272,11 +272,16 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   - Replaced jagged `font-mono` in badges with clean modern sans-serif typography.
   - All menu cards, counts (`Orders`, `Leads`, `Vouchers`, `Collections`, `Items`), and header tags share the exact same atelier gold/onyx palette.
 
+- **Courier-Agnostic Customer Delivery Estimation:**
+  - Removed hardcoded "BlueDart Air Express" from [`CheckoutView.tsx`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/components/CheckoutView.tsx) and [`ProductModal.tsx`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/components/ProductModal.tsx).
+  - Customer now only sees the clear delivery arrival date ("Estimated Delivery Timeline • Expected Delivery: Sat, 10 Oct • FREE") without pre-assigning any specific courier name before admin dispatch.
+
 ---
 
 ## 6. Verification Checklist
 - [x] Orders placed do NOT receive fake auto-generated BlueDart AWB.
 - [x] Customer Track Order screen shows "Allocation on Dispatch" until real AWB is provided.
+- [x] Checkout screen shows "Estimated Delivery Timeline" with dynamic delivery date (No hardcoded BlueDart).
 - [x] Admin Panel has step-by-step fulfillment: Pending -> Packed -> Ship Order (opens Dispatch Modal).
 - [x] Dispatch Modal allows picking Courier Partner (Delhivery, BlueDart, DTDC, SpeedPost, Ekart, etc.) and entering real AWB.
 - [x] Fast2SMS dispatch notification delivers real tracking link to customer.

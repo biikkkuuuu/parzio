@@ -746,14 +746,14 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                   </div>
                   <div>
                     <span className="text-[10px] uppercase font-bold tracking-wider text-[#747878]">
-                      BlueDart Air Express
+                      Estimated Delivery Timeline
                     </span>
                     <p className="text-xs font-bold text-[#141414]">
                       Expected Delivery: <span className="text-emerald-700">{deliveryDate}</span>
                     </p>
                   </div>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
                   FREE
                 </span>
               </div>
