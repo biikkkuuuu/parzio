@@ -117,6 +117,10 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 - **`Footer.tsx`:** Tightened vertical padding (`pt-4 pb-6`), streamlined column gaps, and reduced button heights for a sleek mobile and desktop footer.
 - **`WhyChooseParzio.tsx`:** Removed excessive empty vertical margins and padding (`py-5 sm:py-7`), unified circular badges into a responsive 4-column row, and resized illustration containers to prevent layout breaking.
 
+### M. Elimination of Verbose Descriptions & Q&A Content
+- Removed all FAQ and Q&A interview-style blocks from the storefront and customer care menus.
+- Replaced lengthy definition essays in `Footer.tsx` (About Us, Shipping, Returns) and `ProductDetailView.tsx` with short, crisp, luxury brand bullet points.
+
 ---
 
 ## 3. Firestore Collections Reference

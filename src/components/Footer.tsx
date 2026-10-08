@@ -109,10 +109,10 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                 </li>
                 <li>
                   <button
-                    onClick={() => setActiveModal('faq')}
+                    onClick={() => setActiveModal('contact')}
                     className="hover:text-[#c5a059] transition-colors cursor-pointer text-left"
                   >
-                    FAQ
+                    Help &amp; Support
                   </button>
                 </li>
               </ul>
@@ -213,126 +213,93 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
       {/* Interactive Information Modals */}
       {activeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn">
-          <div className="relative w-full max-w-lg bg-white rounded-3xl p-6 shadow-2xl border border-[#eae5dc] text-[#141414]">
+          <div className="relative w-full max-w-md bg-white rounded-2xl p-5 shadow-2xl border border-[#eae5dc] text-[#141414]">
             <button
               onClick={() => setActiveModal(null)}
-              className="absolute top-4 right-4 p-2 rounded-full hover:bg-neutral-100 text-neutral-500 hover:text-black transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-neutral-100 text-neutral-500 hover:text-black transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
 
             {activeModal === 'shipping' && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#f4efe8] flex items-center justify-center text-[#9e7144]">
-                    <Truck className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-[#f4efe8] flex items-center justify-center text-[#9e7144]">
+                    <Truck className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-lg text-[#141414]">Shipping Policy</h3>
-                    <p className="text-xs text-[#747878]">Fast, Insured & Tracked Express Delivery</p>
+                    <h3 className="font-bold text-base text-[#141414]">Shipping Policy</h3>
+                    <p className="text-[11px] text-[#747878]">Express Insured Delivery Across India</p>
                   </div>
                 </div>
-                <div className="space-y-2.5 text-xs text-[#444] leading-relaxed">
-                  <p>• <strong>Free Delivery:</strong> All prepaid and COD orders above ₹499 qualify for complimentary insured shipping across India.</p>
-                  <p>• <strong>Dispatch Time:</strong> Orders placed before 3:00 PM are packed and dispatched on the same business day from our Giridih / Mumbai ateliers.</p>
-                  <p>• <strong>Delivery Timeframe:</strong> Metro cities: 2-4 days. Other locations: 4-6 business days with SMS tracking link sent via BlueDart / Delhivery.</p>
-                  <p>• <strong>Cash On Delivery (COD):</strong> COD is available across 26,000+ pincodes. Check package before making cash payment.</p>
+                <div className="space-y-2 text-xs text-[#444]">
+                  <p>• <strong>Free Shipping:</strong> Free express delivery on all prepaid and COD orders above ₹499.</p>
+                  <p>• <strong>Dispatch:</strong> Packed &amp; dispatched same business day via BlueDart / Delhivery.</p>
+                  <p>• <strong>Delivery Time:</strong> 2–4 days (Metro cities) | 4–6 days (Rest of India).</p>
+                  <p>• <strong>COD:</strong> Available across 26,000+ Indian pincodes.</p>
                 </div>
               </div>
             )}
 
             {activeModal === 'returns' && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#f4efe8] flex items-center justify-center text-[#9e7144]">
-                    <RotateCcw className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-[#f4efe8] flex items-center justify-center text-[#9e7144]">
+                    <RotateCcw className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-lg text-[#141414]">Return &amp; Refund Policy</h3>
-                    <p className="text-xs text-[#747878]">7-Day Hassle-Free Exchange &amp; Refunds</p>
+                    <h3 className="font-bold text-base text-[#141414]">Return &amp; Refund Policy</h3>
+                    <p className="text-[11px] text-[#747878]">7-Day Hassle-Free Guarantee</p>
                   </div>
                 </div>
-                <div className="space-y-2.5 text-xs text-[#444] leading-relaxed">
-                  <p>• <strong>7 Days Easy Return:</strong> If you receive a damaged or incorrect piece, initiate return within 7 days of delivery.</p>
-                  <p>• <strong>Doorstep Pickup:</strong> Our courier partner will pick up the package from your address with zero reverse shipping fees.</p>
-                  <p>• <strong>Instant Refunds:</strong> Prepaid refunds processed back to original UPI/Card in 24-48 hours. For COD, bank transfer/UPI refund is issued.</p>
-                </div>
-              </div>
-            )}
-
-            {activeModal === 'faq' && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#f4efe8] flex items-center justify-center text-[#9e7144]">
-                    <HelpCircle className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-display font-bold text-lg text-[#141414]">Frequently Asked Questions</h3>
-                    <p className="text-xs text-[#747878]">Quick answers to common queries</p>
-                  </div>
-                </div>
-                <div className="space-y-3 text-xs text-[#444] max-h-[60vh] overflow-y-auto pr-1">
-                  <div>
-                    <h4 className="font-bold text-[#141414]">Q: Is PARZIO jewellery waterproof?</h4>
-                    <p className="mt-0.5 text-[#666]">Yes, all our jewellery is crafted in surgical grade 316L stainless steel with 18K micro-plating. It won't tarnish or turn black in water, sweat, or perfumes.</p>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-[#141414]">Q: How do I track my order?</h4>
-                    <p className="mt-0.5 text-[#666]">Click the Track Order tab or enter your Order ID in the track section to see real-time updates.</p>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-[#141414]">Q: Can I buy on Meesho directly?</h4>
-                    <p className="mt-0.5 text-[#666]">Yes! You can click our Meesho button in the footer to visit our verified shop on Meesho.</p>
-                  </div>
+                <div className="space-y-2 text-xs text-[#444]">
+                  <p>• <strong>7-Day Returns:</strong> Easy returns for any damaged or incorrect items.</p>
+                  <p>• <strong>Doorstep Pickup:</strong> Free reverse pickup from your address.</p>
+                  <p>• <strong>Quick Refund:</strong> Processed in 24–48 hours directly to your UPI/Bank.</p>
                 </div>
               </div>
             )}
 
             {activeModal === 'about' && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#f4efe8] flex items-center justify-center text-[#9e7144]">
-                    <Info className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-[#f4efe8] flex items-center justify-center text-[#9e7144]">
+                    <Info className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-lg text-[#141414]">About PARZIO</h3>
-                    <p className="text-xs text-[#747878]">Aapke Shringar, Hamari Pehchaan</p>
+                    <h3 className="font-bold text-base text-[#141414]">About PARZIO</h3>
+                    <p className="text-[11px] text-[#747878]">Aapke Shringar, Hamari Pehchaan</p>
                   </div>
                 </div>
-                <div className="space-y-2 text-xs text-[#444] leading-relaxed">
-                  <p>PARZIO was born out of a desire to make luxury demi-fine jewellery, cosmetics, and beauty accessories accessible to every woman across India without the hefty designer markups.</p>
-                  <p>Every piece in our catalog is engineered to withstand daily wear—100% waterproof, sweatproof, and hypoallergenic. Over 50,000+ happy shoppers across India trust PARZIO for their festive and everyday elegance.</p>
-                </div>
+                <p className="text-xs text-[#444] leading-relaxed">
+                  PARZIO crafts 100% waterproof, anti-tarnish demi-fine jewellery and cosmetics designed for daily luxury without high designer markups.
+                </p>
               </div>
             )}
 
             {activeModal === 'contact' && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#f4efe8] flex items-center justify-center text-[#9e7144]">
-                    <Phone className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-[#f4efe8] flex items-center justify-center text-[#9e7144]">
+                    <Phone className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-lg text-[#141414]">Contact Support</h3>
-                    <p className="text-xs text-[#747878]">We're here to help you 7 days a week</p>
+                    <h3 className="font-bold text-base text-[#141414]">Contact Support</h3>
+                    <p className="text-[11px] text-[#747878]">Available 7 days a week</p>
                   </div>
                 </div>
-                <div className="space-y-3 text-xs text-[#444]">
-                  <div className="p-3 bg-[#faf8f5] rounded-xl border border-[#eae5dc]">
-                    <span className="font-bold text-[#141414] block mb-1">Phone / WhatsApp Support</span>
-                    <a href="tel:+917033656752" className="text-[#9e7144] font-semibold text-sm hover:underline">
+                <div className="space-y-2 text-xs text-[#444]">
+                  <div className="p-2.5 bg-[#faf8f5] rounded-lg border border-[#eae5dc]">
+                    <span className="font-bold text-[#141414] block text-[11px]">Phone / WhatsApp</span>
+                    <a href="tel:+917033656752" className="text-[#9e7144] font-semibold text-xs hover:underline">
                       +91 7033656752
                     </a>
                   </div>
-                  <div className="p-3 bg-[#faf8f5] rounded-xl border border-[#eae5dc]">
-                    <span className="font-bold text-[#141414] block mb-1">Email Concierge</span>
-                    <a href="mailto:jitendrapandit1764@gmail.com" className="text-[#9e7144] font-semibold hover:underline break-all">
+                  <div className="p-2.5 bg-[#faf8f5] rounded-lg border border-[#eae5dc]">
+                    <span className="font-bold text-[#141414] block text-[11px]">Email</span>
+                    <a href="mailto:jitendrapandit1764@gmail.com" className="text-[#9e7144] font-semibold text-xs hover:underline break-all">
                       jitendrapandit1764@gmail.com
                     </a>
-                  </div>
-                  <div className="p-3 bg-[#faf8f5] rounded-xl border border-[#eae5dc]">
-                    <span className="font-bold text-[#141414] block mb-1">Headquarters &amp; Dispatch Hub</span>
-                    <p className="text-[#666]">Giridih, Jharkhand - 815316, India</p>
                   </div>
                 </div>
               </div>
@@ -340,7 +307,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
 
             <button
               onClick={() => setActiveModal(null)}
-              className="mt-5 w-full py-2.5 rounded-full bg-[#141414] hover:bg-[#9e7144] text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+              className="mt-4 w-full py-2 rounded-xl bg-[#141414] hover:bg-[#9e7144] text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
             >
               Close
             </button>
