@@ -145,7 +145,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
               </ul>
             </div>
 
-            {/* Column 4: Available On (Official Brand Badges) */}
+            {/* Column 4: Available On (Official Brand Logos) */}
             <div className="col-span-1">
               <h3 className="text-xs font-semibold text-white mb-1.5 sm:mb-2 uppercase tracking-wider">
                 Available On
@@ -156,17 +156,14 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                   href="https://www.meesho.com/Parzio?_ms=3.0.1"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg bg-[#22131c] hover:bg-[#321929] border border-[#f43397]/30 hover:border-[#f43397] transition-all w-fit min-w-[110px] cursor-pointer shadow-xs group"
+                  className="flex items-center justify-center py-1.5 px-3 rounded-lg bg-[#22131c] hover:bg-[#321929] border border-[#f43397]/30 hover:border-[#f43397] transition-all w-fit min-w-[115px] h-8 cursor-pointer shadow-xs"
                   title="Shop Parzio on Meesho"
                 >
-                  <div className="w-5 h-5 rounded bg-[#841a54] flex items-center justify-center shrink-0">
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                      <path d="M5 18V9.5C5 7.57 6.57 6 8.5 6C9.9 6 11.1 6.82 11.65 8C12.2 6.82 13.4 6 14.8 6C16.73 6 18.3 7.57 18.3 9.5V18H15.5V10.2C15.5 9.4 14.8 8.7 14 8.7C13.2 8.7 12.5 9.4 12.5 10.2V18H9.7V10.2C9.7 9.4 9 8.7 8.2 8.7C7.4 8.7 6.7 9.4 6.7 10.2V18H5Z" fill="#FFFFFF"/>
-                    </svg>
-                  </div>
-                  <span className="text-xs font-bold text-white tracking-tight group-hover:text-[#fed488] transition-colors">
-                    Meesho
-                  </span>
+                  <img
+                    src="/images/platforms/meesho.png"
+                    alt="Meesho"
+                    className="h-4.5 w-auto object-contain"
+                  />
                 </a>
 
                 {/* Flipkart */}
@@ -174,19 +171,14 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                   href="https://www.flipkart.com/search?q=Parzio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg bg-[#0e1726] hover:bg-[#15233a] border border-[#2874f0]/30 hover:border-[#2874f0] transition-all w-fit min-w-[110px] cursor-pointer shadow-xs group"
+                  className="flex items-center justify-center py-1.5 px-3 rounded-lg bg-[#0e1726] hover:bg-[#15233a] border border-[#2874f0]/30 hover:border-[#2874f0] transition-all w-fit min-w-[115px] h-8 cursor-pointer shadow-xs"
                   title="Shop Parzio on Flipkart"
                 >
-                  <div className="w-5 h-5 rounded bg-[#2874f0] flex items-center justify-center shrink-0">
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                      <path d="M6 7h12l1.2 12a1.5 1.5 0 01-1.5 1.5H6.3a1.5 1.5 0 01-1.5-1.5L6 7z" fill="#FFE500"/>
-                      <path d="M9 7V4.5A2.5 2.5 0 0111.5 2h1A2.5 2.5 0 0115 4.5V7" stroke="#FFE500" strokeWidth="2" strokeLinecap="round"/>
-                      <path d="M12 11h-2v1.5h2V14h1.5v-1.5H14V11h-1.5V9.5c0-.3.2-.5.5-.5h1V7.5h-1c-1.1 0-2 .9-2 2V11z" fill="#2874F0"/>
-                    </svg>
-                  </div>
-                  <span className="text-xs font-bold text-white italic tracking-tight group-hover:text-[#fed488] transition-colors">
-                    Flipkart
-                  </span>
+                  <img
+                    src="/images/platforms/flipkart.svg"
+                    alt="Flipkart"
+                    className="h-4.5 w-auto object-contain"
+                  />
                 </a>
 
                 {/* Amazon */}
@@ -194,19 +186,14 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                   href="https://www.amazon.in/s?k=Parzio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg bg-[#191c20] hover:bg-[#262b32] border border-[#ff9900]/30 hover:border-[#ff9900] transition-all w-fit min-w-[110px] cursor-pointer shadow-xs group"
+                  className="flex items-center justify-center py-1.5 px-3 rounded-lg bg-[#191c20] hover:bg-[#262b32] border border-[#ff9900]/30 hover:border-[#ff9900] transition-all w-fit min-w-[115px] h-8 cursor-pointer shadow-xs"
                   title="Shop Parzio on Amazon"
                 >
-                  <div className="w-5 h-5 rounded bg-[#131921] border border-[#ff9900]/40 flex items-center justify-center shrink-0">
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                      <path d="M13.5 13c-1.1.9-2.7 1.4-4 1.4-3.1 0-5-1.9-5-4.8 0-2.9 2-4.9 5.2-4.9 1.4 0 2.8.4 3.8 1.2L12.5 7.7c-.8-.6-1.8-.9-2.8-.9-2 0-3.2 1.2-3.2 3 0 1.8 1.2 3 3.2 3 .9 0 1.9-.3 2.7-.8l1.1 1z" fill="#FFFFFF"/>
-                      <path d="M4 16.2c4.2 2.1 9.2 2 13.2-.5.3-.2.5.2.3.5-4.2 3.1-9.8 3.2-14.1 1-.4-.2-.1-.8.6-1z" fill="#FF9900"/>
-                      <path d="M17.9 14.6c-.3.6-1.1 1.1-1.8 1.3-.2 0-.2-.3.1-.4.7-.5 1.5-.8 1.9-1.3.2-.2.4.2-.2.4z" fill="#FF9900"/>
-                    </svg>
-                  </div>
-                  <span className="text-xs font-bold text-white tracking-tight group-hover:text-[#fed488] transition-colors">
-                    Amazon
-                  </span>
+                  <img
+                    src="/images/platforms/amazon.svg"
+                    alt="Amazon"
+                    className="h-4 w-auto object-contain"
+                  />
                 </a>
               </div>
             </div>
