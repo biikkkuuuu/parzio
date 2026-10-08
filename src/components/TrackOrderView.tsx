@@ -62,14 +62,26 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
     }
   };
 
-  const getTrackingUrl = (courier: string, awb?: string) => {
-    if (!awb) return 'https://www.bluedart.com';
-    const c = courier.toLowerCase();
+  const getTrackingUrl = (courier?: string, awb?: string) => {
+    if (!awb) return '#';
+    const c = (courier || '').toLowerCase();
     if (c.includes('bluedart')) {
       return `https://www.bluedart.com/tracking?trackNumber=${encodeURIComponent(awb)}`;
     }
     if (c.includes('delhivery')) {
       return `https://www.delhivery.com/tracking?waybill=${encodeURIComponent(awb)}`;
+    }
+    if (c.includes('dtdc')) {
+      return `https://www.dtdc.in/tracking/shipment-tracking.asp?strCnno=${encodeURIComponent(awb)}`;
+    }
+    if (c.includes('post') || c.includes('speed')) {
+      return `https://www.indiapost.gov.in/_layouts/15/dpt.cpt.tracking/trackconsignment.aspx`;
+    }
+    if (c.includes('ekart')) {
+      return `https://ekartlogistics.com/shipmenttrack/${encodeURIComponent(awb)}`;
+    }
+    if (c.includes('shadowfax')) {
+      return `https://tracker.shadowfax.in/#/track?awb=${encodeURIComponent(awb)}`;
     }
     return `https://trackcourier.io/track-and-trace/${encodeURIComponent(awb)}`;
   };
@@ -117,6 +129,8 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
   /* ========================================================================= */
   if (selectedOrder) {
     const currentStep = getJourneyStep(selectedOrder.status);
+    const hasAwb = !!selectedOrder.trackingNumber;
+    const isDispatchedOrDelivered = selectedOrder.status === 'Dispatched' || selectedOrder.status === 'In Transit' || selectedOrder.status === 'Delivered';
     const trackingUrl = getTrackingUrl(selectedOrder.courier, selectedOrder.trackingNumber);
 
     return (
@@ -170,11 +184,17 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
               </div>
               <div>
                 <h4 className="text-xs font-bold text-[#141414]">Courier Delivery</h4>
-                <p className="text-[11px] text-[#747878]">{selectedOrder.courier || 'BlueDart Express'}</p>
+                <p className="text-[11px] text-[#747878]">
+                  {hasAwb ? selectedOrder.courier : 'Allocation on Dispatch (Mumbai Atelier)'}
+                </p>
               </div>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Live
+            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+              isDispatchedOrDelivered 
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-amber-50 text-amber-800 border border-amber-200'
+            }`}>
+              {isDispatchedOrDelivered ? 'Dispatched' : 'Preparing'}
             </span>
           </div>
 
@@ -183,45 +203,58 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
             <span className="text-[10px] font-bold text-[#747878] uppercase tracking-wider block">
               Tracking Number (AWB)
             </span>
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-sm font-bold text-[#141414] select-all">
-                {selectedOrder.trackingNumber || `BD-${selectedOrder.id.replace(/[^0-9]/g, '')}729`}
-              </span>
-              <button
-                onClick={() => handleCopyAwb(selectedOrder.trackingNumber || `BD-${selectedOrder.id.replace(/[^0-9]/g, '')}729`)}
-                className="flex items-center gap-1 px-3 py-1 rounded-lg bg-white hover:bg-neutral-100 border border-[#eae5dc] text-[11px] font-bold text-[#141414] transition-colors cursor-pointer active:scale-95"
-              >
-                {copiedAwb ? (
-                  <>
-                    <Check className="w-3 h-3 text-emerald-600" />
-                    <span className="text-emerald-700">Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3 h-3 text-[#747878]" />
-                    <span>Copy</span>
-                  </>
-                )}
-              </button>
-            </div>
+            {hasAwb ? (
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-sm font-bold text-[#141414] select-all">
+                  {selectedOrder.trackingNumber}
+                </span>
+                <button
+                  onClick={() => handleCopyAwb(selectedOrder.trackingNumber || '')}
+                  className="flex items-center gap-1 px-3 py-1 rounded-lg bg-white hover:bg-neutral-100 border border-[#eae5dc] text-[11px] font-bold text-[#141414] transition-colors cursor-pointer active:scale-95"
+                >
+                  {copiedAwb ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-600" />
+                      <span className="text-emerald-700">Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3 text-[#747878]" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs text-[#747878] py-1 font-medium italic">
+                <Clock className="w-3.5 h-3.5 text-[#8c7138] shrink-0" />
+                <span>AWB will be assigned once handed over to the courier partner.</span>
+              </div>
+            )}
           </div>
 
           {/* Official Tracking Link Button */}
-          <a
-            href={trackingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-3 px-4 rounded-2xl bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm active:scale-98 cursor-pointer"
-          >
-            <span>Track on {selectedOrder.courier?.split(' ')[0] || 'Courier'} Website</span>
-            <ExternalLink className="w-3.5 h-3.5 text-[#fed488]" />
-          </a>
+          {hasAwb ? (
+            <a
+              href={trackingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 px-4 rounded-2xl bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm active:scale-98 cursor-pointer"
+            >
+              <span>Track on {selectedOrder.courier?.split(' ')[0] || 'Courier'} Website</span>
+              <ExternalLink className="w-3.5 h-3.5 text-[#fed488]" />
+            </a>
+          ) : (
+            <div className="w-full py-2.5 px-4 rounded-2xl bg-neutral-100 text-neutral-400 text-xs font-semibold text-center select-none">
+              Tracking link activates upon courier dispatch
+            </div>
+          )}
 
           {/* Estimated Delivery */}
           <div className="flex items-center gap-2 text-xs text-[#747878] pt-1">
             <Clock className="w-4 h-4 text-[#8c7138] flex-shrink-0" />
             <span>
-              Estimated Delivery: <strong className="text-[#141414]">2 - 3 Business Days</strong>
+              Estimated Delivery: <strong className="text-[#141414]">{selectedOrder.deliveryDate || '2 - 3 Business Days'}</strong>
             </span>
           </div>
         </div>

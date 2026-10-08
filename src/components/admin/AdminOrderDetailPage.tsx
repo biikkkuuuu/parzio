@@ -52,10 +52,12 @@ export const AdminOrderDetailPage: React.FC<AdminOrderDetailPageProps> = ({
 }) => {
   const [loadingStatus, setLoadingStatus] = useState<string | null>(null);
   const [editingAwb, setEditingAwb] = useState<string>(
-    order.trackingNumber || `BD-${order.id.replace(/[^0-9]/g, '') || '982410'}729`
+    order.trackingNumber || ''
   );
   const [editingCourier, setEditingCourier] = useState<string>(
-    order.courier || 'BlueDart Air Express'
+    order.courier && order.courier !== 'Pending Dispatch' && order.courier !== 'Preparing for Dispatch'
+      ? order.courier
+      : 'Delhivery Express'
   );
 
   const handleStatusChangeWithAnimation = (newStatus: OrderStatus) => {
@@ -68,13 +70,14 @@ export const AdminOrderDetailPage: React.FC<AdminOrderDetailPageProps> = ({
   };
 
   const handleSaveTracking = () => {
+    const cleanAwb = editingAwb.trim();
     const updated = {
       ...order,
-      trackingNumber: editingAwb.trim(),
-      courier: editingCourier.trim()
+      trackingNumber: cleanAwb || undefined,
+      courier: editingCourier.trim() || 'Courier Delivery'
     };
     onEditOrder(updated);
-    onTriggerToast(`Updated AWB Tracking Number to ${editingAwb.trim()}`);
+    onTriggerToast(`Updated AWB Tracking Number to ${cleanAwb || 'None'}`);
   };
 
   const isHighRTO = order.rtoRisk === 'High';
@@ -83,7 +86,7 @@ export const AdminOrderDetailPage: React.FC<AdminOrderDetailPageProps> = ({
 
   const whatsappUrl = order.phone
     ? `https://wa.me/${order.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-        `Hi ${order.customerName}! Update regarding your PARZIO Order #${order.id}: Status is now ${order.status}. Tracking AWB: ${order.trackingNumber || editingAwb}`
+        `Hi ${order.customerName}! Update regarding your PARZIO Order #${order.id}: Status is now ${order.status}.${order.trackingNumber ? ` Tracking AWB: ${order.trackingNumber} (${order.courier})` : ''}`
       )}`
     : '#';
 
@@ -418,7 +421,7 @@ export const AdminOrderDetailPage: React.FC<AdminOrderDetailPageProps> = ({
                 </span>
                 <p className="font-mono text-xs font-bold text-[#141414] flex items-center gap-1.5">
                   <Truck className="w-3.5 h-3.5 text-blue-600" />
-                  <span>{editingCourier} • {editingAwb}</span>
+                  <span>{editingCourier} • {editingAwb || 'AWB Pending Dispatch'}</span>
                 </p>
               </div>
 

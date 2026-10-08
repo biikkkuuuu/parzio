@@ -182,6 +182,30 @@ export const smsService = {
       console.warn('Fast2SMS sendCustomSms note:', err);
       return { success: false, error: err?.message || 'Network error sending SMS' };
     }
+  },
+
+  /**
+   * Send Order Placed Confirmation SMS
+   */
+  async sendOrderPlacedSms(order: { id: string; customerName: string; phone?: string; amount: number; paymentMethod: string }): Promise<{ success: boolean; error?: string }> {
+    if (!order.phone) return { success: false, error: 'No phone number' };
+    const cleanPhone = order.phone.replace(/\D/g, '').slice(-10);
+    const firstName = order.customerName ? order.customerName.split(' ')[0] : 'Customer';
+    const msg = `Dear ${firstName}, your PARZIO Jewellery order #${order.id} for Rs.${order.amount} (${order.paymentMethod}) is confirmed! Track status: https://parzio.in/#/orders/${order.id}`;
+    return this.sendCustomSms(cleanPhone, msg);
+  },
+
+  /**
+   * Send Order Dispatched / Shipped SMS with Courier & AWB
+   */
+  async sendOrderDispatchedSms(order: { id: string; customerName: string; phone?: string; courier: string; trackingNumber?: string }): Promise<{ success: boolean; error?: string }> {
+    if (!order.phone) return { success: false, error: 'No phone number' };
+    const cleanPhone = order.phone.replace(/\D/g, '').slice(-10);
+    const firstName = order.customerName ? order.customerName.split(' ')[0] : 'Customer';
+    const awbText = order.trackingNumber ? ` AWB: ${order.trackingNumber}.` : '';
+    const msg = `Dear ${firstName}, your PARZIO order #${order.id} has been dispatched via ${order.courier}.${awbText} Track live: https://parzio.in/#/orders/${order.id}`;
+    return this.sendCustomSms(cleanPhone, msg);
   }
 };
+
 

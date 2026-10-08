@@ -491,7 +491,8 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       quantity: totalQuantity,
       image: cartItems[0]?.product.image || '',
       tag: paymentMethod === 'COD' ? 'OTP Verified' : 'Prepaid UPI',
-      courier: 'BlueDart Air Express',
+      courier: 'Pending Dispatch',
+      trackingNumber: undefined,
       notes: paymentMethod === 'Prepaid UPI'
         ? `Prepaid UPI • UTR: ${utr} • Address: ${address}, Pin: ${pincode}${appliedCoupon ? ` • Coupon: ${appliedCoupon.code}` : ''}`
         : `Doorstep delivery at ${address}, Pin: ${pincode}${appliedCoupon ? ` • Coupon: ${appliedCoupon.code}` : ''}`
@@ -545,6 +546,14 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       if (cleanPhone) {
         await dbService.markLeadConvertedByPhone(cleanPhone);
       }
+      // Automated Fast2SMS Order Confirmation
+      smsService.sendOrderPlacedSms({
+        id: clientOrder.id,
+        customerName: clientOrder.customerName,
+        phone: clientOrder.phone,
+        amount: clientOrder.amount,
+        paymentMethod: clientOrder.paymentMethod
+      }).catch((smsErr) => console.warn('Fast2SMS order confirmation notice:', smsErr));
     } catch (dbErr) {
       console.warn('Order db create notice:', dbErr);
     }
@@ -1164,14 +1173,41 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                 </div>
               </div>
 
-              {/* Back to store CTA */}
-              <div className="pt-2">
+              {/* Action Buttons: WhatsApp Receipt, Track Order, Back to Store */}
+              <div className="pt-2 space-y-2.5">
+                {/* 1-Click WhatsApp Receipt */}
+                <a
+                  href={`https://api.whatsapp.com/send?phone=917033656752&text=${encodeURIComponent(
+                    `Hi PARZIO Atelier, I have placed order #${placedOrderId} (₹${placedOrderData.amount}, ${placedOrderData.paymentMethod}). Please share my dispatch updates here!`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-98 cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4 fill-white/20" />
+                  <span>Receive Live Updates on WhatsApp</span>
+                </a>
+
+                {/* Track Order Direct Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.hash = `#/orders/${placedOrderId}`;
+                    if (onClose) onClose();
+                  }}
+                  className="w-full py-3 rounded-2xl bg-[#141414] text-[#fed488] hover:bg-[#2a2a2a] font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Truck className="w-4 h-4" />
+                  <span>Track Order Status</span>
+                </button>
+
+                {/* Back to Store */}
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full py-3 rounded-full bg-[#141414] text-white hover:bg-[#8c7138] font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-98 cursor-pointer"
+                  className="w-full py-2.5 rounded-2xl bg-white border border-[#eae5dc] text-neutral-700 hover:bg-neutral-50 font-semibold text-xs transition-colors cursor-pointer"
                 >
-                  Back to Jewellery Store
+                  Continue Shopping
                 </button>
               </div>
             </div>

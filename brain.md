@@ -196,6 +196,27 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 - **Automated Lead Conversion:**
   - When an order is finalized by any customer with a matching phone number, `dbService.markLeadConvertedByPhone` automatically marks pending leads as `status: 'converted'`, updating conversion metrics in real-time.
 
+### T. Real AWB Fulfillment & Courier Partner Dispatch Workflow
+- **Elimination of Fake Auto-Generated Tracking:**
+  - Removed dummy auto-assigned `BlueDart Air Express` and fallback barcode strings (`BD-xxx729`) on new order placement.
+  - Initial state of every new order is strictly set to `courier: 'Pending Dispatch'` and `trackingNumber: undefined`.
+- **Customer Status Communication (`TrackOrderView.tsx`):**
+  - While order is in `Pending`, `COD Confirmed`, `Prepaid UPI`, or `Packed` status:
+    - Courier display shows: **"Allocation on Dispatch (Mumbai Atelier)"** with status badge **"Preparing"**.
+    - Tracking Number box shows: **"AWB will be assigned upon courier dispatch"**.
+    - Tracking button remains in placeholder state (*"Tracking link activates upon courier dispatch"*).
+  - Once status moves to `Dispatched`, `In Transit`, or `Delivered`:
+    - Shows real assigned Courier Partner (BlueDart, Delhivery, DTDC, India Post, Ekart, Shadowfax, etc.).
+    - Shows real AWB tracking number with 1-click Copy button.
+    - Direct carrier link opens exact live tracking page for that courier.
+- **Admin Dispatch Modal (`AdminDispatchModal.tsx`):**
+  - When admin moves an order to `Dispatched` or clicks **"Ship Order 🚚"** in `AdminOrdersView.tsx`:
+    - Opens a popup dialog requiring the admin to pick the **Courier Partner** (Delhivery, BlueDart, DTDC, India Post, Ekart, Shadowfax, Custom) and enter the **Real AWB/Waybill barcode number**.
+    - Option to automatically dispatch an instant SMS to the customer's phone with courier name, AWB, and live tracking link via Fast2SMS.
+- **Order Success Screen WhatsApp Receipt & Track Button (`CheckoutView.tsx`):**
+  - Added 1-click **"Receive Live Updates on WhatsApp"** button directly opening WhatsApp with order summary and tracking link.
+  - Direct **"Track Order Status"** button navigating directly to `#/orders/{orderId}`.
+
 ---
 
 ## 3. Firestore Collections Reference
@@ -223,9 +244,12 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 
 - **`src/App.tsx`:** Master orchestrator, screen routing, real-time Firestore listeners, CRUD handler functions, cache buster (`parzio_clean_catalog_2026_v5`).
 - **`src/services/dbService.ts`:** Firestore database driver and localStorage fallback engine; handles all collection queries, snapshots, abandoned lead tracking, and deletions.
-- **`src/services/smsService.ts`:** Fast2SMS gateway driver for 6-digit OTP verification and custom marketing/concierge SMS dispatch.
-- **`src/components/CheckoutView.tsx`:** Checkout process capturing draft abandoned leads before gateway launch and auto-converting leads on order placement.
+- **`src/services/smsService.ts`:** Fast2SMS gateway driver for 6-digit OTP verification, custom concierge messaging, and automated order confirmation/dispatch SMS.
+- **`src/components/CheckoutView.tsx`:** Checkout process capturing draft abandoned leads, assigning pending courier state, sending order confirmation SMS, and providing WhatsApp receipt.
 - **`src/components/AtelierOpsHub.tsx`:** Admin Operations Hub coordinator (`#/admin`), passes props to inventory, categories, orders, abandoned leads, banners, coupons, and emergency lockdown views.
+- **`src/components/admin/AdminDispatchModal.tsx`:** Courier selection and real AWB tracking number modal upon order dispatch.
+- **`src/components/admin/AdminOrdersView.tsx`:** Admin order management with step-by-step fulfillment actions (Mark Packed, Ship Order with modal, Print, Edit).
+- **`src/components/TrackOrderView.tsx`:** Customer order tracking view with intelligent pending/dispatched AWB display and live carrier links.
 - **`src/components/admin/AdminLeadsView.tsx`:** Abandoned checkout drop-off recovery view with stats, WhatsApp 1-click launcher, Fast2SMS direct sender, and luxury marketing templates.
 - **`src/components/admin/AdminInventoryView.tsx`:** Product inventory view with stock counters, low stock alerts, edit/delete modal, and "Delete All Products" action.
 - **`src/components/admin/AdminCategoriesView.tsx`:** Categories and collection management with "Products By Category" and "Category Cards" views, plus "Delete All Categories" action.
@@ -236,11 +260,12 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 ---
 
 ## 5. Verification Checklist
-- [x] Abandoned lead draft is recorded in `dbService` and Firestore when customer reaches payment step.
-- [x] Admin Panel has dedicated "Abandoned Checkout Leads" section with metric counters and search.
-- [x] WhatsApp 1-click modal opens pre-populated luxury marketing messages (VIP discount, stock hold, warranty card, stylist concierge).
-- [x] Fast2SMS dispatch delivers direct SMS without mentioning "payment failed".
-- [x] Order completion auto-converts pending leads to "converted" status.
+- [x] Orders placed do NOT receive fake auto-generated BlueDart AWB.
+- [x] Customer Track Order screen shows "Allocation on Dispatch" until real AWB is provided.
+- [x] Admin Panel has step-by-step fulfillment: Pending -> Packed -> Ship Order (opens Dispatch Modal).
+- [x] Dispatch Modal allows picking Courier Partner (Delhivery, BlueDart, DTDC, SpeedPost, Ekart, etc.) and entering real AWB.
+- [x] Fast2SMS dispatch notification delivers real tracking link to customer.
+- [x] Order success screen has 1-Click WhatsApp Receipt and Track Order buttons.
 - [x] Full build verification passes (`npm run build`).
 - [x] Git commits pushed to `origin/main` for live Vercel deployment.
 

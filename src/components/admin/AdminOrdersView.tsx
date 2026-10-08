@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { OrderItem, OrderStatus, Product } from '../../types';
 import { AdminOrderModal } from './AdminOrderModal';
 import { AdminOrderDetailPage } from './AdminOrderDetailPage';
+import { AdminDispatchModal } from './AdminDispatchModal';
 import {
   Search,
   Filter,
@@ -18,7 +19,8 @@ import {
   Plus,
   Edit2,
   Trash2,
-  XCircle
+  XCircle,
+  Send
 } from 'lucide-react';
 
 interface AdminOrdersViewProps {
@@ -53,6 +55,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
   const [editingOrder, setEditingOrder] = useState<OrderItem | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<OrderItem | null>(null);
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<OrderItem | null>(null);
+  const [orderForDispatch, setOrderForDispatch] = useState<OrderItem | null>(null);
 
   // Filter Orders
   const filteredOrders = orders.filter((order) => {
@@ -92,24 +95,51 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
     );
   };
 
+  // Dispatch Modal Confirmation Handler
+  const handleConfirmDispatch = (orderId: string, courier: string, trackingNumber: string) => {
+    const existing = orders.find((o) => o.id === orderId);
+    if (existing) {
+      const updated: OrderItem = {
+        ...existing,
+        status: 'Dispatched',
+        courier,
+        trackingNumber
+      };
+      onEditOrder(updated);
+      if (selectedDetailOrder?.id === orderId) {
+        setSelectedDetailOrder(updated);
+      }
+      onTriggerToast(`Order #${orderId} Dispatched via ${courier} (AWB: ${trackingNumber})!`);
+    }
+  };
+
   // Pack & Dispatch Flow with Loading Animation
-  const handlePack = (orderId: string) => {
-    setPackingOrderId(orderId);
-    setTimeout(() => {
-      onUpdateOrderStatus(orderId, 'Dispatched');
-      setPackingOrderId(null);
-      onTriggerToast(`Order #${orderId} packed & BlueDart AWB generated!`);
-    }, 700);
+  const handlePack = (order: OrderItem) => {
+    if (order.status !== 'Packed') {
+      setPackingOrderId(order.id);
+      setTimeout(() => {
+        onUpdateOrderStatus(order.id, 'Packed');
+        setPackingOrderId(null);
+        onTriggerToast(`Order #${order.id} marked Packed! Ready for courier dispatch.`);
+      }, 500);
+    } else {
+      setOrderForDispatch(order);
+    }
   };
 
   // Animated Status Dropdown Handler
-  const handleSelectStatusWithAnimation = (orderId: string, newStatus: OrderStatus) => {
-    setPackingOrderId(orderId);
+  const handleSelectStatusWithAnimation = (order: OrderItem, newStatus: OrderStatus) => {
+    if ((newStatus === 'Dispatched' || newStatus === 'In Transit') && !order.trackingNumber) {
+      setOrderForDispatch(order);
+      return;
+    }
+
+    setPackingOrderId(order.id);
     setTimeout(() => {
-      onUpdateOrderStatus(orderId, newStatus);
+      onUpdateOrderStatus(order.id, newStatus);
       setPackingOrderId(null);
-      onTriggerToast(`Order #${orderId} status changed to ${newStatus}`);
-    }, 700);
+      onTriggerToast(`Order #${order.id} status changed to ${newStatus}`);
+    }, 500);
   };
 
   // Bulk Pack & Generate Manifest
@@ -484,7 +514,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
                         ) : (
                           <select
                             value={order.status}
-                            onChange={(e) => handleSelectStatusWithAnimation(order.id, e.target.value as OrderStatus)}
+                            onChange={(e) => handleSelectStatusWithAnimation(order, e.target.value as OrderStatus)}
                             className={`border rounded-full px-3.5 py-1.5 text-xs font-bold focus:outline-none focus:border-[#8c7138] cursor-pointer transition-colors ${
                               isCancelled
                                 ? 'bg-rose-50 text-rose-800 border-rose-200'
@@ -533,16 +563,30 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
 
-                      {/* Pack & Dispatch Trigger */}
+                      {/* Step-by-Step Fulfillment Action Button */}
                       {isDispatched ? (
-                        <span className="px-3.5 py-1.5 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 shadow-xs">
+                        <button
+                          onClick={() => setOrderForDispatch(order)}
+                          title="Click to view or edit Courier & AWB"
+                          className="px-3.5 py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition-all"
+                        >
                           <CheckCircle2 className="w-3.5 h-3.5" />
-                          Dispatched
-                        </span>
+                          <span>{order.courier ? order.courier.split(' ')[0] : 'Dispatched'}</span>
+                          {order.trackingNumber && <span className="font-mono text-[10px] opacity-80">({order.trackingNumber})</span>}
+                        </button>
+                      ) : order.status === 'Packed' ? (
+                        <button
+                          disabled={packingOrderId === order.id}
+                          onClick={() => setOrderForDispatch(order)}
+                          className="px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
+                        >
+                          <Truck className="w-3.5 h-3.5 text-white" />
+                          <span>Ship Order</span>
+                        </button>
                       ) : (
                         <button
                           disabled={packingOrderId === order.id}
-                          onClick={() => handlePack(order.id)}
+                          onClick={() => handlePack(order)}
                           className="px-4 py-1.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
                         >
                           {packingOrderId === order.id ? (
@@ -553,7 +597,7 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
                           ) : (
                             <>
                               <Package className="w-3.5 h-3.5 text-[#fed488]" />
-                              <span>Pack &amp; Ship</span>
+                              <span>Mark Packed</span>
                             </>
                           )}
                         </button>
@@ -588,6 +632,14 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
             onTriggerToast(`Manual Order #${savedOrder.id} added to live queue!`);
           }
         }}
+      />
+
+      {/* Courier & AWB Dispatch Modal */}
+      <AdminDispatchModal
+        order={orderForDispatch}
+        isOpen={!!orderForDispatch}
+        onClose={() => setOrderForDispatch(null)}
+        onConfirmDispatch={handleConfirmDispatch}
       />
 
       {/* Delete Confirmation Modal */}
