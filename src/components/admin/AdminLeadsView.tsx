@@ -216,32 +216,30 @@ export const AdminLeadsView: React.FC<AdminLeadsViewProps> = ({ leads = [], onRe
 
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
-      {/* Header & Subtitle */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 p-6 rounded-2xl text-white shadow-xl border border-neutral-700/50">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
-              <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-              High-Intent Drop-offs
-            </span>
-            <span className="text-xs text-neutral-400 font-mono">Gateway Drop-off Tracking</span>
+      {/* Top Workspace Controls */}
+      <div className="bg-white rounded-3xl p-5 border border-[#eae5dc] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[#faf6ef] border border-[#ebd7be] flex items-center justify-center text-[#8c7138] shrink-0 shadow-2xs">
+            <Flame className="w-5 h-5 text-[#8c7138]" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif tracking-tight text-white flex items-center gap-2">
-            Abandoned Checkout Leads
-          </h1>
-          <p className="text-sm text-neutral-300 mt-1 max-w-2xl">
-            Track potential buyers who selected addresses or entered details at the gateway but dropped off before completing payment. Re-engage them softly via tailored luxury perks.
-          </p>
+          <div>
+            <h3 className="font-display text-base font-bold text-[#141414] flex items-center gap-2">
+              Abandoned Checkout Leads ({filteredLeads.length} Leads)
+            </h3>
+            <p className="text-xs text-[#747878] mt-0.5">
+              High-intent visitors who entered details or selected address at checkout but dropped off before completing payment.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {onRefresh && (
             <button
               onClick={onRefresh}
-              className="px-4 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 rounded-xl text-sm font-medium transition-all flex items-center gap-2 border border-neutral-700 active:scale-95"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#faf8f5] hover:bg-[#eae5dc] border border-[#eae5dc] text-xs font-bold text-[#141414] transition-colors cursor-pointer active:scale-95 shadow-2xs"
             >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
+              <RefreshCw className="w-3.5 h-3.5 text-[#8c7138]" />
+              <span>Refresh Queue</span>
             </button>
           )}
         </div>
