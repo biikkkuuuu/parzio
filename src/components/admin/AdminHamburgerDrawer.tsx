@@ -65,63 +65,65 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
       id: 'leads',
       label: 'Abandoned Checkout Leads',
       sublabel: 'Re-engage gateway drop-offs via WhatsApp & Fast2SMS',
-      icon: <Flame className="w-4 h-4 text-amber-600" />,
+      icon: <Flame className="w-4 h-4 text-[#8c7138]" />,
       badge: leadsCount > 0 ? `${leadsCount} Pending` : 'Tracking',
-      badgeColor: 'bg-amber-50 text-amber-800 border border-amber-200'
+      badgeColor: leadsCount > 0 
+        ? 'bg-amber-50 text-amber-800 border border-amber-200/80' 
+        : 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
     },
     {
       id: 'coupons',
       label: 'Coupons & Secret Vouchers',
       sublabel: 'Create custom secret codes (PAR123) for Meesho/WhatsApp clients',
       icon: <Tag className="w-4 h-4 text-[#8c7138]" />,
-      badge: 'SECRET VOUCHERS',
-      badgeColor: 'bg-[#8c7138] text-white'
+      badge: 'Secret Codes',
+      badgeColor: 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
     },
     {
       id: 'categories',
       label: 'Categories & Collections',
       sublabel: 'Create new categories and manage jewelry collections',
-      icon: <Layers className="w-4 h-4" />,
+      icon: <Layers className="w-4 h-4 text-[#8c7138]" />,
       badge: `${categoriesCount} Collections`,
-      badgeColor: 'bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc]'
+      badgeColor: 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
     },
     {
       id: 'banners',
       label: 'Banners & Running Marquee',
       sublabel: 'Edit hero banners, announcements & moving tickers',
-      icon: <Sparkles className="w-4 h-4" />,
+      icon: <Sparkles className="w-4 h-4 text-[#8c7138]" />,
       badge: `${bannerCount} Active`,
-      badgeColor: 'bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc]'
+      badgeColor: 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
     },
     {
       id: 'inventory',
       label: 'Products & Stock',
       sublabel: 'View all jewelry, update prices & stock count',
-      icon: <Package className="w-4 h-4" />,
+      icon: <Package className="w-4 h-4 text-[#8c7138]" />,
       badge: `${productCount} Items`,
-      badgeColor: 'bg-[#faf8f5] text-[#141414] border border-[#eae5dc]'
+      badgeColor: 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
     },
     {
       id: 'exchanges',
       label: 'Exchanges & Returns',
       sublabel: 'Check return requests & courier pickups',
-      icon: <RotateCcw className="w-4 h-4" />,
+      icon: <RotateCcw className="w-4 h-4 text-[#8c7138]" />,
       badge: '3 Open',
-      badgeColor: 'bg-amber-50 text-amber-800 border border-amber-200'
+      badgeColor: 'bg-amber-50 text-amber-800 border border-amber-200/80'
     },
     {
       id: 'rto-shield',
       label: 'Cash on Delivery Safety',
       sublabel: 'Prevent fake orders & block risky pincodes',
-      icon: <ShieldCheck className="w-4 h-4" />,
-      badge: 'Active',
-      badgeColor: 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+      icon: <ShieldCheck className="w-4 h-4 text-[#8c7138]" />,
+      badge: 'Protected',
+      badgeColor: 'bg-emerald-50 text-emerald-800 border border-emerald-200/80'
     },
     {
       id: 'settings',
       label: 'Store Settings',
       sublabel: 'Online payment, COD fee & store address',
-      icon: <Settings className="w-4 h-4" />
+      icon: <Settings className="w-4 h-4 text-[#8c7138]" />
     }
   ];
 
@@ -182,7 +184,7 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
                 <TrendingUp className="w-3.5 h-3.5 text-[#8c7138]" />
                 Main Dashboard
               </span>
-              <span className="text-[10px] font-semibold text-[#747878] bg-[#faf8f5] px-2.5 py-0.5 rounded-full border border-[#eae5dc]">
+              <span className="text-[10px] font-mono font-bold text-[#8c7138] bg-[#faf6ef] px-2.5 py-0.5 rounded-full border border-[#ebd7be]">
                 Primary Hub
               </span>
             </div>
@@ -216,7 +218,7 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
                           Sales Overview
                         </span>
                         {activeTab === 'overview' && (
-                          <span className="px-2.5 py-0.5 rounded-full bg-[#8c7138]/40 text-[#fed488] text-[9px] font-bold uppercase tracking-wider">
+                          <span className="px-2 py-0.5 rounded-full bg-[#8c7138] text-white text-[9px] font-bold uppercase tracking-wider">
                             Active
                           </span>
                         )}
@@ -257,7 +259,11 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
                         <span className={`text-sm font-bold ${activeTab === 'orders' ? 'text-[#fed488]' : 'text-[#141414]'}`}>
                           Customer Orders
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-full bg-[#fed488] text-[#141414] text-[10px] font-mono font-bold">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                          activeTab === 'orders'
+                            ? 'bg-[#8c7138] text-white'
+                            : 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
+                        }`}>
                           {orderCount} Orders
                         </span>
                       </div>
@@ -278,7 +284,7 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#747878]">
                 Store Management
               </span>
-              <span className="text-[10px] text-[#747878]">
+              <span className="text-[10px] font-mono font-bold text-[#8c7138] bg-[#faf6ef] px-2.5 py-0.5 rounded-full border border-[#ebd7be]">
                 {managementItems.length} Sections
               </span>
             </div>

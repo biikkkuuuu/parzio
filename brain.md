@@ -259,13 +259,25 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 
 ---
 
-## 5. Verification Checklist
+## 5. Standardized Luxury Design System (Section U)
+- **Token Harmonization:** Established a unified luxury design specification documented in [`DESIGN_SYSTEM.md`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/DESIGN_SYSTEM.md).
+- **Badge & Pill Tokens:** Standardized all badge colors across the Admin Hamburger Menu Drawer, Operations Hub header, and table views:
+  - **Neutral Count & Attribute Pill:** `bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be] font-mono text-[10px] font-bold` (No mismatched neon yellow or solid brown blocks).
+  - **Active Selection Pill:** `bg-[#8c7138] text-white text-[9px] font-bold uppercase tracking-wider`.
+  - **System Online / Verified:** `bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-[10px] font-mono font-bold`.
+  - **Action Required / Pending:** `bg-amber-50 text-amber-800 border border-amber-200/80 text-[10px] font-mono font-bold`.
+- **Drawer Streamlining:** Refined `AdminHamburgerDrawer.tsx` so all menu cards, counts (`Orders`, `Leads`, `Vouchers`, `Collections`, `Items`), and header tags share the exact same atelier gold/onyx palette.
+
+---
+
+## 6. Verification Checklist
 - [x] Orders placed do NOT receive fake auto-generated BlueDart AWB.
 - [x] Customer Track Order screen shows "Allocation on Dispatch" until real AWB is provided.
 - [x] Admin Panel has step-by-step fulfillment: Pending -> Packed -> Ship Order (opens Dispatch Modal).
 - [x] Dispatch Modal allows picking Courier Partner (Delhivery, BlueDart, DTDC, SpeedPost, Ekart, etc.) and entering real AWB.
 - [x] Fast2SMS dispatch notification delivers real tracking link to customer.
 - [x] Order success screen has 1-Click WhatsApp Receipt and Track Order buttons.
+- [x] Unified pill and badge luxury design tokens applied across Admin Hamburger Drawer and Operations Hub.
 - [x] Full build verification passes (`npm run build`).
 - [x] Git commits pushed to `origin/main` for live Vercel deployment.
 
