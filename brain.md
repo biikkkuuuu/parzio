@@ -281,6 +281,11 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   - In [`ProductDetailView.tsx`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/components/ProductDetailView.tsx), removed hardcoded fake Unsplash placeholder fallbacks; the storefront customer gallery slider now strictly uses the real uploaded images (`product.images`).
   - In [`dbService.ts`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/services/dbService.ts), ensured `upsertProduct`, `deleteProduct`, and `deleteAllProducts` sanitize payload and synchronously write to Firebase Cloud Firestore with complete delete query sweeps, so edits and deletes immediately reflect for all external clients across all devices.
 
+- **Product Detail View Full-Screen Desktop & Luxury Layout:**
+  - In [`ProductDetailView.tsx`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/components/ProductDetailView.tsx), expanded the PC/Desktop container from a narrow `max-w-6xl` to an expansive `max-w-[1440px]` with high-res aspect-square gallery display (`lg:col-span-6`), sticky purchase & spec summary column (`lg:col-span-6 lg:sticky lg:top-24`), enlarged thumbnails (`w-20 h-20`), clean accordions, and full-width "Complete The Look" grid.
+  - Preserved 100% of mobile touch interactions, swipe gestures, and compact sticky bottom purchase drawer with zero side-overflow or disruption on smartphones.
+  - Replaced hardcoded courier mentions in Delivery accordion with clean "Express insured courier delivery (2–4 business days with live doorstep tracking)".
+
 ---
 
 ## 6. Verification Checklist
@@ -294,6 +299,7 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 - [x] Unified pill and badge luxury design tokens applied across Admin Hamburger Drawer and Operations Hub.
 - [x] Product and banner image uploading works 100% seamlessly in Brave Browser (with Brave Shields ON), Chrome, Safari, Firefox.
 - [x] Product edits, title/price changes, multiple gallery images, and deletions sync directly to Firebase Cloud Firestore for all client devices.
+- [x] Product Detail View optimized with full-screen luxury presence on PC while remaining 100% compact and touch-optimized on Mobile.
 - [x] Full build verification passes (`npm run build`).
 - [x] Git commits pushed to `origin/main` for live Vercel deployment.
 
