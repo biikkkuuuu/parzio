@@ -149,6 +149,14 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 - **Product Description Bullet & Newline Preservation:**
   - Added `whitespace-pre-line` and formatted spacing in `ProductDetailView.tsx` and `ProductModal.tsx` so bullet points (`•`, `-`, newlines) entered by admin in `AdminProductModal.tsx` and `AdminNewProductModal.tsx` render with their original line breaks instead of collapsing into a single paragraph.
 
+### P. Production-Grade Guest Login Enforcements & Full-Width Standard Screen Layout
+- **Guest Access Login Guard:**
+  - Guests (`!userProfile`) are now strictly required to Log In / Sign Up before accessing "Personal Information" or "Saved Delivery Addresses".
+  - Attempting to open Saved Addresses or Edit Profile as a guest presents a standard, clean "Login Required" card with a direct "Log In / Sign Up" button calling the login authentication flow.
+- **Elimination of Floating Tiny Cards:**
+  - Removed all floating rounded mini-cards with excessive blank surrounding background across all interactive Account subviews (`profile`, `address`, `privacy`, `help`, `coupons`).
+  - Standardized all subviews to full-screen clean white layouts (`bg-white min-h-screen`) matching standard D2C / e-commerce mobile applications (Flipkart/Myntra standard).
+
 ---
 
 ## 3. Firestore Collections Reference

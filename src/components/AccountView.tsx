@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { OrderItem } from '../types';
 import { lookupPincode } from '../services/postalService';
-import { UserProfile } from '../services/userService';
+import { UserProfile, userService } from '../services/userService';
 
 interface AccountViewProps {
   orders: OrderItem[];
@@ -366,7 +366,13 @@ export const AccountView: React.FC<AccountViewProps> = ({
               <div className="divide-y divide-[#f0f1f3]">
                 {/* Saved Addresses */}
                 <div
-                  onClick={() => setActiveModal('address')}
+                  onClick={() => {
+                    if (!userProfile && onLoginClick) {
+                      onLoginClick();
+                    } else {
+                      setActiveModal('address');
+                    }
+                  }}
                   className="py-2.5 flex items-center justify-between cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
@@ -376,9 +382,11 @@ export const AccountView: React.FC<AccountViewProps> = ({
                         Saved Delivery Addresses
                       </h4>
                       <p className="text-[10px] text-[#717478]">
-                        {addresses.length > 0
-                          ? `${addresses.length} ${addresses.length === 1 ? 'address' : 'addresses'} saved`
-                          : 'No saved addresses'}
+                        {userProfile
+                          ? (addresses.length > 0
+                              ? `${addresses.length} ${addresses.length === 1 ? 'address' : 'addresses'} saved`
+                              : 'No saved addresses')
+                          : 'Login required'}
                       </p>
                     </div>
                   </div>
@@ -387,7 +395,13 @@ export const AccountView: React.FC<AccountViewProps> = ({
 
                 {/* Edit Profile */}
                 <div
-                  onClick={() => setActiveModal('profile')}
+                  onClick={() => {
+                    if (!userProfile && onLoginClick) {
+                      onLoginClick();
+                    } else {
+                      setActiveModal('profile');
+                    }
+                  }}
                   className="py-2.5 flex items-center justify-between cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
@@ -396,7 +410,9 @@ export const AccountView: React.FC<AccountViewProps> = ({
                       <h4 className="text-xs font-semibold text-[#141414] group-hover:text-[#8c7138] transition-colors">
                         Personal Information
                       </h4>
-                      <p className="text-[10px] text-[#717478]">Name, Phone number &amp; Email</p>
+                      <p className="text-[10px] text-[#717478]">
+                        {userProfile ? 'Name, Phone number & Email' : 'Login to manage profile'}
+                      </p>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-[#a0a3a8] group-hover:text-[#8c7138]" />
@@ -657,58 +673,81 @@ export const AccountView: React.FC<AccountViewProps> = ({
               )}
 
               {/* Saved Address Cards Grid on Desktop */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {addresses.map((addr) => (
-                  <div
-                    key={addr.id}
-                    className={`p-3.5 rounded-xl border transition-all ${
-                      addr.isDefault
-                        ? 'border-[#8c7138] bg-[#faf8f5]/60 shadow-2xs'
-                        : 'border-[#eae5dc] bg-white hover:border-[#8c7138]/50'
-                    }`}
+              {!userProfile ? (
+                <div className="text-center py-10 bg-[#faf8f5] rounded-xl border border-[#eae5dc] text-xs text-[#717478] space-y-2.5">
+                  <MapPin className="w-8 h-8 text-[#9e7144]/60 mx-auto" />
+                  <p className="font-bold text-sm text-[#141414]">Login to View Saved Addresses</p>
+                  <p className="text-xs text-[#717478] max-w-xs mx-auto">
+                    Please log in with your mobile number to access and manage your delivery addresses.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onLoginClick}
+                    className="px-6 py-2.5 rounded-full bg-[#141414] hover:bg-[#9e7144] text-[#fed488] font-bold text-xs uppercase tracking-wider transition-colors shadow-xs cursor-pointer"
                   >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-[#141414]">{addr.name}</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-neutral-100 text-neutral-600">
-                          {addr.type}
-                        </span>
+                    Log In / Sign Up
+                  </button>
+                </div>
+              ) : addresses.length === 0 ? (
+                <div className="text-center py-10 bg-[#faf8f5] rounded-xl border border-[#eae5dc] text-xs text-[#717478] space-y-1">
+                  <MapPin className="w-7 h-7 text-[#9e7144]/50 mx-auto mb-1" />
+                  <p className="font-bold text-[#141414]">No saved delivery addresses</p>
+                  <p className="text-[11px] text-[#717478]">Click "+ Add New Address" above to save your first location.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {addresses.map((addr) => (
+                    <div
+                      key={addr.id}
+                      className={`p-3.5 rounded-xl border transition-all ${
+                        addr.isDefault
+                          ? 'border-[#8c7138] bg-[#faf8f5]/60 shadow-2xs'
+                          : 'border-[#eae5dc] bg-white hover:border-[#8c7138]/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-[#141414]">{addr.name}</span>
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-neutral-100 text-neutral-600">
+                            {addr.type}
+                          </span>
+                        </div>
+                        {addr.isDefault && (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-1">
+                            <Check className="w-3 h-3" /> Default
+                          </span>
+                        )}
                       </div>
-                      {addr.isDefault && (
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Default
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-[#141414] leading-relaxed">
-                      {addr.address}
-                      {addr.postOffice ? `, Post: ${addr.postOffice}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
-                    </p>
-                    <p className="text-xs text-[#717478] mt-1">Phone: {addr.phone}</p>
+                      <p className="text-xs text-[#141414] leading-relaxed">
+                        {addr.address}
+                        {addr.postOffice ? `, Post: ${addr.postOffice}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
+                      </p>
+                      <p className="text-xs text-[#717478] mt-1">Phone: {addr.phone}</p>
 
-                    <div className="mt-3 pt-2 border-t border-[#f0f1f3] flex items-center justify-between text-xs">
-                      {!addr.isDefault ? (
+                      <div className="mt-3 pt-2 border-t border-[#f0f1f3] flex items-center justify-between text-xs">
+                        {!addr.isDefault ? (
+                          <button
+                            onClick={() => handleSetDefaultAddress(addr.id)}
+                            className="text-[11px] font-bold text-[#8c7138] hover:underline"
+                          >
+                            Set as Default
+                          </button>
+                        ) : (
+                          <span className="text-[10px] text-emerald-700 font-semibold">Primary Address</span>
+                        )}
+
                         <button
-                          onClick={() => handleSetDefaultAddress(addr.id)}
-                          className="text-[11px] font-bold text-[#8c7138] hover:underline"
+                          type="button"
+                          onClick={() => setConfirmDeleteAddressId(addr.id)}
+                          className="text-[11px] text-rose-600 hover:underline flex items-center gap-1 cursor-pointer font-medium"
                         >
-                          Set as Default
+                          <Trash2 className="w-3 h-3" /> Delete
                         </button>
-                      ) : (
-                        <span className="text-[10px] text-emerald-700 font-semibold">Primary Address</span>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => setConfirmDeleteAddressId(addr.id)}
-                        className="text-[11px] text-rose-600 hover:underline flex items-center gap-1 cursor-pointer font-medium"
-                      >
-                        <Trash2 className="w-3 h-3" /> Delete
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Personal Info & Warranty Assurance Summary on Desktop */}
@@ -741,151 +780,181 @@ export const AccountView: React.FC<AccountViewProps> = ({
 
       {/* 1. Edit Profile Page */}
       {activeModal === 'profile' && (
-        <div className="fixed inset-0 z-50 bg-[#faf8f5] overflow-y-auto animate-fadeIn flex flex-col">
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3">
-            <div className="max-w-md mx-auto flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto animate-fadeIn flex flex-col">
+          <header className="sticky top-0 z-40 bg-white border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
+            <div className="max-w-xl mx-auto flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setActiveModal(null)}
-                className="flex items-center gap-1.5 text-xs font-bold text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
+                className="flex items-center gap-2 text-xs font-bold text-[#141414] hover:text-[#9e7144] transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 text-[#141414]" />
                 <span>Back</span>
               </button>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8c7138]">Personal Information</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#9e7144]">Personal Information</h3>
             </div>
           </header>
 
-          <main className="flex-1 flex items-start justify-center p-3 sm:p-5 pt-4">
-            <div className="w-full max-w-md bg-white rounded-2xl p-5 border border-[#eae5dc] shadow-sm space-y-3.5">
-              <div className="border-b border-[#f0f1f3] pb-2">
-                <h3 className="text-sm font-bold text-[#141414]">Edit Personal Details</h3>
+          <main className="flex-1 max-w-xl w-full mx-auto px-4 sm:px-6 py-6">
+            {!userProfile ? (
+              <div className="text-center py-12 px-4 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-[#faf7f2] border border-[#eae5dc] text-[#9e7144] flex items-center justify-center mx-auto">
+                  <User className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-[#141414]">Login to Edit Profile</h3>
+                <p className="text-xs text-[#717478] max-w-sm mx-auto leading-relaxed">
+                  You are currently browsing as a guest. Please log in with your registered mobile number to view and update your personal details.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveModal(null);
+                    if (onLoginClick) onLoginClick();
+                  }}
+                  className="px-8 py-3 rounded-full bg-[#141414] hover:bg-[#9e7144] text-[#fed488] font-bold text-xs uppercase tracking-wider transition-colors shadow-md cursor-pointer"
+                >
+                  Log In / Sign Up
+                </button>
               </div>
-
-              <div className="space-y-3 text-xs">
+            ) : (
+              <div className="space-y-6">
                 <div>
-                  <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
-                  />
+                  <h2 className="text-lg font-bold text-[#141414]">Personal Details</h2>
+                  <p className="text-xs text-[#717478] mt-0.5">Manage your verified profile information</p>
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-[10px] font-bold text-[#717478] uppercase">Registered Mobile</label>
-                    <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
-                      🔒 Permanent ID
-                    </span>
-                  </div>
-                  <input
-                    type="text"
-                    value={userPhone || 'Not Registered'}
-                    readOnly
-                    disabled
-                    className="w-full px-3 py-2 rounded-xl bg-neutral-100 border border-[#eae5dc] font-mono text-xs text-neutral-500 cursor-not-allowed select-none"
-                  />
-                </div>
-
-                {userEmail && (
+                <div className="space-y-4 text-xs">
                   <div>
-                    <label className="text-[10px] font-bold text-[#717478] uppercase block mb-1">Email Address</label>
+                    <label className="text-[11px] font-bold text-[#141414] uppercase block mb-1.5">
+                      Full Name <span className="text-rose-500">*</span>
+                    </label>
                     <input
-                      type="email"
-                      value={userEmail}
-                      readOnly
-                      disabled
-                      className="w-full px-3 py-2 rounded-xl bg-neutral-100 border border-[#eae5dc] text-xs text-neutral-500 cursor-not-allowed select-none"
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#faf8f5] border border-[#eae5dc] font-medium text-xs text-[#141414] focus:outline-none focus:border-[#9e7144] focus:bg-white transition-all"
                     />
                   </div>
-                )}
-              </div>
 
-              <button
-                onClick={async () => {
-                  if (!editName.trim()) return;
-                  if (userProfile) {
-                    const updated: UserProfile = {
-                      ...userProfile,
-                      name: editName.trim()
-                    };
-                    try {
-                      localStorage.setItem('parzio_user_profile', JSON.stringify(updated));
-                      await userService.saveUserProfile(updated);
-                    } catch (err) {
-                      console.error('Failed to update profile', err);
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-[11px] font-bold text-[#141414] uppercase">
+                        Registered Mobile Number
+                      </label>
+                      <span className="text-[9px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                        🔒 Permanent ID
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      value={userPhone || 'Not Registered'}
+                      readOnly
+                      disabled
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-100 border border-[#eae5dc] font-mono text-xs text-neutral-500 cursor-not-allowed select-none"
+                    />
+                  </div>
+
+                  {userEmail && (
+                    <div>
+                      <label className="text-[11px] font-bold text-[#141414] uppercase block mb-1.5">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={userEmail}
+                        readOnly
+                        disabled
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-100 border border-[#eae5dc] text-xs text-neutral-500 cursor-not-allowed select-none"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!editName.trim()) return;
+                    if (userProfile) {
+                      const updated: UserProfile = {
+                        ...userProfile,
+                        name: editName.trim()
+                      };
+                      try {
+                        localStorage.setItem('parzio_user_profile', JSON.stringify(updated));
+                        await userService.saveUserProfile(updated);
+                      } catch (err) {
+                        console.error('Failed to update profile', err);
+                      }
+                      if (onUpdateProfile) {
+                        onUpdateProfile(updated);
+                      }
                     }
-                    if (onUpdateProfile) {
-                      onUpdateProfile(updated);
-                    }
-                  }
-                  setActiveModal(null);
-                }}
-                className="w-full py-2.5 rounded-xl bg-[#141414] hover:bg-[#8c7138] text-white font-bold text-xs uppercase tracking-wider shadow-xs transition-colors cursor-pointer"
-              >
-                Save Details
-              </button>
-            </div>
+                    setActiveModal(null);
+                  }}
+                  className="w-full py-3 rounded-full bg-[#141414] hover:bg-[#9e7144] text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-colors cursor-pointer"
+                >
+                  Save Details
+                </button>
+              </div>
+            )}
           </main>
         </div>
       )}
 
       {/* 2. Coupons Page */}
       {activeModal === 'coupons' && (
-        <div className="fixed inset-0 z-50 bg-[#faf8f5] overflow-y-auto animate-fadeIn flex flex-col">
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
-            <div className="max-w-2xl mx-auto flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto animate-fadeIn flex flex-col">
+          <header className="sticky top-0 z-40 bg-white border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
+            <div className="max-w-xl mx-auto flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setActiveModal(null)}
-                className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
+                className="flex items-center gap-2 text-xs font-bold text-[#141414] hover:text-[#9e7144] transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 text-[#141414]" />
                 <span>Back to Account</span>
               </button>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8c7138]">Discount Coupons</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#9e7144]">Discount Coupons</h3>
             </div>
           </header>
 
-          <main className="flex-1 max-w-md w-full mx-auto p-4 sm:p-8">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eae5dc] shadow-xl shadow-black/5 space-y-5">
+          <main className="flex-1 max-w-xl w-full mx-auto px-4 sm:px-6 py-6">
+            <div className="space-y-4">
               <div className="border-b border-[#f0f1f3] pb-3">
-                <h3 className="text-base font-bold text-[#141414]">Active Discount Vouchers</h3>
-                <p className="text-xs text-[#717478]">Apply these codes during checkout for instant savings</p>
+                <h2 className="text-lg font-bold text-[#141414]">Active Discount Vouchers</h2>
+                <p className="text-xs text-[#717478] mt-0.5">Apply these codes during checkout for instant savings</p>
               </div>
 
               <div className="space-y-3">
-                <div className="p-3.5 rounded-2xl border border-dashed border-[#8c7138] bg-[#faf7f2] space-y-1">
+                <div className="p-4 rounded-xl border border-dashed border-[#9e7144] bg-[#faf7f2] space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-xs text-[#8c7138] px-2 py-0.5 bg-[#fed488]/40 rounded-full">
+                    <span className="font-mono font-bold text-xs text-[#9e7144] px-2.5 py-0.5 bg-[#fed488]/40 rounded-full">
                       PARZIO99
                     </span>
-                    <span className="text-[10px] font-extrabold text-emerald-700">FLAT 92% OFF</span>
+                    <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">FLAT 92% OFF</span>
                   </div>
-                  <p className="text-[11px] text-[#444748]">Buy Any 3 Jewellery pieces @ Flat ₹99 Each</p>
+                  <p className="text-xs text-[#444748]">Buy Any 3 Jewellery pieces @ Flat ₹99 Each</p>
                 </div>
 
-                <div className="p-3.5 rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 space-y-1">
+                <div className="p-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-xs text-[#141414] px-2 py-0.5 bg-neutral-200 rounded-full">
+                    <span className="font-mono font-bold text-xs text-[#141414] px-2.5 py-0.5 bg-neutral-200 rounded-full">
                       FREESHIP
                     </span>
-                    <span className="text-[10px] font-extrabold text-emerald-700">FREE COURIER</span>
+                    <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">FREE COURIER</span>
                   </div>
-                  <p className="text-[11px] text-[#444748]">Free express shipping on all orders above ₹499</p>
+                  <p className="text-xs text-[#444748]">Free express shipping on all orders above ₹499</p>
                 </div>
 
-                <div className="p-3.5 rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 space-y-1">
+                <div className="p-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-xs text-[#141414] px-2 py-0.5 bg-neutral-200 rounded-full">
+                    <span className="font-mono font-bold text-xs text-[#141414] px-2.5 py-0.5 bg-neutral-200 rounded-full">
                       FESTIVE10
                     </span>
-                    <span className="text-[10px] font-extrabold text-emerald-700">EXTRA 10% OFF</span>
+                    <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">EXTRA 10% OFF</span>
                   </div>
-                  <p className="text-[11px] text-[#444748]">Extra 10% off on all gift boxes &amp; sets</p>
+                  <p className="text-xs text-[#444748]">Extra 10% off on all gift boxes &amp; sets</p>
                 </div>
               </div>
             </div>
@@ -895,51 +964,69 @@ export const AccountView: React.FC<AccountViewProps> = ({
 
       {/* 3. Saved Addresses Page with "Add Address" Option */}
       {activeModal === 'address' && (
-        <div className="fixed inset-0 z-50 bg-[#faf8f5] overflow-y-auto animate-fadeIn flex flex-col">
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
-            <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto animate-fadeIn flex flex-col">
+          <header className="sticky top-0 z-40 bg-white border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
+            <div className="max-w-xl mx-auto flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => {
                   setActiveModal(null);
                   setIsAddingAddress(false);
                 }}
-                className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
+                className="flex items-center gap-2 text-xs font-bold text-[#141414] hover:text-[#9e7144] transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 text-[#141414]" />
-                <span>Back to Account</span>
+                <span>Back</span>
               </button>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8c7138]">Saved Addresses</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#9e7144]">Saved Addresses</h3>
             </div>
           </header>
 
-          <main className="flex-1 max-w-xl w-full mx-auto p-4 sm:p-8">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eae5dc] shadow-xl shadow-black/5 space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-[#f0f1f3]">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-[#8c7138]" />
-                  <h3 className="text-base font-bold text-[#141414]">Saved Delivery Addresses</h3>
+          <main className="flex-1 max-w-xl w-full mx-auto px-4 sm:px-6 py-6">
+            {!userProfile ? (
+              <div className="text-center py-12 px-4 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-[#faf7f2] border border-[#eae5dc] text-[#9e7144] flex items-center justify-center mx-auto">
+                  <MapPin className="w-8 h-8" />
                 </div>
+                <h3 className="text-lg font-bold text-[#141414]">Login to View Saved Addresses</h3>
+                <p className="text-xs text-[#717478] max-w-sm mx-auto leading-relaxed">
+                  Your delivery addresses are securely linked to your account. Log in with your registered phone number to access and manage your addresses.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveModal(null);
+                    if (onLoginClick) onLoginClick();
+                  }}
+                  className="px-8 py-3 rounded-full bg-[#141414] hover:bg-[#9e7144] text-[#fed488] font-bold text-xs uppercase tracking-wider transition-colors shadow-md cursor-pointer"
+                >
+                  Log In / Sign Up
+                </button>
               </div>
-
-              {/* Address Content */}
-              <div className="space-y-4">
-                {!isAddingAddress && (
-                  <button
-                    type="button"
-                    onClick={() => setIsAddingAddress(true)}
-                    className="w-full py-3 px-4 rounded-2xl border border-dashed border-[#8c7138] text-[#8c7138] hover:bg-[#faf7f2] font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>+ Add New Address</span>
-                  </button>
-                )}
+            ) : (
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-[#141414]">Saved Delivery Addresses</h2>
+                    <p className="text-xs text-[#717478] mt-0.5">Manage your doorstep delivery locations</p>
+                  </div>
+                  {!isAddingAddress && (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingAddress(true)}
+                      className="px-3.5 py-1.5 rounded-full bg-[#9e7144] hover:bg-[#865d34] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add New</span>
+                    </button>
+                  )}
+                </div>
 
                 {/* Add New Address Form */}
                 {isAddingAddress && (
                   <form
                     onSubmit={handleSaveNewAddress}
-                    className="p-4 rounded-2xl border border-[#8c7138] bg-[#faf8f5] space-y-3 animate-fadeIn"
+                    className="p-4 rounded-2xl border border-[#9e7144] bg-[#faf8f5] space-y-3 animate-fadeIn"
                   >
                     <div className="flex items-center justify-between border-b border-[#eae5dc] pb-2">
                       <span className="text-xs font-bold text-[#141414]">Add New Address</span>
@@ -961,7 +1048,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                           value={newAddrName}
                           onChange={(e) => setNewAddrName(e.target.value)}
                           required
-                          className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                          className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#9e7144]"
                         />
                       </div>
 
@@ -973,7 +1060,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                           value={newAddrPhone}
                           onChange={(e) => setNewAddrPhone(e.target.value)}
                           required
-                          className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                          className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#9e7144]"
                         />
                       </div>
                     </div>
@@ -986,7 +1073,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                         value={newAddrStreet}
                         onChange={(e) => setNewAddrStreet(e.target.value)}
                         required
-                        className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#9e7144]"
                       />
                     </div>
 
@@ -996,7 +1083,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                         <div className="flex items-center justify-between mb-1">
                           <label className="text-[10px] font-bold uppercase text-[#717478] block">Pincode *</label>
                           {isLoadingPostal && (
-                            <span className="text-[9px] text-[#8c7138] font-bold animate-pulse">Detecting...</span>
+                            <span className="text-[9px] text-[#9e7144] font-bold animate-pulse">Detecting...</span>
                           )}
                         </div>
                         <input
@@ -1005,7 +1092,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                           maxLength={6}
                           value={newAddrPincode}
                           onChange={(e) => handlePincodeChange(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs font-semibold focus:outline-none focus:border-[#8c7138]"
+                          className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs font-semibold focus:outline-none focus:border-[#9e7144]"
                         />
                       </div>
 
@@ -1016,7 +1103,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                           <select
                             value={newAddrPostOffice}
                             onChange={(e) => setNewAddrPostOffice(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl bg-white border border-[#8c7138] text-xs font-semibold text-[#141414] focus:outline-none cursor-pointer"
+                            className="w-full px-3 py-2 rounded-xl bg-white border border-[#9e7144] text-xs font-semibold text-[#141414] focus:outline-none cursor-pointer"
                           >
                             {postOfficeList.map((po) => (
                               <option key={po} value={po}>
@@ -1030,7 +1117,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                             placeholder={isLoadingPostal ? "Fetching..." : "Post Office"}
                             value={newAddrPostOffice}
                             onChange={(e) => setNewAddrPostOffice(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                            className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#9e7144]"
                           />
                         )}
                       </div>
@@ -1044,7 +1131,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                           placeholder="City"
                           value={newAddrCity}
                           onChange={(e) => setNewAddrCity(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                          className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#9e7144]"
                         />
                       </div>
 
@@ -1055,7 +1142,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                           placeholder="State"
                           value={newAddrState}
                           onChange={(e) => setNewAddrState(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#8c7138]"
+                          className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae5dc] text-xs focus:outline-none focus:border-[#9e7144]"
                         />
                       </div>
                     </div>
@@ -1069,7 +1156,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                             onClick={() => setNewAddrType(t)}
                             className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-colors cursor-pointer ${
                               newAddrType === t
-                                ? 'bg-[#8c7138] text-white'
+                                ? 'bg-[#9e7144] text-white'
                                 : 'bg-white border border-[#eae5dc] text-[#717478]'
                             }`}
                           >
@@ -1083,7 +1170,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                           type="checkbox"
                           checked={newAddrIsDefault}
                           onChange={(e) => setNewAddrIsDefault(e.target.checked)}
-                          className="rounded accent-[#8c7138]"
+                          className="rounded accent-[#9e7144]"
                         />
                         <span>Make Default</span>
                       </label>
@@ -1091,7 +1178,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
 
                     <button
                       type="submit"
-                      className="w-full mt-2 py-3 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                      className="w-full mt-2 py-3 rounded-full bg-[#141414] hover:bg-[#9e7144] text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
                     >
                       Save Address
                     </button>
@@ -1099,19 +1186,19 @@ export const AccountView: React.FC<AccountViewProps> = ({
                 )}
 
                 {/* Saved Address List */}
-                <div className="space-y-3 pt-1">
-                  {addresses.length === 0 ? (
-                    <div className="text-center py-8 bg-[#faf8f5] rounded-2xl border border-[#eae5dc] text-xs text-[#717478] space-y-1">
-                      <MapPin className="w-6 h-6 text-[#8c7138]/50 mx-auto mb-1" />
-                      <p className="font-bold text-[#141414]">No saved delivery addresses</p>
-                      <p className="text-[11px] text-[#717478]">Click "+ Add New Address" above or add during checkout.</p>
+                <div className="space-y-3">
+                  {addresses.length === 0 && !isAddingAddress ? (
+                    <div className="text-center py-12 bg-[#faf8f5] rounded-2xl border border-[#eae5dc] text-xs text-[#717478] space-y-1.5">
+                      <MapPin className="w-8 h-8 text-[#9e7144]/60 mx-auto mb-1" />
+                      <p className="font-bold text-sm text-[#141414]">No saved delivery addresses</p>
+                      <p className="text-[11px] text-[#717478]">Click "+ Add New" above or add an address during checkout.</p>
                     </div>
                   ) : (
                     addresses.map((addr) => (
                       <div
                         key={addr.id}
-                        className={`p-4 rounded-2xl border text-xs space-y-2 relative transition-all ${
-                          addr.isDefault ? 'border-[#8c7138] bg-[#faf7f2]' : 'border-[#e4e6eb] bg-white'
+                        className={`p-4 rounded-xl border text-xs space-y-2 relative transition-all ${
+                          addr.isDefault ? 'border-[#9e7144] bg-[#faf8f5]' : 'border-[#e4e6eb] bg-white'
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -1124,12 +1211,12 @@ export const AccountView: React.FC<AccountViewProps> = ({
 
                           <div className="flex items-center gap-3">
                             {addr.isDefault ? (
-                              <span className="text-[10px] font-bold text-[#8c7138] uppercase">Default</span>
+                              <span className="text-[10px] font-bold text-[#9e7144] uppercase">Default</span>
                             ) : (
                               <button
                                 type="button"
                                 onClick={() => handleSetDefaultAddress(addr.id)}
-                                className="text-[10px] font-bold text-neutral-500 hover:text-[#8c7138] underline cursor-pointer"
+                                className="text-[10px] font-bold text-neutral-500 hover:text-[#9e7144] underline cursor-pointer"
                               >
                                 Set Default
                               </button>
@@ -1155,39 +1242,39 @@ export const AccountView: React.FC<AccountViewProps> = ({
                   )}
                 </div>
               </div>
-            </div>
+            )}
           </main>
         </div>
       )}
 
       {/* 4. Help Center Page */}
       {activeModal === 'help' && (
-        <div className="fixed inset-0 z-50 bg-[#faf8f5] overflow-y-auto animate-fadeIn flex flex-col">
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3">
-            <div className="max-w-md mx-auto flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto animate-fadeIn flex flex-col">
+          <header className="sticky top-0 z-40 bg-white border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
+            <div className="max-w-xl mx-auto flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setActiveModal(null)}
-                className="flex items-center gap-1.5 text-xs font-bold text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
+                className="flex items-center gap-2 text-xs font-bold text-[#141414] hover:text-[#9e7144] transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 text-[#141414]" />
                 <span>Back</span>
               </button>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8c7138]">Help Center</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#9e7144]">Help Center</h3>
             </div>
           </header>
 
-          <main className="flex-1 max-w-md w-full mx-auto p-4 sm:p-6">
-            <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#eae5dc] shadow-sm space-y-4">
-              <div className="border-b border-[#f0f1f3] pb-2.5">
-                <h3 className="text-sm font-bold text-[#141414]">PARZIO 24×7 Help Center</h3>
-                <p className="text-[11px] text-[#717478]">Direct concierge support &amp; order assistance</p>
+          <main className="flex-1 max-w-xl w-full mx-auto px-4 sm:px-6 py-6">
+            <div className="space-y-4">
+              <div className="border-b border-[#f0f1f3] pb-3">
+                <h2 className="text-lg font-bold text-[#141414]">PARZIO 24×7 Help Center</h2>
+                <p className="text-xs text-[#717478] mt-0.5">Direct concierge support &amp; order assistance</p>
               </div>
 
-              <div className="space-y-3 text-xs text-[#444748]">
-                <div className="p-3.5 bg-[#faf7f2] rounded-xl border border-[#eae5dc] space-y-1">
+              <div className="space-y-4 text-xs text-[#444748]">
+                <div className="p-4 bg-[#faf7f2] rounded-xl border border-[#eae5dc] space-y-1.5">
                   <p className="font-bold text-xs text-[#141414]">WhatsApp Support</p>
-                  <p className="text-[11px] text-[#717478]">Instant assistance for order and delivery tracking</p>
+                  <p className="text-[11px] text-[#717478]">Instant assistance for order, delivery tracking, and returns</p>
                   <a
                     href="https://wa.me/917033656752"
                     target="_blank"
@@ -1199,9 +1286,9 @@ export const AccountView: React.FC<AccountViewProps> = ({
                   </a>
                 </div>
 
-                <div className="space-y-1.5 text-[11px] leading-relaxed">
+                <div className="p-4 bg-white rounded-xl border border-[#eae5dc] space-y-2 text-xs leading-relaxed">
                   <p>• <strong>Delivery:</strong> 2–4 business days via BlueDart / Delhivery</p>
-                  <p>• <strong>Warranty:</strong> 316L Surgical Steel shower &amp; perfume safe</p>
+                  <p>• <strong>Warranty:</strong> 316L Surgical Steel shower, sweat &amp; perfume safe</p>
                   <p>• <strong>Returns:</strong> 7-day hassle-free doorstep reverse pickup</p>
                 </div>
               </div>
@@ -1212,44 +1299,44 @@ export const AccountView: React.FC<AccountViewProps> = ({
 
       {/* 5. Privacy Policy Page (Govt of India E-Commerce & DPDP Act Compliant) */}
       {activeModal === 'privacy' && (
-        <div className="fixed inset-0 z-50 bg-[#faf8f5] overflow-y-auto animate-fadeIn flex flex-col">
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#eae5dc] px-4 sm:px-8 py-3">
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto animate-fadeIn flex flex-col">
+          <header className="sticky top-0 z-40 bg-white border-b border-[#eae5dc] px-4 sm:px-8 py-3.5">
             <div className="max-w-2xl mx-auto flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setActiveModal(null)}
-                className="flex items-center gap-1.5 text-xs font-bold text-[#555] hover:text-[#141414] transition-colors cursor-pointer"
+                className="flex items-center gap-2 text-xs font-bold text-[#141414] hover:text-[#9e7144] transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 text-[#141414]" />
                 <span>Back</span>
               </button>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8c7138]">Privacy Policy</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#9e7144]">Privacy Policy</h3>
             </div>
           </header>
 
-          <main className="flex-1 max-w-2xl w-full mx-auto p-4 sm:p-6">
-            <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#eae5dc] shadow-sm space-y-4 text-xs text-[#333]">
-              <div className="border-b border-[#f0f1f3] pb-2.5">
-                <h2 className="text-base font-bold text-[#141414]">PARZIO Privacy &amp; Data Protection Policy</h2>
-                <p className="text-[11px] text-[#717478] mt-0.5">
+          <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 text-xs text-[#333]">
+            <div className="space-y-5 leading-relaxed">
+              <div className="border-b border-[#f0f1f3] pb-3">
+                <h1 className="text-lg sm:text-xl font-bold text-[#141414]">PARZIO Privacy &amp; Data Protection Policy</h1>
+                <p className="text-xs text-[#717478] mt-1">
                   Compliant with the Information Technology Act, 2000, Consumer Protection (E-Commerce) Rules, 2020 &amp; DPDP Act.
                 </p>
               </div>
 
-              <div className="space-y-3 leading-relaxed">
+              <div className="space-y-4">
                 <div>
-                  <h4 className="font-bold text-[#141414] text-xs mb-0.5">1. Information We Collect</h4>
+                  <h3 className="font-bold text-sm text-[#141414] mb-1">1. Information We Collect</h3>
                   <p className="text-[#555]">
                     When you place an order or create an account, we collect necessary transactional details including your name, delivery address, pincode, mobile number, and email. We do not store credit/debit card numbers or UPI MPINs.
                   </p>
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-[#141414] text-xs mb-0.5">2. Purpose of Data Processing</h4>
+                  <h3 className="font-bold text-sm text-[#141414] mb-1">2. Purpose of Data Processing</h3>
                   <p className="text-[#555]">
                     Your information is utilized solely for:
                   </p>
-                  <ul className="list-disc pl-4 mt-1 space-y-0.5 text-[#555]">
+                  <ul className="list-disc pl-4 mt-1.5 space-y-1 text-[#555]">
                     <li>Fulfillment and doorstep delivery of your orders via BlueDart &amp; Delhivery.</li>
                     <li>SMS and WhatsApp dispatch notifications and live tracking.</li>
                     <li>Processing payments, tax invoices, and 7-day doorstep returns or exchanges.</li>
@@ -1257,25 +1344,25 @@ export const AccountView: React.FC<AccountViewProps> = ({
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-[#141414] text-xs mb-0.5">3. Payment Security &amp; 256-Bit Encryption</h4>
+                  <h3 className="font-bold text-sm text-[#141414] mb-1">3. Payment Security &amp; 256-Bit Encryption</h3>
                   <p className="text-[#555]">
                     All online payments (Razorpay &amp; UPI) are processed over end-to-end 256-bit SSL encrypted bank channels. PARZIO never accesses or stores sensitive financial credentials.
                   </p>
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-[#141414] text-xs mb-0.5">4. Disclosure &amp; Third-Party Sharing</h4>
+                  <h3 className="font-bold text-sm text-[#141414] mb-1">4. Disclosure &amp; Third-Party Sharing</h3>
                   <p className="text-[#555]">
                     We strictly do not sell, rent, or trade your personal data with third-party advertisers. Data is shared exclusively with licensed logistics couriers for delivery purposes.
                   </p>
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-[#141414] text-xs mb-0.5">5. Grievance Redressal Mechanism</h4>
+                  <h3 className="font-bold text-sm text-[#141414] mb-1">5. Grievance Redressal Mechanism</h3>
                   <p className="text-[#555]">
                     In accordance with Rule 5(9) of Consumer Protection (E-Commerce) Rules, 2020:
                   </p>
-                  <div className="p-3 bg-[#faf8f5] rounded-xl border border-[#eae5dc] mt-1.5 space-y-0.5 text-[11px]">
+                  <div className="p-4 bg-[#faf8f5] rounded-xl border border-[#eae5dc] mt-2 space-y-1 text-xs">
                     <p><strong>Grievance Officer:</strong> Jitendra Pandit</p>
                     <p><strong>Email:</strong> <a href="mailto:jitendrapandit1764@gmail.com" className="text-[#9e7144] font-semibold underline">jitendrapandit1764@gmail.com</a></p>
                     <p><strong>Phone:</strong> +91 7033656752</p>
