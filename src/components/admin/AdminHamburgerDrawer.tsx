@@ -17,7 +17,8 @@ import {
   ChevronRight,
   TrendingUp,
   Layers,
-  Flame
+  Flame,
+  LayoutGrid
 } from 'lucide-react';
 
 interface AdminHamburgerDrawerProps {
@@ -53,79 +54,177 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  // Primary Dashboard Items
+  const primaryItems: {
+    id: AdminTab;
+    label: string;
+    sublabel: string;
+    icon: React.ReactNode;
+    badge?: string;
+  }[] = [
+    {
+      id: 'overview',
+      label: 'Sales Overview',
+      sublabel: "Today's sales, daily graphs & revenue analytics",
+      icon: <BarChart3 className="w-4 h-4" />,
+      badge: activeTab === 'overview' ? 'Active' : undefined
+    },
+    {
+      id: 'orders',
+      label: 'Customer Orders',
+      sublabel: 'Live orders, packing slips & dispatch tracking',
+      icon: <Package className="w-4 h-4" />,
+      badge: `${orderCount} Orders`
+    }
+  ];
+
+  // Store Management Navigation Items
   const managementItems: {
     id: AdminTab;
     label: string;
     sublabel: string;
     icon: React.ReactNode;
     badge?: string;
-    badgeColor?: string;
+    isAlert?: boolean;
   }[] = [
     {
       id: 'leads',
       label: 'Abandoned Checkout Leads',
-      sublabel: 'Re-engage gateway drop-offs via WhatsApp & Fast2SMS',
-      icon: <Flame className="w-4 h-4 text-[#8c7138]" />,
-      badge: leadsCount > 0 ? `${leadsCount} Pending` : 'Tracking',
-      badgeColor: leadsCount > 0 
-        ? 'bg-amber-50 text-amber-800 border border-amber-200/80' 
-        : 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
-    },
-    {
-      id: 'coupons',
-      label: 'Coupons & Secret Vouchers',
-      sublabel: 'Create custom secret codes (PAR123) for Meesho/WhatsApp clients',
-      icon: <Tag className="w-4 h-4 text-[#8c7138]" />,
-      badge: 'Secret Codes',
-      badgeColor: 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
-    },
-    {
-      id: 'categories',
-      label: 'Categories & Collections',
-      sublabel: 'Create new categories and manage jewelry collections',
-      icon: <Layers className="w-4 h-4 text-[#8c7138]" />,
-      badge: `${categoriesCount} Collections`,
-      badgeColor: 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
-    },
-    {
-      id: 'banners',
-      label: 'Banners & Running Marquee',
-      sublabel: 'Edit hero banners, announcements & moving tickers',
-      icon: <Sparkles className="w-4 h-4 text-[#8c7138]" />,
-      badge: `${bannerCount} Active`,
-      badgeColor: 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
+      sublabel: 'Recover drop-offs via WhatsApp & Fast2SMS',
+      icon: <Flame className="w-4 h-4" />,
+      badge: leadsCount > 0 ? `${leadsCount} Pending` : undefined,
+      isAlert: leadsCount > 0
     },
     {
       id: 'inventory',
       label: 'Products & Stock',
-      sublabel: 'View all jewelry, update prices & stock count',
-      icon: <Package className="w-4 h-4 text-[#8c7138]" />,
-      badge: `${productCount} Items`,
-      badgeColor: 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
+      sublabel: 'Catalog pricing, inventory & live toggle',
+      icon: <Package className="w-4 h-4" />,
+      badge: `${productCount} Items`
+    },
+    {
+      id: 'categories',
+      label: 'Categories & Collections',
+      sublabel: 'Jewellery classifications & navigation tabs',
+      icon: <Layers className="w-4 h-4" />,
+      badge: `${categoriesCount} Collections`
+    },
+    {
+      id: 'coupons',
+      label: 'Coupons & Secret Vouchers',
+      sublabel: 'Create custom promo codes (PAR123)',
+      icon: <Tag className="w-4 h-4" />,
+      badge: 'Codes'
+    },
+    {
+      id: 'banners',
+      label: 'Banners & Running Marquee',
+      sublabel: 'Hero banners & announcement tickers',
+      icon: <Sparkles className="w-4 h-4" />,
+      badge: `${bannerCount} Active`
     },
     {
       id: 'exchanges',
       label: 'Exchanges & Returns',
-      sublabel: 'Check return requests & courier pickups',
-      icon: <RotateCcw className="w-4 h-4 text-[#8c7138]" />,
+      sublabel: 'Customer replacement & pickup requests',
+      icon: <RotateCcw className="w-4 h-4" />,
       badge: '3 Open',
-      badgeColor: 'bg-amber-50 text-amber-800 border border-amber-200/80'
+      isAlert: true
     },
     {
       id: 'rto-shield',
       label: 'Cash on Delivery Safety',
-      sublabel: 'Prevent fake orders & block risky pincodes',
-      icon: <ShieldCheck className="w-4 h-4 text-[#8c7138]" />,
-      badge: 'Protected',
-      badgeColor: 'bg-emerald-50 text-emerald-800 border border-emerald-200/80'
+      sublabel: 'COD verification & fraud protection',
+      icon: <ShieldCheck className="w-4 h-4" />,
+      badge: 'Protected'
     },
     {
       id: 'settings',
       label: 'Store Settings',
-      sublabel: 'Online payment, COD fee & store address',
-      icon: <Settings className="w-4 h-4 text-[#8c7138]" />
+      sublabel: 'Store address, UPI & operational options',
+      icon: <Settings className="w-4 h-4" />
     }
   ];
+
+  const renderNavRow = (item: {
+    id: AdminTab;
+    label: string;
+    sublabel: string;
+    icon: React.ReactNode;
+    badge?: string;
+    isAlert?: boolean;
+  }) => {
+    const isActive = activeTab === item.id;
+
+    return (
+      <button
+        key={item.id}
+        type="button"
+        onClick={() => {
+          onSelectTab(item.id);
+          onClose();
+        }}
+        className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition-all cursor-pointer border ${
+          isActive
+            ? 'bg-[#141414] text-white font-bold shadow-md border-[#8c7138]'
+            : 'bg-white text-[#141414] hover:border-[#8c7138]/50 hover:bg-[#faf8f5] border-[#eae5dc] shadow-2xs'
+        }`}
+      >
+        <div className="flex items-center gap-3 min-w-0 pr-2">
+          {/* Uniform Icon Box */}
+          <div
+            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+              isActive
+                ? 'bg-[#8c7138] text-white shadow-xs'
+                : 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
+            }`}
+          >
+            {item.icon}
+          </div>
+
+          {/* Text Labels */}
+          <div className="min-w-0">
+            <div
+              className={`text-xs font-bold truncate leading-tight ${
+                isActive ? 'text-[#fed488]' : 'text-[#141414]'
+              }`}
+            >
+              {item.label}
+            </div>
+            <div
+              className={`text-[11px] truncate leading-tight mt-0.5 ${
+                isActive ? 'text-white/70 font-normal' : 'text-[#747878]'
+              }`}
+            >
+              {item.sublabel}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Badge + Chevron */}
+        <div className="flex items-center gap-2 shrink-0">
+          {item.badge && (
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-sans font-semibold tracking-wide ${
+                isActive
+                  ? 'bg-[#8c7138] text-white'
+                  : item.isAlert
+                  ? 'bg-amber-50 text-amber-800 border border-amber-200/80'
+                  : 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
+              }`}
+            >
+              {item.badge}
+            </span>
+          )}
+          <ChevronRight
+            className={`w-4 h-4 shrink-0 transition-transform ${
+              isActive ? 'text-[#fed488]' : 'text-[#a2a5a5]'
+            }`}
+          />
+        </div>
+      </button>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -135,226 +234,79 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-fadeIn"
       />
 
-      {/* Drawer Content Panel - Warm Luxury App Theme Standard */}
+      {/* Drawer Content Panel */}
       <div className="relative w-full max-w-sm sm:max-w-md bg-[#fbf9f6] text-[#141414] h-full flex flex-col shadow-2xl border-r border-[#eae5dc] z-10 animate-slideRight">
         
         {/* Drawer Header - Deep Onyx with Artisan Gold Accents */}
-        <div className="p-4 sm:p-5 border-b border-[#2e3131] flex items-center justify-between bg-[#141414]">
-          <div className="flex items-center gap-2.5">
+        <div className="p-4 sm:p-5 border-b border-[#2e3131] flex items-center justify-between bg-[#141414] text-white">
+          <div className="flex items-center gap-3">
             <Logo className="h-6 w-auto" isLight />
             <div className="h-4 w-px bg-white/20" />
-            <span className="px-3 py-1 rounded-full bg-[#8c7138]/20 border border-[#8c7138]/50 text-[#fed488] font-mono text-[10px] uppercase font-bold tracking-wider flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Store Dashboard
+            <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#fed488]">
+              Admin Operations
             </span>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-[#222424] hover:bg-[#8c7138] text-[#fed488] hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-full bg-[#222424] hover:bg-[#8c7138] text-[#fed488] hover:text-white transition-colors cursor-pointer"
             title="Close Menu"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Admin User Info Card */}
-        <div className="px-5 py-3 bg-white border-b border-[#eae5dc] flex items-center justify-between shadow-xs">
+        {/* Admin Profile Bar */}
+        <div className="px-5 py-3 bg-white border-b border-[#eae5dc] flex items-center justify-between shadow-2xs">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-[#8c7138] text-white font-bold text-xs flex items-center justify-center shadow-xs">
               VR
             </div>
             <div>
               <p className="text-xs font-bold text-[#141414] leading-none">Store Manager</p>
-              <p className="text-[10px] text-[#747878] mt-0.5 font-medium">Full Access</p>
+              <p className="text-[10px] text-[#747878] mt-0.5">Master Access</p>
             </div>
           </div>
-          <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-mono font-bold">
-            ONLINE
-          </span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[10px] font-bold text-emerald-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Online</span>
+          </div>
         </div>
 
         {/* Scrollable Navigation Body */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5 no-scrollbar bg-[#fbf9f6]">
           
-          {/* PRIMARY SECTION: Overview & Orders (Prominently styled in Hamburger) */}
-          <div className="space-y-2.5">
-            <div className="px-1 flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#8c7138] flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-[#8c7138]" />
-                Main Dashboard
-              </span>
-              <span className="text-[10px] font-mono font-bold text-[#8c7138] bg-[#faf6ef] px-2.5 py-0.5 rounded-full border border-[#ebd7be]">
-                Primary Hub
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2.5">
-              {/* Sales Overview Card */}
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectTab('overview');
-                  onClose();
-                }}
-                className={`w-full p-4 rounded-2xl text-left transition-all cursor-pointer border ${
-                  activeTab === 'overview'
-                    ? 'bg-[#141414] text-white shadow-md border-[#8c7138]'
-                    : 'bg-white text-[#141414] hover:bg-[#faf8f5] hover:border-[#8c7138]/50 border-[#eae5dc] shadow-xs'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl transition-colors ${
-                      activeTab === 'overview'
-                        ? 'bg-[#8c7138] text-white'
-                        : 'bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc]'
-                    }`}>
-                      <BarChart3 className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-bold ${activeTab === 'overview' ? 'text-[#fed488]' : 'text-[#141414]'}`}>
-                          Sales Overview
-                        </span>
-                        {activeTab === 'overview' && (
-                          <span className="px-2 py-0.5 rounded-full bg-[#8c7138] text-white text-[9px] font-bold uppercase tracking-wider">
-                            Active
-                          </span>
-                        )}
-                      </div>
-                      <p className={`text-xs mt-0.5 ${activeTab === 'overview' ? 'text-white/80' : 'text-[#747878]'}`}>
-                        Today's sales, daily graphs and revenue
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className={`w-4 h-4 ${activeTab === 'overview' ? 'text-[#fed488]' : 'text-[#747878]'}`} />
-                </div>
-              </button>
-
-              {/* Customer Orders Card */}
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectTab('orders');
-                  onClose();
-                }}
-                className={`w-full p-4 rounded-2xl text-left transition-all cursor-pointer border ${
-                  activeTab === 'orders'
-                    ? 'bg-[#141414] text-white shadow-md border-[#8c7138]'
-                    : 'bg-white text-[#141414] hover:bg-[#faf8f5] hover:border-[#8c7138]/50 border-[#eae5dc] shadow-xs'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl transition-colors ${
-                      activeTab === 'orders'
-                        ? 'bg-[#8c7138] text-white'
-                        : 'bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc]'
-                    }`}>
-                      <Package className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-bold ${activeTab === 'orders' ? 'text-[#fed488]' : 'text-[#141414]'}`}>
-                          Customer Orders
-                        </span>
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                          activeTab === 'orders'
-                            ? 'bg-[#8c7138] text-white'
-                            : 'bg-[#faf6ef] text-[#8c7138] border border-[#ebd7be]'
-                        }`}>
-                          {orderCount} Orders
-                        </span>
-                      </div>
-                      <p className={`text-xs mt-0.5 ${activeTab === 'orders' ? 'text-white/80' : 'text-[#747878]'}`}>
-                        Live orders, packing, shipping and slips
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className={`w-4 h-4 ${activeTab === 'orders' ? 'text-[#fed488]' : 'text-[#747878]'}`} />
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* SECONDARY SECTION: Store Management */}
+          {/* SECTION 1: Main Hub */}
           <div className="space-y-2">
-            <div className="px-1 flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#747878]">
-                Store Management
-              </span>
-              <span className="text-[10px] font-mono font-bold text-[#8c7138] bg-[#faf6ef] px-2.5 py-0.5 rounded-full border border-[#ebd7be]">
-                {managementItems.length} Sections
-              </span>
+            <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-[#8c7138] flex items-center gap-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-[#8c7138]" />
+              <span>Main Dashboard</span>
             </div>
-
             <div className="space-y-1.5">
-              {managementItems.map((item) => {
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      onSelectTab(item.id);
-                      onClose();
-                    }}
-                    className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition-all cursor-pointer border ${
-                      isActive
-                        ? 'bg-[#141414] text-white font-bold shadow-md border-[#8c7138]'
-                        : 'bg-white text-[#141414] hover:border-[#8c7138]/40 hover:bg-[#faf8f5] border-[#eae5dc] shadow-xs'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-xl transition-colors ${
-                        isActive
-                          ? 'bg-[#8c7138] text-white'
-                          : 'bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc]'
-                      }`}>
-                        {item.icon}
-                      </div>
-                      <div>
-                        <div className={`text-xs font-bold ${isActive ? 'text-[#fed488]' : 'text-[#141414]'}`}>
-                          {item.label}
-                        </div>
-                        <div className={`text-[10px] leading-tight line-clamp-1 ${
-                          isActive ? 'text-[#c4c7c7] font-normal' : 'text-[#747878]'
-                        }`}>
-                          {item.sublabel}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {item.badge && (
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                            isActive
-                              ? 'bg-[#8c7138] text-white'
-                              : item.badgeColor || 'bg-[#faf8f5] text-[#141414] border border-[#eae5dc]'
-                          }`}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
-                      <ChevronRight className={`w-4 h-4 ${isActive ? 'text-[#fed488]' : 'text-[#747878]'}`} />
-                    </div>
-                  </button>
-                );
-              })}
+              {primaryItems.map((item) => renderNavRow(item))}
             </div>
           </div>
 
-          {/* Emergency Stop Card */}
+          {/* SECTION 2: Store Management */}
+          <div className="space-y-2">
+            <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-[#747878] flex items-center gap-1.5">
+              <LayoutGrid className="w-3.5 h-3.5 text-[#747878]" />
+              <span>Store Management</span>
+            </div>
+            <div className="space-y-1.5">
+              {managementItems.map((item) => renderNavRow(item))}
+            </div>
+          </div>
+
+          {/* SECTION 3: Emergency Stop Card */}
           <div className={`p-3.5 rounded-2xl border transition-all ${
             emergencyConfig.isActive
               ? 'bg-rose-950/90 border-rose-600 text-white shadow-md'
-              : 'bg-white border-[#eae5dc] shadow-xs hover:border-rose-300'
+              : 'bg-white border-[#eae5dc] shadow-2xs hover:border-rose-300'
           }`}>
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                   emergencyConfig.isActive ? 'bg-rose-600 text-white animate-pulse' : 'bg-rose-50 text-rose-600 border border-rose-100'
                 }`}>
                   <AlertOctagon className="w-4 h-4" />
@@ -365,12 +317,12 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
                   }`}>
                     <span>Emergency Stop</span>
                     {emergencyConfig.isActive && (
-                      <span className="px-1.5 py-0.2 rounded bg-rose-500 text-white text-[9px] font-mono font-bold animate-pulse">
+                      <span className="px-1.5 py-0.2 rounded bg-rose-500 text-white text-[9px] font-bold animate-pulse">
                         ON
                       </span>
                     )}
                   </h4>
-                  <p className={`text-[10px] ${emergencyConfig.isActive ? 'text-rose-200' : 'text-[#747878]'}`}>
+                  <p className={`text-[11px] ${emergencyConfig.isActive ? 'text-rose-200' : 'text-[#747878]'}`}>
                     {emergencyConfig.isActive ? 'Orders Paused' : 'Pause Store Orders'}
                   </p>
                 </div>
@@ -393,10 +345,10 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
             </div>
           </div>
 
-          {/* Storefront & Session Section */}
+          {/* SECTION 4: Storefront & Session */}
           <div className="space-y-2 pt-2 border-t border-[#eae5dc]">
-            <div className="px-1 pb-1 text-[11px] font-bold uppercase tracking-wider text-[#747878]">
-              Store &amp; Exit
+            <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-[#747878]">
+              Storefront &amp; Exit
             </div>
 
             {/* Store Dekho (View Live Storefront) Button */}
@@ -406,10 +358,10 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
                 onClose();
                 onViewStore();
               }}
-              className="w-full flex items-center justify-between p-3 rounded-2xl bg-white hover:bg-[#faf8f5] text-[#141414] border border-[#eae5dc] hover:border-[#8c7138]/40 transition-all text-left group shadow-xs cursor-pointer"
+              className="w-full flex items-center justify-between p-3 rounded-2xl bg-white hover:bg-[#faf8f5] text-[#141414] border border-[#eae5dc] hover:border-[#8c7138]/40 transition-all text-left group shadow-2xs cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-[#8c7138]/10 text-[#8c7138] group-hover:scale-105 transition-transform">
+                <div className="w-9 h-9 rounded-xl bg-[#8c7138]/10 text-[#8c7138] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <Store className="w-4 h-4" />
                 </div>
                 <div>
@@ -417,12 +369,12 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
                     <span>Store Dekho (View Store)</span>
                     <ExternalLink className="w-3 h-3 text-[#8c7138]" />
                   </div>
-                  <div className="text-[10px] text-[#747878]">
+                  <div className="text-[11px] text-[#747878]">
                     Switch to customer shopping experience
                   </div>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#747878] group-hover:text-[#141414]" />
+              <ChevronRight className="w-4 h-4 text-[#a2a5a5] group-hover:text-[#141414]" />
             </button>
 
             {/* Admin Logout Button */}
@@ -432,15 +384,15 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
                 onClose();
                 onLogout();
               }}
-              className="w-full flex items-center justify-between p-3 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 transition-all text-left group shadow-xs cursor-pointer"
+              className="w-full flex items-center justify-between p-3 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 transition-all text-left group shadow-2xs cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-rose-100 text-rose-700 group-hover:scale-105 transition-transform">
+                <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <LogOut className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="text-xs font-bold text-rose-800">Admin Logout</div>
-                  <div className="text-[10px] text-rose-600">
+                  <div className="text-[11px] text-rose-600">
                     Exit admin safely
                   </div>
                 </div>
@@ -452,8 +404,8 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
         </div>
 
         {/* Drawer Footer */}
-        <div className="p-4 border-t border-[#eae5dc] bg-white text-center text-[10px] text-[#747878] flex items-center justify-between font-mono">
-          <span>PARZIO STORE ADMIN</span>
+        <div className="p-3.5 border-t border-[#eae5dc] bg-white text-center text-[10px] text-[#747878] flex items-center justify-between">
+          <span className="font-semibold uppercase tracking-wider">PARZIO ATELIER OPS</span>
           <span className="text-emerald-700 font-bold flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             CONNECTED

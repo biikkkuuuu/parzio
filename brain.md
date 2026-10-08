@@ -266,7 +266,11 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   - **Active Selection Pill:** `bg-[#8c7138] text-white text-[9px] font-bold uppercase tracking-wider`.
   - **System Online / Verified:** `bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-[10px] font-mono font-bold`.
   - **Action Required / Pending:** `bg-amber-50 text-amber-800 border border-amber-200/80 text-[10px] font-mono font-bold`.
-- **Drawer Streamlining:** Refined `AdminHamburgerDrawer.tsx` so all menu cards, counts (`Orders`, `Leads`, `Vouchers`, `Collections`, `Items`), and header tags share the exact same atelier gold/onyx palette.
+- **Drawer Streamlining & Structural Grid Harmonization:** 
+  - Eliminated oversized, disconnected top cards and replaced with a uniform, balanced row grid where every navigation item shares the exact same height (`p-3 rounded-2xl`), icon dimension (`w-9 h-9`), typography hierarchy, and aligned badge positioning.
+  - Eliminated badge stacking clutter from the header/profile section.
+  - Replaced jagged `font-mono` in badges with clean modern sans-serif typography.
+  - All menu cards, counts (`Orders`, `Leads`, `Vouchers`, `Collections`, `Items`), and header tags share the exact same atelier gold/onyx palette.
 
 ---
 
