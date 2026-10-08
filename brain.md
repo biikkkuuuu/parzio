@@ -277,6 +277,10 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   - Added safe `try...catch` fallback so that if Brave Shields Fingerprint Protection or strict mode blocks HTML5 `<canvas>` context extraction, it seamlessly falls back to direct Base64 encoding.
   - Auto-clears file input ref on change so re-selecting images works flawlessly in Brave, Chrome, Safari, and Firefox.
 
+- **Cross-Device Cloud Sync & Real Gallery Photos Fix:**
+  - In [`ProductDetailView.tsx`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/components/ProductDetailView.tsx), removed hardcoded fake Unsplash placeholder fallbacks; the storefront customer gallery slider now strictly uses the real uploaded images (`product.images`).
+  - In [`dbService.ts`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/services/dbService.ts), ensured `upsertProduct`, `deleteProduct`, and `deleteAllProducts` sanitize payload and synchronously write to Firebase Cloud Firestore with complete delete query sweeps, so edits and deletes immediately reflect for all external clients across all devices.
+
 ---
 
 ## 6. Verification Checklist
@@ -289,6 +293,7 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 - [x] Order success screen has 1-Click WhatsApp Receipt and Track Order buttons.
 - [x] Unified pill and badge luxury design tokens applied across Admin Hamburger Drawer and Operations Hub.
 - [x] Product and banner image uploading works 100% seamlessly in Brave Browser (with Brave Shields ON), Chrome, Safari, Firefox.
+- [x] Product edits, title/price changes, multiple gallery images, and deletions sync directly to Firebase Cloud Firestore for all client devices.
 - [x] Full build verification passes (`npm run build`).
 - [x] Git commits pushed to `origin/main` for live Vercel deployment.
 

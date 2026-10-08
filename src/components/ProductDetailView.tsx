@@ -52,15 +52,16 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     setOpenAccordion(null);
   }, [product.id]);
 
-  // Gallery images: use product.images if provided and non-empty, otherwise fallback to main image + hover
-  const galleryImages = (product.images && product.images.length > 0)
+  // Gallery images: strictly use real uploaded product photos
+  const rawGallery = (product.images && product.images.length > 0)
     ? product.images
-    : [
-        product.image,
-        ...(product.hoverImage && product.hoverImage !== product.image ? [product.hoverImage] : []),
-        'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=800',
-        'https://images.unsplash.com/photo-1611591475179-42cd3423e89d?auto=format&fit=crop&q=80&w=800'
-      ].filter(Boolean);
+    : [product.image, product.hoverImage].filter(Boolean);
+  
+  // Deduplicate and filter valid non-empty images
+  const galleryImages = Array.from(new Set(rawGallery.filter((img): img is string => Boolean(img && img.trim()))));
+  if (galleryImages.length === 0 && product.image) {
+    galleryImages.push(product.image);
+  }
 
   const handlePrevImage = () => {
     setSelectedImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1));

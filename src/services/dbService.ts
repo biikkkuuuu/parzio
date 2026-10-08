@@ -197,7 +197,9 @@ export const dbService = {
 
     if (db && isFirebaseConfigured()) {
       try {
-        await setDoc(doc(db, 'products', product.id), sanitizeForFirestore(product));
+        const cleanPayload = sanitizeForFirestore(product);
+        await setDoc(doc(db, 'products', product.id), cleanPayload);
+        console.log(`[Cloud Sync] Product "${product.name}" (${product.id}) successfully synced to Firestore!`);
       } catch (e) {
         console.error('Failed to sync product to Firebase:', e);
       }
@@ -217,11 +219,16 @@ export const dbService = {
         const deletePromises: Promise<any>[] = [];
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
-          if (docSnap.id === productId || data.id === productId) {
+          if (
+            docSnap.id === productId ||
+            data.id === productId ||
+            docSnap.id.toLowerCase() === productId.toLowerCase()
+          ) {
             deletePromises.push(deleteDoc(doc(db, 'products', docSnap.id)));
           }
         });
         await Promise.all(deletePromises);
+        console.log(`[Cloud Sync] Product (${productId}) removed from Firestore.`);
       } catch (e) {
         console.error('Failed to delete product from Firebase:', e);
       }
@@ -238,6 +245,7 @@ export const dbService = {
           deletePromises.push(deleteDoc(doc(db, 'products', docSnap.id)));
         });
         await Promise.all(deletePromises);
+        console.log('[Cloud Sync] All products removed from Firestore.');
       } catch (e) {
         console.error('Failed to delete all products from Firebase:', e);
       }
