@@ -496,9 +496,6 @@ export const AccountView: React.FC<AccountViewProps> = ({
                   <span>Log In to Your Account</span>
                 </button>
               )}
-              <p className="text-[10px] text-center text-[#a0a3a8] mt-2">
-                PARZIO App Version 2.4.0 • Crafted with care in Giridih &amp; Mumbai
-              </p>
             </div>
           </div>
 

@@ -13,15 +13,15 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
 
   return (
     <>
-      <footer className="bg-[#161311] text-white border-t border-[#26201b] pt-5 sm:pt-10 pb-16 sm:pb-6 font-sans">
+      <footer className="bg-[#161311] text-white border-t border-[#26201b] pt-4 sm:pt-6 pb-6 sm:pb-5 font-sans">
         <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-14">
           
           {/* Main Footer Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-x-4 gap-y-4 sm:gap-8 pb-5 sm:pb-8 border-b border-[#2a241f] text-xs">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-x-4 gap-y-4 sm:gap-6 pb-4 sm:pb-6 border-b border-[#2a241f] text-xs">
             
             {/* Column 1: PARZIO Brand Logo */}
             <div className="col-span-2 sm:col-span-2 lg:col-span-1 flex flex-col items-start">
-              <Logo className="h-8 sm:h-10 w-auto filter brightness-125 mb-1.5 sm:mb-3" />
+              <Logo className="h-7 sm:h-9 w-auto filter brightness-125 mb-1 sm:mb-2" />
               <p className="text-[11px] text-gray-400 leading-relaxed max-w-[280px]">
                 Aapke Shringar, Hamari Pehchaan. Timeless demi-fine jewellery, fragrances, and beauty essentials.
               </p>
@@ -29,10 +29,10 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
 
             {/* Column 2: Quick Links */}
             <div className="col-span-1">
-              <h3 className="text-xs sm:text-sm font-semibold text-white mb-2 sm:mb-3 uppercase tracking-wider">
+              <h3 className="text-xs font-semibold text-white mb-1.5 sm:mb-2 uppercase tracking-wider">
                 Quick Links
               </h3>
-              <ul className="space-y-1.5 sm:space-y-2 text-gray-300 text-[11px] sm:text-xs">
+              <ul className="space-y-1 sm:space-y-1.5 text-gray-300 text-[11px]">
                 <li>
                   <button
                     onClick={() => {
@@ -87,10 +87,10 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
 
             {/* Column 3: Customer Care */}
             <div className="col-span-1">
-              <h3 className="text-xs sm:text-sm font-semibold text-white mb-2 sm:mb-3 uppercase tracking-wider">
+              <h3 className="text-xs font-semibold text-white mb-1.5 sm:mb-2 uppercase tracking-wider">
                 Customer Care
               </h3>
-              <ul className="space-y-1.5 sm:space-y-2 text-gray-300 text-[11px] sm:text-xs">
+              <ul className="space-y-1 sm:space-y-1.5 text-gray-300 text-[11px]">
                 <li>
                   <button
                     onClick={() => setActiveModal('shipping')}
@@ -120,10 +120,10 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
 
             {/* Column 4: Get in Touch */}
             <div className="col-span-2 sm:col-span-1 lg:col-span-1">
-              <h3 className="text-xs sm:text-sm font-semibold text-white mb-2 sm:mb-3 uppercase tracking-wider">
+              <h3 className="text-xs font-semibold text-white mb-1.5 sm:mb-2 uppercase tracking-wider">
                 Get in Touch
               </h3>
-              <ul className="space-y-1.5 sm:space-y-2.5 text-gray-300 text-[11px] sm:text-xs">
+              <ul className="space-y-1 sm:space-y-1.5 text-gray-300 text-[11px]">
                 <li className="flex items-center gap-2">
                   <Phone className="w-3.5 h-3.5 text-[#c5a059] shrink-0" />
                   <a href="tel:+917033656752" className="hover:text-white transition-colors">
@@ -145,7 +145,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
 
             {/* Column 5: We're Also Available On (Clickable Live Links) */}
             <div className="col-span-2 sm:col-span-1 lg:col-span-1">
-              <h3 className="text-xs sm:text-sm font-semibold text-white mb-2 sm:mb-3 uppercase tracking-wider">
+              <h3 className="text-xs font-semibold text-white mb-1.5 sm:mb-2 uppercase tracking-wider">
                 Available On
               </h3>
               <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                   href="https://www.meesho.com/Parzio?_ms=3.0.1"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-8 px-2.5 rounded-md bg-[#841a54] hover:bg-[#9e1f64] flex items-center justify-center font-bold text-white text-[11px] tracking-tight shadow-xs transition-all cursor-pointer"
+                  className="h-7 px-2.5 rounded-md bg-[#841a54] hover:bg-[#9e1f64] flex items-center justify-center font-bold text-white text-[11px] tracking-tight shadow-xs transition-all cursor-pointer"
                   title="Visit Parzio Official Shop on Meesho"
                 >
                   meesho
@@ -165,7 +165,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                   href="https://www.flipkart.com/search?q=Parzio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-8 px-2.5 rounded-md bg-[#2874f0] hover:bg-[#1a66e0] flex items-center justify-center font-bold text-[#ffe500] text-[11px] italic tracking-tight shadow-xs transition-all cursor-pointer"
+                  className="h-7 px-2.5 rounded-md bg-[#2874f0] hover:bg-[#1a66e0] flex items-center justify-center font-bold text-[#ffe500] text-[11px] italic tracking-tight shadow-xs transition-all cursor-pointer"
                   title="Shop Parzio on Flipkart"
                 >
                   Flipkart
@@ -176,7 +176,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                   href="https://www.amazon.in/s?k=Parzio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-8 px-2.5 rounded-md bg-[#1f2124] hover:bg-[#2d3035] border border-gray-700 flex items-center justify-center font-bold text-white text-[11px] tracking-tight shadow-xs transition-all cursor-pointer"
+                  className="h-7 px-2.5 rounded-md bg-[#1f2124] hover:bg-[#2d3035] border border-gray-700 flex items-center justify-center font-bold text-white text-[11px] tracking-tight shadow-xs transition-all cursor-pointer"
                   title="Shop Parzio on Amazon"
                 >
                   amazon
@@ -187,7 +187,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
           </div>
 
           {/* Bottom Bar: Copyright on Left, Tagline on Right */}
-          <div className="pt-3.5 flex flex-col sm:flex-row items-center justify-between gap-1.5 text-[10px] sm:text-[11px] text-gray-400">
+          <div className="pt-2.5 flex flex-col sm:flex-row items-center justify-between gap-1 text-[10px] sm:text-[11px] text-gray-400">
             <div className="flex items-center gap-2 sm:gap-3">
               <p>© 2025 Parzio. All Rights Reserved.</p>
               <span className="text-gray-600">•</span>

@@ -112,6 +112,11 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 - Executed `scripts/cleanDummyProducts.mjs` directly against Google Cloud Firestore, permanently deleting all 8 seeded demo products (`hero-coin-bracelet`, `prod-croissant-dome-ring`, `prod-infinity-mangalsutra`, `prod-red-bangles`, `prod-snake-chain-necklace`, `prod-solitaire-mangalsutra`, `prod-teardrop-earrings`, `prod-velvet-bangles`) while preserving admin-created products.
 - Bumped frontend cache-invalidation token in `src/App.tsx` to `parzio_clean_catalog_2026_v5` to flush all customer device local caches.
 
+### L. UI Layout Compactness & Clean Refinements
+- **`AccountView.tsx`:** Removed the footer attribution text (`PARZIO App Version 2.4.0 • Crafted with care in Giridih & Mumbai`).
+- **`Footer.tsx`:** Tightened vertical padding (`pt-4 pb-6`), streamlined column gaps, and reduced button heights for a sleek mobile and desktop footer.
+- **`WhyChooseParzio.tsx`:** Removed excessive empty vertical margins and padding (`py-5 sm:py-7`), unified circular badges into a responsive 4-column row, and resized illustration containers to prevent layout breaking.
+
 ---
 
 ## 3. Firestore Collections Reference
