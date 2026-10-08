@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Product, CategoryItem, CartItem, OrderItem, ActiveScreen, OrderStatus, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon, ExchangeRequest } from './types';
+import { Product, CategoryItem, CartItem, OrderItem, ActiveScreen, OrderStatus, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon, ExchangeRequest, AbandonedLead } from './types';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { userService, UserProfile } from './services/userService';
@@ -252,6 +252,9 @@ export default function App() {
   // Categories State (Unified Data Layer via dbService)
   const [categories, setCategories] = useState<CategoryItem[]>(() => dbService.getCategories());
 
+  // Abandoned Checkout Leads State
+  const [abandonedLeads, setAbandonedLeads] = useState<AbandonedLead[]>(() => dbService.getAbandonedLeads());
+
   // Background Cloud Sync & Realtime Firestore Listeners across all devices/browsers
   useEffect(() => {
     let isMounted = true;
@@ -270,7 +273,8 @@ export default function App() {
           cloudSaleBanner,
           cloudExchanges,
           cloudPincodes,
-          cloudStoreSettings
+          cloudStoreSettings,
+          cloudLeads
         ] = await Promise.all([
           dbService.fetchProductsFromCloud(),
           dbService.fetchCategoriesFromCloud(),
@@ -285,6 +289,7 @@ export default function App() {
           dbService.fetchExchangesFromCloud(),
           dbService.fetchPincodesFromCloud(),
           dbService.fetchStoreSettingsFromCloud(),
+          dbService.fetchAbandonedLeadsFromCloud()
         ]);
         if (isMounted) {
           if (cloudProducts !== null) setProducts(cloudProducts);
@@ -300,6 +305,7 @@ export default function App() {
           if (cloudExchanges && cloudExchanges.length > 0) setExchanges(cloudExchanges);
           if (cloudPincodes && cloudPincodes.length > 0) setPincodes(cloudPincodes);
           if (cloudStoreSettings) setStoreSettings(cloudStoreSettings);
+          if (cloudLeads && cloudLeads.length > 0) setAbandonedLeads(cloudLeads);
         }
       }
     };
@@ -346,6 +352,13 @@ export default function App() {
       }
     });
 
+    // 7. Realtime listener for Abandoned Leads
+    const unsubscribeLeads = dbService.subscribeToAbandonedLeads((liveLeads) => {
+      if (isMounted && liveLeads) {
+        setAbandonedLeads(liveLeads);
+      }
+    });
+
     return () => {
       isMounted = false;
       if (unsubscribeProducts) unsubscribeProducts();
@@ -354,6 +367,7 @@ export default function App() {
       if (unsubscribeOrders) unsubscribeOrders();
       if (unsubscribeCoupons) unsubscribeCoupons();
       if (unsubscribeTopMarquee) unsubscribeTopMarquee();
+      if (unsubscribeLeads) unsubscribeLeads();
     };
   }, []);
 
@@ -1218,6 +1232,8 @@ export default function App() {
             onUpdatePincodes={handleUpdatePincodes}
             storeSettings={storeSettings}
             onUpdateStoreSettings={handleUpdateStoreSettings}
+            abandonedLeads={abandonedLeads}
+            onRefreshLeads={() => setAbandonedLeads(dbService.getAbandonedLeads())}
           />
         </React.Suspense>
       </AdminProtected>

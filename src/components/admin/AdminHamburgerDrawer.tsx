@@ -16,7 +16,8 @@ import {
   Store,
   ChevronRight,
   TrendingUp,
-  Layers
+  Layers,
+  Flame
 } from 'lucide-react';
 
 interface AdminHamburgerDrawerProps {
@@ -26,6 +27,7 @@ interface AdminHamburgerDrawerProps {
   onSelectTab: (tab: AdminTab) => void;
   orderCount: number;
   productCount: number;
+  leadsCount?: number;
   bannerCount?: number;
   categoriesCount?: number;
   onViewStore: () => void;
@@ -41,6 +43,7 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
   onSelectTab,
   orderCount,
   productCount,
+  leadsCount = 0,
   bannerCount = 2,
   categoriesCount = 5,
   onViewStore,
@@ -58,6 +61,14 @@ export const AdminHamburgerDrawer: React.FC<AdminHamburgerDrawerProps> = ({
     badge?: string;
     badgeColor?: string;
   }[] = [
+    {
+      id: 'leads',
+      label: 'Abandoned Checkout Leads',
+      sublabel: 'Re-engage gateway drop-offs via WhatsApp & Fast2SMS',
+      icon: <Flame className="w-4 h-4 text-amber-600" />,
+      badge: leadsCount > 0 ? `${leadsCount} Pending` : 'Tracking',
+      badgeColor: 'bg-amber-50 text-amber-800 border border-amber-200'
+    },
     {
       id: 'coupons',
       label: 'Coupons & Secret Vouchers',

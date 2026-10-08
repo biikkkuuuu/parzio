@@ -130,6 +130,7 @@ export interface SalePoster {
 export type AdminTab =
   | 'overview'
   | 'orders'
+  | 'leads'
   | 'inventory'
   | 'categories'
   | 'banners'
@@ -207,6 +208,32 @@ export interface QCStep {
   description: string;
   standard: string;
   passed: boolean;
+}
+
+export interface AbandonedLead {
+  id: string;
+  customerName: string;
+  phone: string;
+  email?: string;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+  items: {
+    productId: string;
+    productName: string;
+    price: number;
+    quantity: number;
+    image?: string;
+  }[];
+  totalAmount: number;
+  createdAt: number;
+  updatedAt: number;
+  status: 'pending' | 'contacted' | 'converted' | 'dismissed';
+  lastContactedAt?: number;
+  contactNotes?: string;
 }
 
 export type ActiveScreen = 'storefront' | 'atelier-ops';

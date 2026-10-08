@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CartItem, OrderItem } from '../types';
+import { CartItem, OrderItem, AbandonedLead } from '../types';
 import { smsService } from '../services/smsService';
 import { UserProfile } from '../services/userService';
 import { auth } from '../lib/firebase';
@@ -236,6 +236,36 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
     if (!cleanPincode || cleanPincode.length !== 6) {
       alert('Please enter a valid 6-digit delivery pincode.');
       return;
+    }
+
+    // Capture Abandoned Checkout Lead (Draft state before gateway / OTP verification)
+    try {
+      const draftLead: AbandonedLead = {
+        id: `lead-${Date.now()}-${cleanPhone.slice(-4)}`,
+        customerName: name.trim(),
+        phone: cleanPhone,
+        email: email.trim() || userProfile?.email || undefined,
+        address: {
+          street: address.trim(),
+          city: city.trim() || (postOffice ? postOffice : 'City Pending'),
+          state: state.trim() || 'State Pending',
+          pincode: cleanPincode,
+        },
+        items: cartItems.map((item) => ({
+          productId: item.product.id,
+          productName: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          image: item.product.image || '',
+        })),
+        totalAmount: Math.max(1, payableAmount),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        status: 'pending',
+      };
+      dbService.saveAbandonedLead(draftLead);
+    } catch (err) {
+      console.warn('Unable to record draft lead:', err);
     }
 
     // 1. Prepaid Online Payment via Razorpay
@@ -511,6 +541,10 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
     try {
       await dbService.createOrder(clientOrder);
+      const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+      if (cleanPhone) {
+        await dbService.markLeadConvertedByPhone(cleanPhone);
+      }
     } catch (dbErr) {
       console.warn('Order db create notice:', dbErr);
     }

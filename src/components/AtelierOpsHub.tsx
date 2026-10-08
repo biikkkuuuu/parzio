@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { OrderItem, OrderStatus, Product, CategoryItem, AdminTab, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon, ExchangeRequest } from '../types';
+import { OrderItem, OrderStatus, Product, CategoryItem, AdminTab, EmergencyShutdownConfig, MarqueeItem, StoreBanner, SkinSafeConfig, SaleBannerConfig, SalePoster, Coupon, ExchangeRequest, AbandonedLead } from '../types';
 import { PincodeItem, GlobalStoreSettings } from '../services/dbService';
 import { AdminAnalyticsView } from './admin/AdminAnalyticsView';
 import { AdminOrdersView } from './admin/AdminOrdersView';
+import { AdminLeadsView } from './admin/AdminLeadsView';
 import { AdminInventoryView } from './admin/AdminInventoryView';
 import { AdminCategoriesView } from './admin/AdminCategoriesView';
 import { AdminBannersView } from './admin/AdminBannersView';
@@ -81,6 +82,8 @@ interface AtelierOpsHubProps {
   onUpdatePincodes?: (pincodes: PincodeItem[]) => void;
   storeSettings?: GlobalStoreSettings;
   onUpdateStoreSettings?: (settings: GlobalStoreSettings) => void;
+  abandonedLeads?: AbandonedLead[];
+  onRefreshLeads?: () => void;
 }
 
 export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
@@ -126,7 +129,9 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
   pincodes,
   onUpdatePincodes,
   storeSettings,
-  onUpdateStoreSettings
+  onUpdateStoreSettings,
+  abandonedLeads = [],
+  onRefreshLeads
 }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
@@ -143,6 +148,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
   const tabLabels: Record<AdminTab, string> = {
     overview: 'Sales Overview',
     orders: 'Customer Orders',
+    leads: 'Abandoned Checkout Leads',
     inventory: 'Products & Stock',
     categories: 'Categories & Collections',
     banners: 'Banners & Marquee',
@@ -155,6 +161,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
   const tabDescriptions: Record<AdminTab, string> = {
     overview: 'Real-time overview of store performance, revenue, and active orders.',
     orders: 'View, process, track status, and generate packing slips for customer orders.',
+    leads: 'Track and re-engage visitors who dropped off at checkout via WhatsApp & Fast2SMS.',
     inventory: 'Manage catalog products, stock quantity, price points, and live status.',
     categories: 'Organize jewellery collections, classifications, and category tags.',
     banners: 'Configure top announcement ticker and storefront promotional banners.',
@@ -344,6 +351,13 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
           />
         )}
 
+        {activeTab === 'leads' && (
+          <AdminLeadsView
+            leads={abandonedLeads}
+            onRefresh={onRefreshLeads}
+          />
+        )}
+
         {activeTab === 'inventory' && (
           <AdminInventoryView
             products={products}
@@ -431,6 +445,7 @@ export const AtelierOpsHub: React.FC<AtelierOpsHubProps> = ({
         }}
         orderCount={orders.length}
         productCount={products.length}
+        leadsCount={(abandonedLeads || []).filter((l) => l.status === 'pending').length}
         categoriesCount={categories.length}
         bannerCount={banners.length}
         onViewStore={onBackToStore}

@@ -9,7 +9,8 @@ import {
   ExchangeRequest,
   SkinSafeConfig,
   SaleBannerConfig,
-  SalePoster
+  SalePoster,
+  AbandonedLead
 } from '../types';
 import { INITIAL_ORDERS } from '../data/orders';
 import {
@@ -51,6 +52,7 @@ const KEYS = {
   PINCODES: 'parzio_rto_pincodes',
   STORE_SETTINGS: 'parzio_store_settings',
   INSTAGRAM_POSTS: 'parzio_instagram_posts',
+  ABANDONED_LEADS: 'parzio_abandoned_leads',
 };
 
 export interface PincodeItem {
@@ -1057,4 +1059,144 @@ export const dbService = {
       console.error('Failed to cache instagram posts', e);
     }
   },
+
+  // ================= ABANDONED CHECKOUTS (LEADS) =================
+  getAbandonedLeads(): AbandonedLead[] {
+    try {
+      const saved = localStorage.getItem(KEYS.ABANDONED_LEADS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
+  },
+
+  saveAbandonedLeads(leads: AbandonedLead[]): void {
+    try {
+      localStorage.setItem(KEYS.ABANDONED_LEADS, JSON.stringify(leads));
+    } catch (e) {
+      console.error('Failed to cache abandoned leads', e);
+    }
+  },
+
+  async saveAbandonedLead(lead: AbandonedLead): Promise<void> {
+    const current = this.getAbandonedLeads();
+    const existingIndex = current.findIndex(l => l.phone === lead.phone && l.status === 'pending');
+    let updated: AbandonedLead[];
+    if (existingIndex >= 0) {
+      updated = [...current];
+      updated[existingIndex] = { ...updated[existingIndex], ...lead, updatedAt: Date.now() };
+    } else {
+      updated = [lead, ...current];
+    }
+    this.saveAbandonedLeads(updated);
+
+    if (db && isFirebaseConfigured()) {
+      try {
+        await setDoc(doc(db, 'abandoned_checkouts', lead.id), sanitizeForFirestore(lead));
+      } catch (e) {
+        console.error('Failed to save abandoned checkout lead to Firebase:', e);
+      }
+    }
+  },
+
+  async fetchAbandonedLeadsFromCloud(): Promise<AbandonedLead[]> {
+    if (!db || !isFirebaseConfigured()) return this.getAbandonedLeads();
+    try {
+      const q = query(collection(db, 'abandoned_checkouts'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const leads: AbandonedLead[] = [];
+      querySnapshot.forEach((docSnap) => {
+        leads.push({ ...(docSnap.data() as AbandonedLead), id: docSnap.id });
+      });
+      this.saveAbandonedLeads(leads);
+      return leads;
+    } catch (e) {
+      console.warn('Firebase fetch abandoned leads fallback to local cache:', e);
+      return this.getAbandonedLeads();
+    }
+  },
+
+  subscribeToAbandonedLeads(callback: (leads: AbandonedLead[]) => void): () => void {
+    if (!db || !isFirebaseConfigured()) {
+      callback(this.getAbandonedLeads());
+      return () => {};
+    }
+    try {
+      const q = query(collection(db, 'abandoned_checkouts'), orderBy('createdAt', 'desc'));
+      return onSnapshot(
+        q,
+        (snapshot) => {
+          const leads: AbandonedLead[] = [];
+          snapshot.forEach((docSnap) => {
+            leads.push({ ...(docSnap.data() as AbandonedLead), id: docSnap.id });
+          });
+          this.saveAbandonedLeads(leads);
+          callback(leads);
+        },
+        (error) => {
+          console.warn('Firebase abandoned leads snapshot listener error, using local fallback:', error);
+          callback(this.getAbandonedLeads());
+        }
+      );
+    } catch (e) {
+      console.error('Failed to subscribe to abandoned leads:', e);
+      callback(this.getAbandonedLeads());
+      return () => {};
+    }
+  },
+
+  async updateAbandonedLeadStatus(id: string, status: 'pending' | 'contacted' | 'converted' | 'dismissed', notes?: string): Promise<void> {
+    const current = this.getAbandonedLeads();
+    const updated = current.map(l => {
+      if (l.id === id) {
+        return {
+          ...l,
+          status,
+          updatedAt: Date.now(),
+          lastContactedAt: status === 'contacted' ? Date.now() : l.lastContactedAt,
+          contactNotes: notes !== undefined ? notes : l.contactNotes
+        };
+      }
+      return l;
+    });
+    this.saveAbandonedLeads(updated);
+
+    if (db && isFirebaseConfigured()) {
+      try {
+        await updateDoc(doc(db, 'abandoned_checkouts', id), sanitizeForFirestore({
+          status,
+          updatedAt: Date.now(),
+          ...(status === 'contacted' ? { lastContactedAt: Date.now() } : {}),
+          ...(notes !== undefined ? { contactNotes: notes } : {})
+        }));
+      } catch (e) {
+        console.error('Failed to update lead status in Firebase:', e);
+      }
+    }
+  },
+
+  async deleteAbandonedLead(id: string): Promise<void> {
+    const current = this.getAbandonedLeads();
+    const updated = current.filter(l => l.id !== id);
+    this.saveAbandonedLeads(updated);
+
+    if (db && isFirebaseConfigured()) {
+      try {
+        await deleteDoc(doc(db, 'abandoned_checkouts', id));
+      } catch (e) {
+        console.error('Failed to delete lead from Firebase:', e);
+      }
+    }
+  },
+
+  async markLeadConvertedByPhone(phone: string): Promise<void> {
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    const current = this.getAbandonedLeads();
+    const matched = current.filter(l => l.phone.replace(/\D/g, '').slice(-10) === cleanPhone && l.status !== 'converted');
+    for (const lead of matched) {
+      await this.updateAbandonedLeadStatus(lead.id, 'converted');
+    }
+  }
 };

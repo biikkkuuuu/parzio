@@ -145,5 +145,43 @@ export const smsService = {
     } catch (e) {
       return { success: false, error: 'Invalid verification session. Please click Resend Code.' };
     }
+  },
+
+  /**
+   * Send Direct Custom Marketing / Concierge SMS via Fast2SMS Quick Route
+   */
+  async sendCustomSms(rawPhone: string, message: string): Promise<{ success: boolean; error?: string }> {
+    const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+      return { success: false, error: 'Please enter a valid 10-digit mobile number' };
+    }
+    if (!message || message.trim().length === 0) {
+      return { success: false, error: 'Message cannot be empty' };
+    }
+
+    try {
+      const encodedMsg = encodeURIComponent(message.trim());
+      const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${FAST2SMS_API_KEY}&route=q&message=${encodedMsg}&language=english&flash=0&numbers=${cleanPhone}`;
+
+      const res = await fetch(url, { method: 'GET' });
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { message: text };
+      }
+
+      if (data.return === true || (Array.isArray(data.message) && data.message[0]?.toLowerCase().includes('success'))) {
+        return { success: true };
+      } else {
+        const reason = data.message || (Array.isArray(data.message) ? data.message.join(', ') : 'SMS gateway response');
+        return { success: false, error: String(reason) };
+      }
+    } catch (err: any) {
+      console.warn('Fast2SMS sendCustomSms note:', err);
+      return { success: false, error: err?.message || 'Network error sending SMS' };
+    }
   }
 };
+

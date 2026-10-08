@@ -176,6 +176,26 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   - Placed "Available On" directly beside "Get in Touch", utilizing previously empty right space.
   - Stacked Meesho, Flipkart, and Amazon store badges one-by-one with dedicated compact styling.
 
+### S. Abandoned Checkout Drop-off Tracking & Multi-Channel Recovery Concierge (Fast2SMS & WhatsApp)
+- **Zero-Intrusion Drop-off Capture:**
+  - When customers enter details or choose a saved delivery address in checkout and proceed towards the payment step (Razorpay gateway / COD verification), a background draft lead is instantly captured in `dbService.saveAbandonedLead`.
+  - Captures full customer identity: Name, 10-digit mobile number, full address/pincode, cart items (with quantities, prices, image previews), total amount, and timestamp.
+- **Admin Panel Lead Management (`AdminLeadsView.tsx`):**
+  - Added dedicated **"Abandoned Checkout Leads"** tab (`#/admin -> leads`) with flame badge indicating pending high-intent leads.
+  - Metrics row tracking: Total Drop-offs, Pending Action count, Recoverable Cart Value, and Converted leads.
+  - Filterable by status (`all`, `pending`, `contacted`, `converted`, `dismissed`) and live search by customer name, phone, city, or product name.
+- **Natural Luxury Marketing & Re-engagement Angles (No "Payment Failed" Creepiness):**
+  - Replaced awkward "payment failed" messages with 4 high-converting, tailored luxury perks:
+    1. **VIP 15% Privileged Discount (`LUXE15`):** Exclusive code offer + Free BlueDart Air Express.
+    2. **Artisan Vault Reservation (Stock Alert):** Limited batch notice holding pieces for 4 hours.
+    3. **Complimentary 1-Year Anti-Tarnish Assurance Card:** Free warranty card and polishing cloth upgrade.
+    4. **Atelier Stylist & Sizing Concierge:** Friendly personal stylist checking on ring sizing, chain layering, and gift wrapping.
+- **Dual Re-engagement Dispatch Channels:**
+  - **WhatsApp 1-Click Launch:** Pre-fills customer phone and tailored luxury message in WhatsApp (`https://api.whatsapp.com/send?phone=...&text=...`), automatically updating lead status to `contacted`.
+  - **Fast2SMS Direct Gateway Dispatch:** Sends instant customized SMS directly to the customer's phone using `smsService.sendCustomSms` with live API feedback.
+- **Automated Lead Conversion:**
+  - When an order is finalized by any customer with a matching phone number, `dbService.markLeadConvertedByPhone` automatically marks pending leads as `status: 'converted'`, updating conversion metrics in real-time.
+
 ---
 
 ## 3. Firestore Collections Reference
@@ -185,6 +205,7 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 | `products` | Live inventory catalog | `getDocs` on boot + `onSnapshot` listener + CRUD |
 | `categories` | Store categories & collections | `getDocs` on boot + `onSnapshot` listener + CRUD |
 | `orders` | Customer orders & tracking | `getDocs` + `onSnapshot` listener + CRUD |
+| `abandoned_leads` | Abandoned checkout drop-offs & leads | `getDocs` on boot + `onSnapshot` listener + CRUD |
 | `store_banners` | Hero carousel images & links | `getDocs` + `onSnapshot` listener |
 | `store_coupons` | Promo codes & discounts | `getDocs` + `onSnapshot` listener |
 | `top_marquee` | Top header running tickers | `getDocs` + `onSnapshot` listener |
@@ -200,9 +221,12 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 
 ## 4. Key File Map
 
-- **`src/App.tsx`:** Master orchestrator, screen routing, real-time Firestore listeners, CRUD handler functions, cache buster (`parzio_clean_catalog_2026_v4`).
-- **`src/services/dbService.ts`:** Firestore database driver and localStorage fallback engine; handles all collection queries, snapshots, and deletions.
-- **`src/components/AtelierOpsHub.tsx`:** Admin Operations Hub coordinator (`#/admin`), passes props to inventory, categories, orders, banners, coupons, and emergency lockdown views.
+- **`src/App.tsx`:** Master orchestrator, screen routing, real-time Firestore listeners, CRUD handler functions, cache buster (`parzio_clean_catalog_2026_v5`).
+- **`src/services/dbService.ts`:** Firestore database driver and localStorage fallback engine; handles all collection queries, snapshots, abandoned lead tracking, and deletions.
+- **`src/services/smsService.ts`:** Fast2SMS gateway driver for 6-digit OTP verification and custom marketing/concierge SMS dispatch.
+- **`src/components/CheckoutView.tsx`:** Checkout process capturing draft abandoned leads before gateway launch and auto-converting leads on order placement.
+- **`src/components/AtelierOpsHub.tsx`:** Admin Operations Hub coordinator (`#/admin`), passes props to inventory, categories, orders, abandoned leads, banners, coupons, and emergency lockdown views.
+- **`src/components/admin/AdminLeadsView.tsx`:** Abandoned checkout drop-off recovery view with stats, WhatsApp 1-click launcher, Fast2SMS direct sender, and luxury marketing templates.
 - **`src/components/admin/AdminInventoryView.tsx`:** Product inventory view with stock counters, low stock alerts, edit/delete modal, and "Delete All Products" action.
 - **`src/components/admin/AdminCategoriesView.tsx`:** Categories and collection management with "Products By Category" and "Category Cards" views, plus "Delete All Categories" action.
 - **`src/components/SalesSection.tsx`:** Sale page with dynamic category chips and responsive grid layout.
@@ -212,9 +236,11 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 ---
 
 ## 5. Verification Checklist
-- [x] Products deleted individually or in bulk disappear from storefront immediately.
-- [x] Categories deleted individually or in bulk disappear from storefront immediately.
-- [x] Dynamic category chips in `SalesSection` hide when no categories exist.
-- [x] Device image uploads compress safely without crashing Chrome.
-- [x] Full build verification passes (`bun run build`).
+- [x] Abandoned lead draft is recorded in `dbService` and Firestore when customer reaches payment step.
+- [x] Admin Panel has dedicated "Abandoned Checkout Leads" section with metric counters and search.
+- [x] WhatsApp 1-click modal opens pre-populated luxury marketing messages (VIP discount, stock hold, warranty card, stylist concierge).
+- [x] Fast2SMS dispatch delivers direct SMS without mentioning "payment failed".
+- [x] Order completion auto-converts pending leads to "converted" status.
+- [x] Full build verification passes (`npm run build`).
 - [x] Git commits pushed to `origin/main` for live Vercel deployment.
+
