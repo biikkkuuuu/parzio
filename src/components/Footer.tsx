@@ -145,43 +145,46 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
               </ul>
             </div>
 
-            {/* Column 4: Available On (One-by-one) */}
+            {/* Column 4: Available On (Compact Brand Pills) */}
             <div className="col-span-1">
               <h3 className="text-xs font-semibold text-white mb-1.5 sm:mb-2 uppercase tracking-wider">
                 Available On
               </h3>
-              <div className="flex flex-col gap-1.5 max-w-[130px]">
-                {/* Meesho Official Store Link */}
+              <div className="flex flex-col gap-1.5">
+                {/* Meesho */}
                 <a
                   href="https://www.meesho.com/Parzio?_ms=3.0.1"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-7 px-3 rounded-md bg-[#841a54] hover:bg-[#9e1f64] flex items-center justify-center font-bold text-white text-[11px] tracking-tight shadow-xs transition-all cursor-pointer"
-                  title="Visit Parzio Official Shop on Meesho"
+                  className="inline-flex items-center gap-2 py-1 px-2.5 rounded-md bg-[#22131c] hover:bg-[#321929] border border-[#f43397]/30 hover:border-[#f43397] transition-all text-gray-200 hover:text-white text-[11px] font-medium w-fit cursor-pointer"
+                  title="Shop Parzio on Meesho"
                 >
-                  meesho
+                  <span className="w-3.5 h-3.5 rounded-full bg-[#f43397] flex items-center justify-center text-[9px] font-black text-white leading-none shrink-0">m</span>
+                  <span>Meesho</span>
                 </a>
 
-                {/* Flipkart Badge */}
+                {/* Flipkart */}
                 <a
                   href="https://www.flipkart.com/search?q=Parzio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-7 px-3 rounded-md bg-[#2874f0] hover:bg-[#1a66e0] flex items-center justify-center font-bold text-[#ffe500] text-[11px] italic tracking-tight shadow-xs transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 py-1 px-2.5 rounded-md bg-[#0e1726] hover:bg-[#15233a] border border-[#2874f0]/30 hover:border-[#2874f0] transition-all text-gray-200 hover:text-white text-[11px] font-medium w-fit cursor-pointer"
                   title="Shop Parzio on Flipkart"
                 >
-                  Flipkart
+                  <span className="w-3.5 h-3.5 rounded bg-[#2874f0] flex items-center justify-center text-[10px] font-black italic text-[#ffe500] leading-none shrink-0">f</span>
+                  <span>Flipkart</span>
                 </a>
 
-                {/* Amazon Badge */}
+                {/* Amazon */}
                 <a
                   href="https://www.amazon.in/s?k=Parzio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-7 px-3 rounded-md bg-[#1f2124] hover:bg-[#2d3035] border border-gray-700 flex items-center justify-center font-bold text-white text-[11px] tracking-tight shadow-xs transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 py-1 px-2.5 rounded-md bg-[#191c20] hover:bg-[#262b32] border border-[#ff9900]/30 hover:border-[#ff9900] transition-all text-gray-200 hover:text-white text-[11px] font-medium w-fit cursor-pointer"
                   title="Shop Parzio on Amazon"
                 >
-                  amazon
+                  <span className="w-3.5 h-3.5 rounded bg-[#ff9900] flex items-center justify-center text-[9px] font-bold text-[#141414] leading-none shrink-0">a</span>
+                  <span>Amazon</span>
                 </a>
               </div>
             </div>
