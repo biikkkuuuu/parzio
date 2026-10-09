@@ -292,6 +292,13 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   - **GSTIN / State:** 20AABCP9918K1Z5 (Jharkhand State Code 20)
   - Applied across all printable Shipping Manifests, Tax Invoices ([`AdminInvoiceModal.tsx`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/components/admin/AdminInvoiceModal.tsx)), customer tracking badges, and storefront dispatch descriptions.
 
+- **Unified Luxury ProductCard & Video Hover Experience:**
+  - **Component (`src/components/ProductCard.tsx`):** Standardized product card across Home (`ProductVault`), Sale (`SalesSection`), Category (`CategoryPageView`), Search (`SearchView`), Wishlist (`WishlistView`), and Related (`ProductDetailView`).
+  - **Secondary Image Hover Switch:** Smooth 500ms crossfade to alternate piece photo (`hoverImage || images[1] || colorVariants[1].image`) with subtle zoom effect (`scale-105`).
+  - **Floating Quick-View "Eye" Icon:** Top-right circular white pill (`w-8 h-8 rounded-full bg-white/90 shadow-md`) that reveals on hover to trigger instant Quick View modal (`onOpenProductModal`).
+  - **Sliding "Add to Cart" Pill Button:** Sleek rounded button at the bottom of the image (`w-[90%] rounded-full bg-white/95 text-[#141414] hover:bg-[#141414] hover:text-[#fed488] shadow-lg`) with smooth slide-up hover animation (`translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100`).
+  - **Full Touch & Mobile Compatibility:** Preserves touch taps to open detail view and direct quick-add buttons on mobile viewports.
+
 ---
 
 ## 6. Verification Checklist
@@ -309,6 +316,8 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
 - [x] Multi-color/style variant creation in Admin with 1-click presets and custom color picker.
 - [x] Live color swatch picker on Product Details & Quick View modal with variant-specific image switching.
 - [x] Multi-variant cart management, checkout summary, and admin order fulfillment integration.
+- [x] Official Consignor and Fulfillment Center address set to Suggasar, Giridih, Jharkhand - 815316 on Shipping Labels & Invoices.
+- [x] Video hover effects added (Secondary image crossfade zoom, floating Quick-View eye button, and sliding "Add to cart" pill button).
 - [x] Full build verification passes (`npm run build`).
 - [x] Git commits pushed to `origin/main` for live Vercel deployment.
 

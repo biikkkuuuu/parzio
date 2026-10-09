@@ -14,6 +14,7 @@ import {
 import { Product, CategoryItem } from '../types';
 import { Footer } from './Footer';
 import { useCartStore } from '../store/useCartStore';
+import { ProductCard } from './ProductCard';
 
 interface CategoryPageViewProps {
   categoryName: string;
@@ -271,124 +272,16 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-            {filteredAndSortedProducts.map((product) => {
-              const isWishlisted = wishlistIds.includes(product.id);
-              const cartItem = cartItems.find((item) => item.product.id === product.id);
-              const qtyInCart = cartItem?.quantity || 0;
-              const discountTag = product.originalPrice
-                ? `${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF`
-                : '40% OFF';
-
-              return (
-                <div
-                  key={product.id}
-                  className="group flex flex-col justify-between bg-white rounded-xl border border-[#eee7dc] hover:border-[#9e7144]/50 shadow-2xs hover:shadow-md transition-all duration-300 p-2 sm:p-3"
-                >
-                  {/* Product Image */}
-                  <div className="relative aspect-square w-full rounded-lg overflow-hidden bg-[#faf7f2] mb-2.5">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      onClick={() => onSelectProduct(product)}
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 cursor-pointer"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src =
-                          'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=500&q=80';
-                      }}
-                    />
-
-                    {/* Wishlist Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleWishlist(product.id);
-                      }}
-                      className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-white/85 hover:bg-white text-gray-600 hover:text-[#9e7144] transition-all cursor-pointer shadow-xs"
-                      title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                    >
-                      <Heart
-                        className={`w-3.5 h-3.5 transition-colors ${
-                          isWishlisted ? 'fill-[#e53e3e] text-[#e53e3e]' : 'text-gray-600'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Title & Pricing */}
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3
-                        onClick={() => onSelectProduct(product)}
-                        className="font-sans text-xs sm:text-[13px] font-medium text-[#1a1714] line-clamp-1 hover:text-[#9e7144] cursor-pointer transition-colors leading-snug mb-1"
-                        title={product.name}
-                      >
-                        {product.name}
-                      </h3>
-
-                      {/* Price Row: ₹299  ~~₹499~~  40% OFF */}
-                      <div className="flex items-center gap-1.5 mb-2.5">
-                        <span className="text-xs sm:text-sm font-bold text-[#1a1714]">
-                          ₹{product.price}
-                        </span>
-                        {product.originalPrice && (
-                          <span className="text-[11px] text-gray-400 line-through">
-                            ₹{product.originalPrice}
-                          </span>
-                        )}
-                        <span className="bg-[#9e7144] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-xs">
-                          {discountTag}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Quantity Selector / Add to Cart Button */}
-                    {qtyInCart > 0 ? (
-                      <div className="w-full bg-[#9e7144] text-white py-1.5 px-2 rounded-md flex items-center justify-between shadow-xs">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateQuantity(product.id, -1);
-                          }}
-                          className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 text-white font-bold transition-colors cursor-pointer active:scale-90"
-                          title="Decrease quantity"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-xs font-bold text-white px-2">
-                          {qtyInCart}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateQuantity(product.id, 1);
-                          }}
-                          className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 text-white font-bold transition-colors cursor-pointer active:scale-90"
-                          title="Increase quantity"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAddToCart(product);
-                        }}
-                        className="bg-[#9e7144] hover:bg-[#865d34] text-white text-xs font-semibold py-1.5 sm:py-2 rounded-md transition-colors w-full flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 shadow-xs"
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                        <span>Add to Bag</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {filteredAndSortedProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={onAddToCart}
+                onToggleWishlist={onToggleWishlist}
+                isWishlisted={wishlistIds.includes(product.id)}
+                onOpenProductModal={onSelectProduct}
+              />
+            ))}
           </div>
         )}
       </section>

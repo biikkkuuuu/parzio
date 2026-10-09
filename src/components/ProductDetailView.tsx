@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Product, ProductColorVariant } from '../types';
 import { dbService } from '../services/dbService';
+import { ProductCard } from './ProductCard';
 
 interface ProductDetailViewProps {
   product: Product;
@@ -544,60 +545,12 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             {finalRelated.map((rel) => (
-              <div
+              <ProductCard
                 key={rel.id}
-                className="bg-white border border-[#eae5dc] rounded-xl lg:rounded-2xl flex flex-col justify-between overflow-hidden shadow-xs hover:border-[#8c7138]/50 hover:shadow-md transition-all duration-200 group"
-              >
-                {/* 1:1 Compact Image */}
-                <div
-                  onClick={() => onSelectProduct(rel)}
-                  className="aspect-square w-full bg-[#f8f6f2] cursor-pointer relative overflow-hidden"
-                >
-                  <img
-                    src={rel.image}
-                    alt={rel.name}
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  <span className="absolute top-2 left-2 bg-[#141414] text-[#fed488] text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-xs">
-                    SAVE {rel.savePercent}%
-                  </span>
-                </div>
-
-                {/* Meta */}
-                <div className="p-3 lg:p-4 flex flex-col justify-between flex-1">
-                  <div>
-                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#8c7138] block leading-none mb-1 truncate">
-                      {rel.category} • 316L Steel
-                    </span>
-                    <h4
-                      onClick={() => onSelectProduct(rel)}
-                      className="text-xs sm:text-sm font-semibold text-[#141414] truncate cursor-pointer hover:text-[#8c7138] transition-colors leading-tight"
-                      title={rel.name}
-                    >
-                      {rel.name}
-                    </h4>
-
-                    <div className="flex items-center justify-between gap-1 mt-2 pt-2 border-t border-[#f4efea]">
-                      <span className="font-bold text-xs sm:text-sm lg:text-base text-[#141414]">
-                        ₹{rel.price}
-                      </span>
-                      <span className="text-[10px] sm:text-xs text-[#a3a3a3] line-through">
-                        ₹{rel.originalPrice.toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => onAddToCart(rel)}
-                    className="w-full mt-3 bg-[#9e7144] hover:bg-[#865d34] text-white py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer active:scale-95"
-                  >
-                    <ShoppingBag className="w-3.5 h-3.5" />
-                    <span>Add to Cart</span>
-                  </button>
-                </div>
-              </div>
+                product={rel}
+                onAddToCart={(p) => onAddToCart(p, 1)}
+                onOpenProductModal={onSelectProduct}
+              />
             ))}
           </div>
         </div>

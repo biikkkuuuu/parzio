@@ -1,13 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import {
   Heart,
-  ShoppingBag,
   Trash2,
   ArrowLeft,
-  Share2,
-  X
+  Share2
 } from 'lucide-react';
 import { Product } from '../types';
+import { ProductCard } from './ProductCard';
 
 interface WishlistViewProps {
   wishlistProducts: Product[];
@@ -188,76 +187,17 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
             {/* Product Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 mt-4">
               {filteredProducts.map((product) => (
-                <div
+                <ProductCard
                   key={product.id}
-                  className="bg-white border border-[#eae5dc] rounded-xl overflow-hidden flex flex-col justify-between group transition-shadow hover:shadow-sm"
-                >
-                  {/* Image Container */}
-                  <div
-                    onClick={() => onSelectProduct(product)}
-                    className="aspect-square w-full bg-[#faf8f5] relative cursor-pointer overflow-hidden"
-                  >
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-
-                    {/* Remove Icon */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRemoveFromWishlist(product.id);
-                      }}
-                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#747878] hover:text-rose-600 transition-colors shadow-xs cursor-pointer"
-                      title="Remove"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {/* Card Content matching Home page */}
-                  <div className="p-2.5 sm:p-3 flex flex-col justify-between flex-1">
-                    <div>
-                      <h3
-                        onClick={() => onSelectProduct(product)}
-                        className="font-sans text-xs sm:text-[13px] font-medium text-[#1a1714] line-clamp-1 hover:text-[#9e7144] cursor-pointer transition-colors leading-snug mb-1"
-                        title={product.name}
-                      >
-                        {product.name}
-                      </h3>
-
-                      {/* Price Row matching Home page */}
-                      <div className="flex items-center gap-1.5 mb-2.5">
-                        <span className="text-xs sm:text-sm font-bold text-[#1a1714]">
-                          ₹{product.price}
-                        </span>
-                        {product.originalPrice && (
-                          <span className="text-[11px] text-gray-400 line-through">
-                            ₹{product.originalPrice}
-                          </span>
-                        )}
-                        <span className="bg-[#9e7144] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-xs">
-                          {product.savePercent || 40}% OFF
-                        </span>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onAddToCart(product);
-                        onRemoveFromWishlist(product.id);
-                      }}
-                      className="w-full bg-[#9e7144] hover:bg-[#865d34] text-white py-1.5 sm:py-2 px-2 rounded-xs text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer active:scale-95"
-                    >
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Move to Bag</span>
-                    </button>
-                  </div>
-                </div>
+                  product={product}
+                  onAddToCart={(p) => {
+                    onAddToCart(p);
+                    onRemoveFromWishlist(p.id);
+                  }}
+                  onToggleWishlist={onRemoveFromWishlist}
+                  isWishlisted={true}
+                  onOpenProductModal={onSelectProduct}
+                />
               ))}
             </div>
           </>

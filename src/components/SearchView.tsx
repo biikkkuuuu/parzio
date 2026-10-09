@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ArrowLeft, X, ShoppingBag, Plus, Minus } from 'lucide-react';
+import { Search, ArrowLeft, X } from 'lucide-react';
 import { Product } from '../types';
-import { useCartStore } from '../store/useCartStore';
+import { ProductCard } from './ProductCard';
 
 interface SearchViewProps {
   products: Product[];
@@ -20,8 +20,6 @@ export const SearchView: React.FC<SearchViewProps> = ({
 }) => {
   const [query, setQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState('All');
-  const cartItems = useCartStore((state) => state.cartItems);
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -130,102 +128,14 @@ export const SearchView: React.FC<SearchViewProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-            {filteredProducts.map((product) => {
-              const cartItem = cartItems.find((item) => item.product.id === product.id);
-              const qtyInCart = cartItem?.quantity || 0;
-
-              return (
-              <div
+            {filteredProducts.map((product) => (
+              <ProductCard
                 key={product.id}
-                onClick={() => onSelectProduct(product)}
-                className="bg-white rounded-2xl border border-[#eae5dc] overflow-hidden flex flex-col cursor-pointer group hover:border-[#8c7138] hover:shadow-lg transition-all duration-200"
-              >
-                {/* Image */}
-                <div className="relative aspect-square overflow-hidden bg-[#faf8f5]">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                  />
-                  {product.badge && (
-                    <span className="absolute top-2 left-2 bg-[#141414]/90 backdrop-blur-xs text-[#fed488] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                      {product.badge}
-                    </span>
-                  )}
-                  {product.savePercent > 0 && (
-                    <span className="absolute top-2 right-2 bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                      -{product.savePercent}%
-                    </span>
-                  )}
-                </div>
-
-                {/* Details */}
-                <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#8c7138]">
-                      {product.category}
-                    </span>
-                    <h4 className="text-xs sm:text-sm font-bold text-[#141414] line-clamp-1 group-hover:text-[#8c7138] transition-colors">
-                      {product.name}
-                    </h4>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1">
-                    <div>
-                      <span className="text-sm sm:text-base font-extrabold text-[#141414]">
-                        ₹{product.price}
-                      </span>
-                      {product.originalPrice > product.price && (
-                        <span className="text-[11px] text-[#888] line-through ml-1.5">
-                          ₹{product.originalPrice}
-                        </span>
-                      )}
-                    </div>
-
-                    {qtyInCart > 0 ? (
-                      <div className="flex items-center gap-1 bg-[#141414] text-white px-2 py-1 rounded-full text-xs font-bold shadow-xs">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateQuantity(product.id, -1);
-                          }}
-                          className="w-5 h-5 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 active:scale-90"
-                          title="Decrease quantity"
-                        >
-                          <Minus className="w-2.5 h-2.5" />
-                        </button>
-                        <span className="text-[11px] font-bold px-1 text-[#fed488]">{qtyInCart}</span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateQuantity(product.id, 1);
-                          }}
-                          className="w-5 h-5 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 active:scale-90"
-                          title="Increase quantity"
-                        >
-                          <Plus className="w-2.5 h-2.5" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAddToCart(product);
-                        }}
-                        className="p-2 rounded-full bg-[#141414] hover:bg-[#8c7138] text-white transition-colors cursor-pointer active:scale-95 shadow-xs"
-                        title="Add to Bag"
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5 text-[#fed488]" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-              );
-            })}
+                product={product}
+                onAddToCart={onAddToCart}
+                onOpenProductModal={onSelectProduct}
+              />
+            ))}
           </div>
         )}
       </main>
