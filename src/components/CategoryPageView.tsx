@@ -1,7 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import {
   ArrowLeft,
-  Search
+  Search,
+  Droplets,
+  ShieldCheck,
+  RotateCcw,
+  Sparkles
 } from 'lucide-react';
 import { Product, CategoryItem } from '../types';
 import { Footer } from './Footer';
