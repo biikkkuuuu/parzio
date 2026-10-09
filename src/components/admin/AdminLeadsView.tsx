@@ -48,7 +48,7 @@ const TEMPLATES = [
     category: 'Urgency',
     badge: 'Low Stock',
     text: (name: string) =>
-      `Hi ${name || 'there'}! 💎 Our Mumbai atelier team has reserved your selected PARZIO anti-tarnish waterproof pieces for the next 4 hours before vault restocking. Would you like us to priority-dispatch your order with our signature complimentary velvet travel pouch?`
+      `Hi ${name || 'there'}! 💎 Our PARZIO atelier team has reserved your selected PARZIO anti-tarnish waterproof pieces for the next 4 hours before vault restocking. Would you like us to priority-dispatch your order with our signature complimentary velvet travel pouch?`
   },
   {
     id: 'free-warranty',

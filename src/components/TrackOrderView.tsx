@@ -185,7 +185,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
               <div>
                 <h4 className="text-xs font-bold text-[#141414]">Courier Delivery</h4>
                 <p className="text-[11px] text-[#747878]">
-                  {hasAwb ? selectedOrder.courier : 'Allocation on Dispatch (Mumbai Atelier)'}
+                  {hasAwb ? selectedOrder.courier : 'Allocation on Dispatch (PARZIO Atelier)'}
                 </p>
               </div>
             </div>

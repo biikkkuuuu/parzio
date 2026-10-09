@@ -286,7 +286,11 @@ PARZIO is a demi-fine luxury e-commerce web platform engineered with **React 19*
   - **Admin Shade Creator (`AdminProductModal.tsx`):** Added 8 luxury 1-click preset jewelry shades ("18K Gold", "Sterling Silver", "Rose Gold", "Dual Tone", "Emerald Green", "Ruby Red", "Jet Black", "Pearl White") alongside a custom shade builder with HTML5 color picker `<input type="color">` and optional variant-specific image upload via `DeviceImageUpload`.
   - **Storefront Selection (`ProductDetailView.tsx` & `ProductModal.tsx`):** Live interactive color swatches with colored dots, active highlight rings, auto-switching main gallery images when selecting a shade with an uploaded image, and carrying chosen variant info to cart and buy-now flows.
   - **Multi-Line Item Cart & Drawer (`useCartStore.ts`, `CartView.tsx`, `CartDrawer.tsx`):** Independent line item tracking by `(productId, selectedColor)` so customers can add different shades of the same jewelry item, with shade pill indicators and color dots.
-  - **Checkout & Fulfillment Pipeline (`CheckoutView.tsx`, `AdminOrdersView.tsx`, `AdminInvoiceModal.tsx`):** Selected variant persisted to Firestore orders (`items[].selectedColor`), displayed on Admin order lists for packing staff, and printed on official GST invoices.
+- **Official Consignor & Fulfillment Hub Address:**
+  - **Fulfillment Center:** PARZIO FULFILLMENT CENTER
+  - **Official Address:** Suggasar, Post: Ranikhawa, PS: Pachamba, Dist: Giridih, Jharkhand - 815316
+  - **GSTIN / State:** 20AABCP9918K1Z5 (Jharkhand State Code 20)
+  - Applied across all printable Shipping Manifests, Tax Invoices ([`AdminInvoiceModal.tsx`](file:///c:/Users/Vikash%20Rana/Downloads/parzioo%20(3)/src/components/admin/AdminInvoiceModal.tsx)), customer tracking badges, and storefront dispatch descriptions.
 
 ---
 

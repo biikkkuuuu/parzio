@@ -58,7 +58,7 @@ export const AdminInvoiceModal: React.FC<AdminInvoiceModalProps> = ({ order, onC
                 </span>
               </div>
               <p className="text-[10px] text-[#747878] mt-1 font-mono">
-                AWB #: BLUEDART-{order.id.replace('PARZIO-', '')}-AIR • ROUTE: BOM/DEL-SURF
+                AWB #: {order.trackingNumber || `${order.courier ? order.courier.toUpperCase().replace(/\s+/g, '-') : 'EXP'}-${order.id.replace('PARZIO-', '')}`} • ORIGIN: IXR/GIRIDIH-815316
               </p>
             </div>
 
@@ -92,9 +92,10 @@ export const AdminInvoiceModal: React.FC<AdminInvoiceModalProps> = ({ order, onC
                 PARZIO FULFILLMENT CENTER
               </p>
               <p className="text-[#444748] mt-0.5 leading-relaxed">
-                Unit 402, Lotus Grandeur, Veera Desai Rd,<br />
-                Andheri West, Mumbai, MH - 400053<br />
-                GSTIN: 27AABCP9918K1Z3 • Phone: +91 98765 43210
+                Suggasar, Post: Ranikhawa,<br />
+                PS: Pachamba, Dist: Giridih,<br />
+                Jharkhand - 815316<br />
+                GSTIN: 20AABCP9918K1Z5 • Phone: +91 98765 43210
               </p>
             </div>
 
@@ -108,7 +109,7 @@ export const AdminInvoiceModal: React.FC<AdminInvoiceModalProps> = ({ order, onC
               <p className="text-[#444748] mt-0.5 leading-relaxed">
                 {order.location}<br />
                 Pin Code: <strong className="text-[#141414]">{order.pincode}</strong><br />
-                Phone: Verified WhatsApp (+91 ••••• ••••)
+                Phone: {order.phone ? `+91 ${order.phone.replace(/\D/g, '').slice(-10)}` : 'Verified Customer'}
               </p>
             </div>
           </div>

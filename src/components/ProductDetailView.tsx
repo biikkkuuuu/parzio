@@ -518,7 +518,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 </button>
                 {openAccordion === 'shipping' && (
                   <div className="px-4 lg:px-5 pb-4 text-xs sm:text-sm text-[#747878] leading-relaxed space-y-1.5 animate-fadeIn">
-                    <p>• <strong>Dispatch:</strong> Packed & shipped within 24 working hours from Mumbai.</p>
+                    <p>• <strong>Dispatch:</strong> Packed & shipped within 24 working hours from PARZIO Atelier.</p>
                     <p>• <strong>Transit:</strong> Express insured courier delivery (2–4 business days with live doorstep tracking).</p>
                     <p>• <strong>Exchanges:</strong> 7-day hassle-free doorstep pickup exchange service.</p>
                   </div>
