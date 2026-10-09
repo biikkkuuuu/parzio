@@ -127,17 +127,37 @@ export const AdminInvoiceModal: React.FC<AdminInvoiceModalProps> = ({ order, onC
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#eae5dc]">
-                <tr>
-                  <td className="py-2.5 font-medium text-[#141414]">
-                    {order.productName}
-                    <div className="text-[10px] text-[#747878]">18K Anti-Tarnish Demi-Fine</div>
-                  </td>
-                  <td className="py-2.5 font-mono text-[#8c7138]">{order.sku}</td>
-                  <td className="py-2.5 font-mono text-[#747878]">71171990</td>
-                  <td className="py-2.5 text-center font-bold">{order.quantity}</td>
-                  <td className="py-2.5 text-right">₹{Math.round(order.amount / 1.03)}</td>
-                  <td className="py-2.5 text-right font-bold text-[#141414]">₹{order.amount}</td>
-                </tr>
+                {order.items && order.items.length > 0 ? (
+                  order.items.map((item: any, idx: number) => (
+                    <tr key={idx}>
+                      <td className="py-2.5 font-medium text-[#141414]">
+                        {item.name}
+                        {item.selectedColor ? (
+                          <div className="text-[10px] text-[#8c7138] font-bold">Shade: {item.selectedColor}</div>
+                        ) : (
+                          <div className="text-[10px] text-[#747878]">{item.material || '18K Anti-Tarnish Demi-Fine'}</div>
+                        )}
+                      </td>
+                      <td className="py-2.5 font-mono text-[#8c7138]">{item.sku || order.sku}</td>
+                      <td className="py-2.5 font-mono text-[#747878]">71171990</td>
+                      <td className="py-2.5 text-center font-bold">{item.quantity}</td>
+                      <td className="py-2.5 text-right">₹{Math.round(((item.price || (order.amount / (order.quantity || 1))) * item.quantity) / 1.03)}</td>
+                      <td className="py-2.5 text-right font-bold text-[#141414]">₹{(item.price || (order.amount / (order.quantity || 1))) * item.quantity}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="py-2.5 font-medium text-[#141414]">
+                      {order.productName}
+                      <div className="text-[10px] text-[#747878]">18K Anti-Tarnish Demi-Fine</div>
+                    </td>
+                    <td className="py-2.5 font-mono text-[#8c7138]">{order.sku}</td>
+                    <td className="py-2.5 font-mono text-[#747878]">71171990</td>
+                    <td className="py-2.5 text-center font-bold">{order.quantity}</td>
+                    <td className="py-2.5 text-right">₹{Math.round(order.amount / 1.03)}</td>
+                    <td className="py-2.5 text-right font-bold text-[#141414]">₹{order.amount}</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

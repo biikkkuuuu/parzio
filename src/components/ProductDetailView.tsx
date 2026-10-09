@@ -16,14 +16,14 @@ import {
   ChevronDown,
   Sparkles
 } from 'lucide-react';
-import { Product } from '../types';
+import { Product, ProductColorVariant } from '../types';
 import { dbService } from '../services/dbService';
 
 interface ProductDetailViewProps {
   product: Product;
   onBack: () => void;
-  onAddToCart: (product: Product, quantity?: number) => void;
-  onBuyNow: (product: Product, quantity?: number) => void;
+  onAddToCart: (product: Product, quantity?: number, selectedColor?: string, selectedColorImage?: string) => void;
+  onBuyNow: (product: Product, quantity?: number, selectedColor?: string, selectedColorImage?: string) => void;
   onToggleWishlist: (productId: string) => void;
   isWishlisted: boolean;
   onSelectProduct: (product: Product) => void;
@@ -39,6 +39,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   onSelectProduct
 }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedVariant, setSelectedVariant] = useState<ProductColorVariant | null>(() => product.colorVariants?.[0] || null);
   const [quantity, setQuantity] = useState(1);
   const [copiedLink, setCopiedLink] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
@@ -48,6 +49,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     setSelectedImageIndex(0);
+    setSelectedVariant(product.colorVariants?.[0] || null);
     setQuantity(1);
     setOpenAccordion(null);
   }, [product.id]);
@@ -329,6 +331,53 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               </div>
             </div>
 
+            {/* Color / Shade Variant Selector */}
+            {product.colorVariants && product.colorVariants.length > 0 && (
+              <div className="p-3.5 sm:p-4 rounded-xl lg:rounded-2xl bg-white border border-[#eae5dc] shadow-2xs space-y-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-[#141414] uppercase tracking-wider flex items-center gap-1.5">
+                    <span>Select Shade / Finish:</span>
+                    <span className="text-[#8c7138] font-extrabold">{selectedVariant?.name || product.colorVariants[0].name}</span>
+                  </span>
+                  <span className="text-[11px] text-[#747878] font-medium">
+                    {product.colorVariants.length} Finishes Available
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {product.colorVariants.map((v, i) => {
+                    const isSelected = selectedVariant?.name === v.name || (!selectedVariant && i === 0);
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVariant(v);
+                          if (v.image) {
+                            const idx = galleryImages.indexOf(v.image);
+                            if (idx !== -1) {
+                              setSelectedImageIndex(idx);
+                            }
+                          }
+                        }}
+                        className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${
+                          isSelected
+                            ? 'bg-[#141414] text-white border-[#141414] shadow-xs scale-102 ring-2 ring-[#8c7138]/40'
+                            : 'bg-[#faf8f5] text-[#141414] hover:bg-[#eae5dc] border-[#eae5dc]'
+                        }`}
+                      >
+                        <span
+                          className="w-3.5 h-3.5 rounded-full border border-black/20 shrink-0 shadow-2xs"
+                          style={{ backgroundColor: v.colorCode || '#D4AF37' }}
+                        />
+                        <span>{v.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Compact Price & Quantity Box */}
             <div className="p-3.5 sm:p-4 lg:p-5 rounded-xl lg:rounded-2xl bg-white border border-[#eae5dc] flex items-center justify-between gap-3 shadow-xs">
               <div>
@@ -377,7 +426,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             <div className="grid grid-cols-2 gap-3 lg:gap-4">
               <button
                 type="button"
-                onClick={() => onAddToCart(product, quantity)}
+                onClick={() => onAddToCart(product, quantity, selectedVariant?.name, selectedVariant?.image)}
                 className="py-3 lg:py-3.5 px-4 sm:px-6 rounded-xl bg-[#9e7144] hover:bg-[#865d34] text-white transition-all font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm cursor-pointer active:scale-98"
               >
                 <ShoppingBag className="w-4 h-4" />
@@ -386,7 +435,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
               <button
                 type="button"
-                onClick={() => onBuyNow(product, quantity)}
+                onClick={() => onBuyNow(product, quantity, selectedVariant?.name, selectedVariant?.image)}
                 className="py-3 lg:py-3.5 px-4 sm:px-6 rounded-xl bg-[#141414] hover:bg-neutral-800 text-white transition-all font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-md cursor-pointer active:scale-98"
               >
                 <Sparkles className="w-4 h-4 fill-[#fed488] text-[#fed488]" />
@@ -566,7 +615,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
         <div className="flex items-center gap-1.5 flex-1 max-w-[240px]">
           <button
             type="button"
-            onClick={() => onAddToCart(product, quantity)}
+            onClick={() => onAddToCart(product, quantity, selectedVariant?.name, selectedVariant?.image)}
             className="flex-1 py-2 rounded-md bg-[#9e7144] hover:bg-[#865d34] text-white font-semibold text-xs flex items-center justify-center gap-1 shadow-xs active:scale-95 cursor-pointer"
           >
             <ShoppingBag className="w-3.5 h-3.5" />
@@ -575,7 +624,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
           <button
             type="button"
-            onClick={() => onBuyNow(product, quantity)}
+            onClick={() => onBuyNow(product, quantity, selectedVariant?.name, selectedVariant?.image)}
             className="flex-1 py-2 rounded-md bg-[#141414] text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1 shadow-xs active:scale-95 cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5 fill-[#fed488] text-[#fed488]" />

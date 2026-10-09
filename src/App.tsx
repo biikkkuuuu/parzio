@@ -1005,26 +1005,26 @@ export default function App() {
   }, [products, activeCategory, searchQuery]);
 
   // Cart Handlers
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (product: Product, quantity: number = 1, selectedColor?: string, selectedColorImage?: string) => {
     setCartItems((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
+      const existing = prev.find((item) => item.product.id === product.id && item.selectedColor === selectedColor);
       if (existing) {
         return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+          item.product.id === product.id && item.selectedColor === selectedColor
+            ? { ...item, quantity: item.quantity + (quantity || 1) }
             : item
         );
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...prev, { product, quantity: quantity || 1, selectedColor, selectedColorImage }];
     });
-    showToast(`Added ${product.name} to bag (₹${product.price})!`);
+    showToast(`Added ${product.name}${selectedColor ? ` (${selectedColor})` : ''} to bag!`);
   };
 
-  const handleUpdateQuantity = (productId: string, delta: number) => {
+  const handleUpdateQuantity = (productId: string, delta: number, selectedColor?: string) => {
     setCartItems((prev) => {
       return prev
         .map((item) => {
-          if (item.product.id === productId) {
+          if (item.product.id === productId && (!selectedColor || item.selectedColor === selectedColor)) {
             const newQty = item.quantity + delta;
             return newQty > 0 ? { ...item, quantity: newQty } : null;
           }
@@ -1034,8 +1034,8 @@ export default function App() {
     });
   };
 
-  const handleRemoveFromCart = (productId: string) => {
-    setCartItems((prev) => prev.filter((item) => item.product.id !== productId));
+  const handleRemoveFromCart = (productId: string, selectedColor?: string) => {
+    setCartItems((prev) => prev.filter((item) => !(item.product.id === productId && (!selectedColor || item.selectedColor === selectedColor))));
   };
 
   const handleMoveToWishlist = (productId: string) => {
@@ -1328,16 +1328,11 @@ export default function App() {
           <ProductDetailView
             product={selectedProduct}
             onBack={handleCloseProduct}
-            onAddToCart={(p, qty) => {
-              for (let i = 0; i < (qty || 1); i++) {
-                handleAddToCart(p);
-              }
-              showToast(`Added ${qty || 1} x ${p.name} to your bag!`);
+            onAddToCart={(p, qty, color, colorImg) => {
+              handleAddToCart(p, qty || 1, color, colorImg);
             }}
-            onBuyNow={(p, qty) => {
-              for (let i = 0; i < (qty || 1); i++) {
-                handleAddToCart(p);
-              }
+            onBuyNow={(p, qty, color, colorImg) => {
+              handleAddToCart(p, qty || 1, color, colorImg);
               setIsCartOpen(false);
               handleOpenCheckout();
             }}

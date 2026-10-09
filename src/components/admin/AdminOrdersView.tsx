@@ -434,9 +434,21 @@ export const AdminOrdersView: React.FC<AdminOrdersViewProps> = ({
                           </span>
                         </div>
 
-                        <p className="font-display font-medium text-sm text-[#141414]">
-                          {order.productName} (Qty: {order.quantity})
-                        </p>
+                        <div className="space-y-0.5">
+                          <p className="font-display font-medium text-sm text-[#141414]">
+                            {order.productName} (Qty: {order.quantity})
+                          </p>
+                          {order.items && order.items.length > 0 && order.items.some((it: any) => it.selectedColor) && (
+                            <div className="flex flex-wrap gap-1.5 pt-0.5">
+                              {order.items.map((it: any, idx: number) => it.selectedColor ? (
+                                <span key={idx} className="inline-flex items-center gap-1 text-[10px] font-bold bg-[#faf8f5] text-[#8c7138] border border-[#eae5dc] px-2 py-0.5 rounded-md">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#8c7138]" />
+                                  <span>{it.name || 'Item'}: {it.selectedColor}</span>
+                                </span>
+                              ) : null)}
+                            </div>
+                          )}
+                        </div>
 
                         <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#747878]">
                           <span className="font-mono text-[#8c7138] font-bold">{order.sku}</span>

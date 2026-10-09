@@ -176,15 +176,15 @@ export const CartView: React.FC<CartViewProps> = ({
 
               {/* Items Card List */}
               <div className="space-y-4">
-                {cartItems.map(({ product, quantity }) => (
+                {cartItems.map(({ product, quantity, selectedColor, selectedColorImage }, idx) => (
                   <div
-                    key={`${product.id}`}
+                    key={`${product.id}-${selectedColor || idx}`}
                     className="flex flex-col sm:flex-row gap-4 p-4 sm:p-5 rounded-2xl bg-white border border-[#eae5dc] shadow-xs hover:border-[#8c7138]/30 transition-all"
                   >
                     {/* Thumbnail */}
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-[#faf8f5] border border-[#eae5dc] flex-shrink-0 relative">
                       <img
-                        src={product.image || (product as any).images?.[0] || ''}
+                        src={selectedColorImage || product.image || (product as any).images?.[0] || ''}
                         alt={product.name}
                         className="w-full h-full object-cover"
                       />
@@ -198,7 +198,19 @@ export const CartView: React.FC<CartViewProps> = ({
                             <h3 className="font-bold text-sm sm:text-base text-[#141414] leading-snug">
                               {product.name}
                             </h3>
-                            <div className="flex items-center gap-2 mt-1">
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                              {selectedColor && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#141414] bg-[#faf8f5] border border-[#eae5dc] px-2 py-0.5 rounded-full shadow-2xs">
+                                  <span
+                                    className="w-2 h-2 rounded-full border border-black/20 shrink-0"
+                                    style={{
+                                      backgroundColor:
+                                        product.colorVariants?.find((v) => v.name === selectedColor)?.colorCode || '#D4AF37'
+                                    }}
+                                  />
+                                  <span>Shade: {selectedColor}</span>
+                                </span>
+                              )}
                               <span className="text-[10px] font-bold text-[#8c7138] bg-[#fed488]/30 px-2 py-0.5 rounded">
                                 18K Anti-Tarnish
                               </span>

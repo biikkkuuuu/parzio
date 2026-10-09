@@ -169,13 +169,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 </button>
               </div>
             ) : (
-              cartItems.map(({ product, quantity }) => (
+              cartItems.map(({ product, quantity, selectedColor, selectedColorImage }, idx) => (
                 <div
-                  key={product.id}
+                  key={`${product.id}-${selectedColor || idx}`}
                   className="flex gap-3 p-3 rounded-2xl bg-white border border-[#eae5dc] shadow-xs"
                 >
                   <img
-                    src={product.image}
+                    src={selectedColorImage || product.image}
                     alt={product.name}
                     className="w-16 h-16 object-cover rounded-xl bg-[#f8f6f2] border border-[#eae5dc]"
                   />
@@ -185,9 +185,23 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         <h4 className="font-sans text-sm font-semibold text-[#141414] leading-snug line-clamp-1">
                           {product.name}
                         </h4>
-                        <span className="text-[10px] text-[#8c7138] font-bold">
-                          18K Anti-Tarnish Finish
-                        </span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          {selectedColor && (
+                            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-[#141414] bg-[#faf8f5] border border-[#eae5dc] px-1.5 py-0.5 rounded-full">
+                              <span
+                                className="w-2 h-2 rounded-full border border-black/20 shrink-0"
+                                style={{
+                                  backgroundColor:
+                                    product.colorVariants?.find((v) => v.name === selectedColor)?.colorCode || '#D4AF37'
+                                }}
+                              />
+                              <span>{selectedColor}</span>
+                            </span>
+                          )}
+                          <span className="text-[10px] text-[#8c7138] font-bold">
+                            18K Anti-Tarnish
+                          </span>
+                        </div>
                       </div>
                       <div className="flex items-center gap-1">
                         {onMoveToWishlist && (

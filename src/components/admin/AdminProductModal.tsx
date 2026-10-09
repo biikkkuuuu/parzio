@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Product } from '../../types';
+import { Product, ProductColorVariant } from '../../types';
 import { DeviceImageUpload } from './DeviceImageUpload';
-import { X, Sparkles, Image, Tag, Droplet, ShieldCheck, DollarSign, Package, Plus, Check, ArrowLeft, Trash2, Layers } from 'lucide-react';
+import { X, Sparkles, Image, Tag, Droplet, ShieldCheck, DollarSign, Package, Plus, Check, ArrowLeft, Trash2, Layers, Palette } from 'lucide-react';
 
 interface AdminProductModalProps {
   isOpen: boolean;
@@ -19,6 +19,17 @@ const DEFAULT_CATEGORIES = [
   'Rings',
   'Bracelets',
   'Anklets'
+];
+
+const PRESET_VARIANTS: { name: string; colorCode: string }[] = [
+  { name: '18K Yellow Gold', colorCode: '#D4AF37' },
+  { name: 'Sterling Silver', colorCode: '#C0C0C0' },
+  { name: 'Rose Gold', colorCode: '#B76E79' },
+  { name: 'Dual Tone (Gold & Silver)', colorCode: '#E5C158' },
+  { name: 'Jet Black', colorCode: '#1A1A1A' },
+  { name: 'Emerald Green', colorCode: '#50C878' },
+  { name: 'Ruby Red', colorCode: '#E0115F' },
+  { name: 'Pearl White', colorCode: '#F8F8FF' }
 ];
 
 export const AdminProductModal: React.FC<AdminProductModalProps> = ({
@@ -42,6 +53,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [sku, setSku] = useState('PRZ-DROP-01');
   const [image, setImage] = useState('');
   const [extraImages, setExtraImages] = useState<string[]>([]);
+  const [colorVariants, setColorVariants] = useState<ProductColorVariant[]>([]);
   const [stock, setStock] = useState('50');
   const [material, setMaterial] = useState('316L Surgical Stainless Steel • 18K Real Gold PVD Plating');
   const [isWaterproof, setIsWaterproof] = useState(true);
@@ -79,6 +91,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
         ? initialProduct.images.filter((img) => img !== initialProduct.image)
         : (initialProduct.hoverImage && initialProduct.hoverImage !== initialProduct.image ? [initialProduct.hoverImage] : []);
       setExtraImages(otherImages);
+      setColorVariants(initialProduct.colorVariants || []);
       setStock(String(initialProduct.stock ?? 45));
       setMaterial(initialProduct.material);
       setIsWaterproof(initialProduct.isWaterproof);
@@ -94,6 +107,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       setSku(`PRZ-${Date.now().toString().slice(-5)}`);
       setImage('');
       setExtraImages([]);
+      setColorVariants([]);
       setStock('50');
       setMaterial('316L Surgical Stainless Steel • 18K Real Gold PVD Plating');
       setIsWaterproof(true);
@@ -109,6 +123,29 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const numOrig = Number(originalPrice) || 1499;
   const savePercent = numOrig > numPrice ? Math.round(((numOrig - numPrice) / numOrig) * 100) : 0;
 
+  const handleAddPresetVariant = (preset: { name: string; colorCode: string }) => {
+    if (colorVariants.some(v => v.name.toLowerCase() === preset.name.toLowerCase())) {
+      return;
+    }
+    setColorVariants(prev => [...prev, { name: preset.name, colorCode: preset.colorCode, image: '' }]);
+  };
+
+  const handleAddCustomVariant = () => {
+    setColorVariants(prev => [...prev, { name: `Shade #${prev.length + 1}`, colorCode: '#D4AF37', image: '' }]);
+  };
+
+  const handleRemoveVariant = (index: number) => {
+    setColorVariants(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateVariant = (index: number, field: keyof ProductColorVariant, value: any) => {
+    setColorVariants(prev => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: value };
+      return copy;
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
@@ -120,6 +157,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
     const validExtraImages = extraImages.filter((img) => Boolean(img && img.trim()));
     const allProductImages = [mainImg, ...validExtraImages];
     const effectiveCategory = category.trim() || defaultCategory || (allCategories[0] || 'General');
+    const validVariants = colorVariants.filter((v) => v.name && v.name.trim().length > 0);
 
     const savedProduct: Product = {
       id: initialProduct?.id || `prod-custom-${Date.now()}`,
@@ -130,7 +168,8 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       savePercent,
       rating: initialProduct?.rating || 4.9,
       reviewsCount: initialProduct?.reviewsCount || 128,
-      colorways: initialProduct?.colorways || 1,
+      colorways: validVariants.length > 0 ? validVariants.length : (initialProduct?.colorways || 1),
+      colorVariants: validVariants.length > 0 ? validVariants : undefined,
       image: mainImg,
       images: allProductImages,
       hoverImage: validExtraImages[0] || initialProduct?.hoverImage || mainImg,
@@ -435,6 +474,145 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                       <ShieldCheck className="w-4 h-4 text-[#8c7138]" /> Lifetime Anti-Tarnish
                     </span>
                   </label>
+                </div>
+              </div>
+
+              {/* Color & Shade Variants Card */}
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#eae5dc] shadow-xs space-y-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#141414] uppercase tracking-wider flex items-center gap-2">
+                      <Palette className="w-4 h-4 text-[#8c7138]" />
+                      <span>Multiple Color / Finish Variants</span>
+                    </h3>
+                    <p className="text-xs text-[#747878] mt-1">
+                      Add different colorways (e.g. Gold, Silver, Rose Gold, Dual Tone). Customers can pick their preferred shade.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-bold text-[#8c7138] bg-[#faf8f5] px-2.5 py-0.5 rounded-full border border-[#eae5dc]">
+                    {colorVariants.length} Shades
+                  </span>
+                </div>
+
+                {/* 1-Click Quick Preset Color Pills */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold text-[#747878] uppercase tracking-wider block">
+                    Quick Add Presets:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {PRESET_VARIANTS.map((preset) => {
+                      const isAdded = colorVariants.some(
+                        (v) => v.name.toLowerCase() === preset.name.toLowerCase()
+                      );
+                      return (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          onClick={() => handleAddPresetVariant(preset)}
+                          disabled={isAdded}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${
+                            isAdded
+                              ? 'bg-neutral-100 text-neutral-400 border-neutral-200 cursor-not-allowed'
+                              : 'bg-[#faf8f5] text-[#141414] hover:bg-[#8c7138] hover:text-white border-[#eae5dc]'
+                          }`}
+                        >
+                          <span
+                            className="w-3 h-3 rounded-full border border-black/20 shrink-0"
+                            style={{ backgroundColor: preset.colorCode }}
+                          />
+                          <span>{preset.name}</span>
+                          {!isAdded && <Plus className="w-3 h-3 ml-0.5" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Variants List */}
+                <div className="space-y-3 pt-2 border-t border-[#eae5dc]">
+                  {colorVariants.length === 0 ? (
+                    <div className="p-4 rounded-2xl bg-[#faf8f5] border border-dashed border-[#dfd7ca] text-center space-y-2">
+                      <p className="text-xs font-medium text-[#747878]">
+                        Single color product by default. Click any preset above or add a custom variant.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleAddCustomVariant}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8c7138] hover:underline cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>+ Add Custom Color Variant</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {colorVariants.map((v, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 bg-[#faf8f5] rounded-2xl border border-[#eae5dc] space-y-3"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 flex-1">
+                              {/* Color Swatch Picker */}
+                              <div className="relative">
+                                <input
+                                  type="color"
+                                  value={v.colorCode || '#D4AF37'}
+                                  onChange={(e) => handleUpdateVariant(idx, 'colorCode', e.target.value)}
+                                  className="w-7 h-7 rounded-full cursor-pointer border border-[#eae5dc] p-0 overflow-hidden bg-transparent shrink-0"
+                                  title="Pick Color Swatch Hex"
+                                />
+                              </div>
+
+                              {/* Variant Name Input */}
+                              <input
+                                type="text"
+                                value={v.name}
+                                onChange={(e) => handleUpdateVariant(idx, 'name', e.target.value)}
+                                placeholder="e.g. 18K Yellow Gold, Rose Gold..."
+                                className="flex-1 bg-white border border-[#eae5dc] rounded-xl px-3 py-1.5 text-xs font-semibold text-[#141414] focus:outline-none focus:border-[#8c7138]"
+                              />
+                            </div>
+
+                            {/* Remove Variant */}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveVariant(idx)}
+                              className="text-xs font-semibold text-rose-500 hover:text-rose-700 p-1 cursor-pointer"
+                              title="Delete variant"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* Variant Photo (Optional photo specific to this color) */}
+                          <div className="pt-2 border-t border-[#eae5dc]/80">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#747878] block mb-1">
+                              Specific Photo for {v.name || `Shade #${idx + 1}`} (Optional):
+                            </span>
+                            <DeviceImageUpload
+                              label=""
+                              value={v.image || ''}
+                              onChange={(val) => handleUpdateVariant(idx, 'image', val)}
+                              recommendedSize="1:1 Square • 800 × 800px"
+                              aspectRatio="square"
+                            />
+                          </div>
+                        </div>
+                      ))}
+
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={handleAddCustomVariant}
+                          className="text-xs font-bold text-[#8c7138] hover:text-[#141414] inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>+ Add Another Color Variant</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

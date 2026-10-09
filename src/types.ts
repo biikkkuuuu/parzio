@@ -5,6 +5,13 @@ export interface CategoryItem {
   image: string;
 }
 
+export interface ProductColorVariant {
+  name: string; // e.g. "18K Gold", "Sterling Silver", "Rose Gold", "Dual Tone", "Emerald Green", "Jet Black"
+  colorCode?: string; // Hex e.g. "#D4AF37", "#C0C0C0", "#B76E79", "#1A1A1A"
+  image?: string; // Variant-specific photo
+  stock?: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -15,6 +22,8 @@ export interface Product {
   rating: number;
   reviewsCount: number;
   colorways: number;
+  colorVariants?: ProductColorVariant[];
+  selectedVariant?: string;
   image: string;
   images?: string[];
   hoverImage?: string;
@@ -142,6 +151,8 @@ export type AdminTab =
 export interface CartItem {
   product: Product;
   quantity: number;
+  selectedColor?: string;
+  selectedColorImage?: string;
 }
 
 export interface Review {

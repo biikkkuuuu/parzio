@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Product } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Product, ProductColorVariant } from '../types';
 import { X, Star, ShieldCheck, Droplet, ShoppingBag, Truck, RotateCcw, CheckCircle2, MapPin, AlertTriangle } from 'lucide-react';
 import { HIGH_RISK_PINCODES } from '../data/adminData';
 
 interface ProductModalProps {
   product: Product | null;
   onClose: () => void;
-  onAddToCart: (product: Product) => void;
+  onAddToCart: (product: Product, quantity?: number, selectedColor?: string, selectedColorImage?: string) => void;
 }
 
 export const ProductModal: React.FC<ProductModalProps> = ({
@@ -14,7 +14,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   onClose,
   onAddToCart
 }) => {
+  const [selectedVariant, setSelectedVariant] = useState<ProductColorVariant | null>(null);
   const [pincode, setPincode] = useState('');
+
+  useEffect(() => {
+    if (product) {
+      setSelectedVariant(product.colorVariants?.[0] || null);
+    }
+  }, [product]);
   const [deliveryResult, setDeliveryResult] = useState<{
     checked: boolean;
     valid: boolean;
@@ -81,7 +88,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             SAVE {product.savePercent}%
           </span>
           <img
-            src={product.image}
+            src={selectedVariant?.image || product.image}
             alt={product.name}
             className="w-full max-h-72 object-contain mix-blend-multiply drop-shadow-xs"
             onError={(e) => {
@@ -109,7 +116,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             </h3>
 
             <p className="text-xs text-[#747878] mt-0.5">
-              SKU: {product.sku} • {product.colorways} Colorways
+              SKU: {product.sku} • {product.colorVariants?.length || product.colorways} Colorways
             </p>
 
             {/* Price Row */}
@@ -124,6 +131,45 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 SAVE {product.savePercent}%
               </span>
             </div>
+
+            {/* Color / Shade Variant Selector */}
+            {product.colorVariants && product.colorVariants.length > 0 && (
+              <div className="mt-3 p-3 bg-white rounded-2xl border border-[#eae5dc] shadow-2xs space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-[#141414] uppercase tracking-wider flex items-center gap-1.5">
+                    <span>Shade:</span>
+                    <span className="text-[#8c7138] font-extrabold">{selectedVariant?.name || product.colorVariants[0].name}</span>
+                  </span>
+                  <span className="text-[10px] text-[#747878]">
+                    {product.colorVariants.length} Options
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {product.colorVariants.map((v, i) => {
+                    const isSelected = selectedVariant?.name === v.name || (!selectedVariant && i === 0);
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setSelectedVariant(v)}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer border ${
+                          isSelected
+                            ? 'bg-[#141414] text-white border-[#141414] shadow-xs scale-102 ring-2 ring-[#8c7138]/40'
+                            : 'bg-[#faf8f5] text-[#141414] hover:bg-[#eae5dc] border-[#eae5dc]'
+                        }`}
+                      >
+                        <span
+                          className="w-3 h-3 rounded-full border border-black/20 shrink-0"
+                          style={{ backgroundColor: v.colorCode || '#D4AF37' }}
+                        />
+                        <span>{v.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Description */}
             <div className="text-xs sm:text-sm text-[#444748] mt-3 leading-relaxed whitespace-pre-line space-y-1 font-sans">
@@ -209,13 +255,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           <div className="mt-5 pt-3 border-t border-[#eae5dc]">
             <button
               onClick={() => {
-                onAddToCart(product);
+                onAddToCart(product, 1, selectedVariant?.name, selectedVariant?.image);
                 onClose();
               }}
-              className="w-full py-3 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white transition-all font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-md active:scale-98"
+              className="w-full py-3 rounded-full bg-[#141414] text-[#fed488] hover:bg-[#8c7138] hover:text-white transition-all font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-md active:scale-98 cursor-pointer"
             >
               <ShoppingBag className="w-4 h-4" />
-              Add To Bag — ₹{product.price}
+              Add To Bag {selectedVariant?.name ? `(${selectedVariant.name})` : ''} — ₹{product.price}
             </button>
             <p className="text-center text-[10px] text-[#747878] mt-2 font-medium">
               Free Express Shipping on orders above ₹500 • 7 Days Return

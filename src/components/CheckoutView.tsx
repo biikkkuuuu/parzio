@@ -480,7 +480,8 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
         name: c.product.name,
         price: c.product.price,
         quantity: c.quantity,
-        image: c.product.image || '',
+        selectedColor: c.selectedColor,
+        image: c.selectedColorImage || c.product.image || '',
         sku: c.product.sku || 'SKU: PARZIO-99',
         material: c.product.material || '316L Stainless Steel'
       })),
@@ -489,7 +490,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       productName: cartItems.length === 1 ? cartItems[0].product.name : `${totalQuantity}x Pieces`,
       sku: cartItems[0]?.product.sku || 'SKU: MIX-99',
       quantity: totalQuantity,
-      image: cartItems[0]?.product.image || '',
+      image: cartItems[0]?.selectedColorImage || cartItems[0]?.product.image || '',
       tag: paymentMethod === 'COD' ? 'OTP Verified' : 'Prepaid UPI',
       courier: 'Pending Dispatch',
       trackingNumber: undefined,
@@ -515,7 +516,15 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
-          items: cartItems.map(c => ({ id: c.product.id, quantity: c.quantity, price: c.product.price, name: c.product.name, image: c.product.image, sku: c.product.sku })),
+          items: cartItems.map(c => ({ 
+            id: c.product.id, 
+            quantity: c.quantity, 
+            price: c.product.price, 
+            name: c.product.name, 
+            selectedColor: c.selectedColor,
+            image: c.selectedColorImage || c.product.image, 
+            sku: c.product.sku 
+          })),
           paymentMethod,
           utr,
           address: `${address}${postOffice ? ` (${postOffice})` : ''}`,
@@ -1222,10 +1231,10 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
               
               <div className="space-y-4 mb-6">
                 {cartItems.map((item) => (
-                  <div key={`${item.product.id}-${item.size}`} className="flex gap-4">
+                  <div key={`${item.product.id}-${item.selectedColor || 'default'}`} className="flex gap-4">
                     <div className="w-16 h-16 bg-white rounded-xl border border-[#eae5dc] overflow-hidden flex-shrink-0 relative">
                       <img 
-                        src={item.product.image || (item.product as any).images?.[0] || ''} 
+                        src={item.selectedColorImage || item.product.image || (item.product as any).images?.[0] || ''} 
                         alt={item.product.name} 
                         className="w-full h-full object-cover" 
                       />
@@ -1235,7 +1244,14 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                     </div>
                     <div className="flex-1 text-sm pt-1">
                       <p className="font-bold text-[#141414] line-clamp-2 leading-snug">{item.product.name}</p>
-                      <p className="text-[11px] text-[#747878] mt-1 font-semibold uppercase tracking-wider">Size: {item.size}</p>
+                      {item.selectedColor ? (
+                        <p className="text-[11px] text-[#8c7138] mt-1 font-semibold flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full border border-black/20" style={{ backgroundColor: item.product.colorVariants?.find(v => v.name === item.selectedColor)?.colorCode || '#8c7138' }} />
+                          <span>Shade: {item.selectedColor}</span>
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-[#747878] mt-1 font-semibold uppercase tracking-wider">{item.product.material || '316L Stainless Steel'}</p>
+                      )}
                     </div>
                     <div className="font-bold text-[#141414] pt-1">₹{item.product.price * item.quantity}</div>
                   </div>
