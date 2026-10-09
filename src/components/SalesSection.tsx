@@ -29,8 +29,6 @@ export const SalesSection: React.FC<SalesSectionProps> = ({
   bannerConfig = DEFAULT_SALE_CONFIG,
   salePosters = []
 }) => {
-  const cartItems = useCartStore((state) => state.cartItems);
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('ALL SALE');
   const [currentPage, setCurrentPage] = useState(1);

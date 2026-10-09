@@ -22,9 +22,6 @@ export const ProductVault: React.FC<ProductVaultProps> = ({
   wishlistIds,
   onOpenProductModal
 }) => {
-  const cartItems = useCartStore((state) => state.cartItems);
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
-
   const isFiltered = Boolean(
     activeFilter &&
     activeFilter !== 'ALL' &&

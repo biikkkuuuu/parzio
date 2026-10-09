@@ -1,19 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import {
   ArrowLeft,
-  Heart,
-  ShoppingBag,
-  Sparkles,
-  ShieldCheck,
-  Droplets,
-  RotateCcw,
-  Search,
-  Plus,
-  Minus
+  Search
 } from 'lucide-react';
 import { Product, CategoryItem } from '../types';
 import { Footer } from './Footer';
-import { useCartStore } from '../store/useCartStore';
 import { ProductCard } from './ProductCard';
 
 interface CategoryPageViewProps {
@@ -44,8 +35,6 @@ export const CategoryPageView: React.FC<CategoryPageViewProps> = ({
   onSelectProduct,
   onOpenAtelierOps
 }) => {
-  const cartItems = useCartStore((state) => state.cartItems);
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
   // Sort and Filter States
   const [sortBy, setSortBy] = useState<SortOption>('featured');
   const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
