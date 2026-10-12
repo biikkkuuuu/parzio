@@ -16,18 +16,28 @@ import { WriteReviewModal } from './WriteReviewModal';
 import { dbService } from '../services/dbService';
 
 interface ProductReviewsSectionProps {
-  product: Product;
-  reviews: Review[];
+  product?: Product;
+  productId?: string;
+  productName?: string;
+  reviews?: Review[];
   onReviewSubmitted?: (review: Review) => void;
-  userProfile?: { name?: string; phone?: string; address?: string };
+  onAddReview?: (review: Omit<Review, 'id' | 'date'>) => Promise<void>;
+  onMarkHelpful?: (reviewId: string) => void;
+  currentUser?: { name?: string; phone?: string; address?: string } | null;
+  userProfile?: { name?: string; phone?: string; address?: string } | null;
 }
 
 type FilterOption = 'all' | 'with-photos' | '5-star' | '4-star' | '3-star';
 
 export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   product,
-  reviews,
+  productId,
+  productName,
+  reviews = [],
   onReviewSubmitted,
+  onAddReview,
+  onMarkHelpful,
+  currentUser,
   userProfile
 }) => {
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
@@ -40,14 +50,21 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   const [votedMap, setVotedMap] = useState<Record<string, boolean>>({});
   const [displayCount, setDisplayCount] = useState<number>(5);
 
+  const effectiveId = product?.id || productId || '';
+  const effectiveName = product?.name || productName || 'PARZIO Piece';
+
   // Relevant reviews for this product or general fallback
   const productReviews = useMemo(() => {
-    const directMatches = reviews.filter(
-      (r) => r.productId === product.id || (r.purchasedItem && r.purchasedItem.toLowerCase() === product.name.toLowerCase())
+    const list = Array.isArray(reviews) ? reviews : [];
+    if (!effectiveId && !effectiveName) return list;
+    const directMatches = list.filter(
+      (r) =>
+        Boolean(r && effectiveId && r.productId === effectiveId) ||
+        Boolean(r && effectiveName && r.purchasedItem && r.purchasedItem.toLowerCase() === effectiveName.toLowerCase())
     );
     if (directMatches.length > 0) return directMatches;
-    return reviews;
-  }, [reviews, product.id, product.name]);
+    return list;
+  }, [reviews, effectiveId, effectiveName]);
 
   // All customer uploaded photos across all reviews for this product
   const allCustomerPhotos = useMemo(() => {
@@ -65,10 +82,10 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   // Ratings calculation
   const totalReviewsCount = productReviews.length;
   const averageRating = useMemo(() => {
-    if (totalReviewsCount === 0) return product.rating || 4.9;
+    if (totalReviewsCount === 0) return product?.rating || 4.9;
     const sum = productReviews.reduce((acc, r) => acc + (r.rating || 5), 0);
     return (sum / totalReviewsCount).toFixed(1);
-  }, [productReviews, totalReviewsCount, product.rating]);
+  }, [productReviews, totalReviewsCount, product?.rating]);
 
   // Star breakdown percentages
   const ratingDistribution = useMemo(() => {
@@ -398,11 +415,12 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
       <WriteReviewModal
         isOpen={isWriteModalOpen}
         onClose={() => setIsWriteModalOpen(false)}
-        product={product}
-        defaultAuthor={userProfile?.name}
-        defaultLocation={userProfile?.address?.split(',').slice(-2).join(', ').trim()}
-        onReviewSubmitted={(newRev) => {
+        product={product || { id: effectiveId, name: effectiveName }}
+        defaultAuthor={currentUser?.name || userProfile?.name}
+        defaultLocation={currentUser?.address || userProfile?.address}
+        onReviewSubmitted={async (newRev) => {
           if (onReviewSubmitted) onReviewSubmitted(newRev);
+          if (onAddReview) await onAddReview(newRev);
         }}
       />
 

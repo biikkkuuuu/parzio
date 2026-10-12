@@ -552,6 +552,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
         {/* Real Flipkart / Amazon Style Ratings & Reviews Section */}
         <ProductReviewsSection
+          product={product}
           productId={product.id}
           productName={product.name}
           reviews={reviews}

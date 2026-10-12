@@ -572,11 +572,21 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
         <WriteReviewModal
           isOpen={!!reviewModalOrder}
           onClose={() => setReviewModalOrder(null)}
-          productId={reviewModalOrder.sku || reviewModalOrder.id}
-          productName={reviewModalOrder.productName}
-          onSubmit={handleReviewSubmit}
-          initialName={reviewModalOrder.customerName}
-          initialLocation={reviewModalOrder.location}
+          product={{
+            id: reviewModalOrder.sku || reviewModalOrder.id,
+            name: reviewModalOrder.productName,
+            image: reviewModalOrder.image,
+            price: reviewModalOrder.amount,
+            sku: reviewModalOrder.sku
+          }}
+          defaultAuthor={reviewModalOrder.customerName}
+          defaultLocation={reviewModalOrder.location}
+          orderId={reviewModalOrder.id}
+          onReviewSubmitted={() => {
+            setReviewModalOrder(null);
+            setToastMessage('🎉 Thank you! Your verified buyer review & photos are live.');
+            setTimeout(() => setToastMessage(null), 4000);
+          }}
         />
       )}
 
