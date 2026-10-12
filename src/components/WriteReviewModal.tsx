@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Star, Upload, Trash2, Camera, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Star, Upload, Trash2, Camera, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { Product, Review } from '../types';
 import { dbService } from '../services/dbService';
 
@@ -68,64 +68,65 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const maxDim = 1200;
-          let w = img.width;
-          let h = img.height;
-          if (w > maxDim || h > maxDim) {
-            if (w > h) {
-              h = Math.round((h * maxDim) / w);
-              w = maxDim;
-            } else {
-              w = Math.round((w * maxDim) / h);
-              h = maxDim;
+          try {
+            const canvas = document.createElement('canvas');
+            const maxDim = 1200;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
             }
-          }
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, w, h);
-            const compressed = canvas.toDataURL('image/jpeg', 0.82);
-            newImages.push(compressed);
-          } else {
-            newImages.push(event.target?.result as string);
-          }
-          processed++;
-          if (processed === fileList.length) {
-            setImages((prev) => [...prev, ...newImages]);
-            setIsUploadingPhoto(false);
-          }
-        };
-        img.onerror = () => {
-          processed++;
-          if (processed === fileList.length) {
-            setImages((prev) => [...prev, ...newImages]);
-            setIsUploadingPhoto(false);
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.82);
+              newImages.push(compressedBase64);
+            }
+          } catch (err) {
+            console.error('Photo compression error:', err);
+          } finally {
+            processed++;
+            if (processed === fileList.length) {
+              setImages((prev) => [...prev, ...newImages].slice(0, 5));
+              setIsUploadingPhoto(false);
+            }
           }
         };
         img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     });
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
-  const handleRemovePhoto = (idx: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== idx));
+  const handleRemovePhoto = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!comment.trim()) {
-      setError('Please write a few words about your experience.');
+
+    if (!rating) {
+      setError('Please tap a star rating (1 to 5 stars).');
       return;
     }
+
+    if (!comment.trim() || comment.trim().length < 10) {
+      setError('Please write at least 10 characters describing your experience.');
+      return;
+    }
+
     if (!author.trim()) {
-      setError('Please provide your name.');
+      setError('Please enter your name.');
       return;
     }
 
@@ -167,218 +168,231 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
   const activeStar = hoverRating || rating;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-[#eae5dc] overflow-hidden my-6 animate-fadeIn">
-        {/* Header */}
-        <div className="bg-[#141414] text-white px-5 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#fed488]/20 border border-[#fed488]/50 flex items-center justify-center text-[#fed488]">
-              <Star className="w-4 h-4 fill-current" />
-            </div>
-            <div>
-              <h3 className="font-bold text-sm sm:text-base text-white">Rate &amp; Review Product</h3>
-              <p className="text-[11px] text-[#fed488] font-mono">Flipkart-Grade Certified Review</p>
-            </div>
-          </div>
+    <div className="fixed inset-0 z-50 bg-[#fbf9f6] overflow-y-auto min-h-screen animate-fadeIn">
+      {/* 1. Clean Luxury Top Navigation Header */}
+      <header className="bg-white border-b border-[#eae5dc] sticky top-0 z-30 shadow-2xs">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#141414] hover:text-[#8c7138] transition-colors cursor-pointer group"
           >
-            <X className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+            <span>Back</span>
           </button>
-        </div>
 
-        {/* Product mini header card */}
+          <div className="text-center">
+            <h1 className="text-sm sm:text-base font-bold text-[#141414] tracking-tight">
+              Rate &amp; Review Piece
+            </h1>
+            <p className="text-[10px] text-[#8c7138] font-medium hidden sm:block">
+              Flipkart-Grade Certified Customer Feedback
+            </p>
+          </div>
+
+          <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+            ✔ Verified
+          </span>
+        </div>
+      </header>
+
+      {/* 2. Full Page Form Container */}
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-4 pb-28">
+        {/* Product Information Card */}
         {product && (
-          <div className="p-4 bg-[#faf8f5] border-b border-[#eae5dc] flex items-center gap-3">
+          <div className="bg-white rounded-3xl p-4 sm:p-5 border border-[#eae5dc] shadow-2xs flex items-center gap-3.5">
             {product.image && (
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-12 h-12 rounded-xl object-cover bg-white border border-[#eae5dc] shrink-0"
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover bg-[#faf8f5] border border-[#eae5dc] shrink-0"
               />
             )}
             <div className="min-w-0 flex-1">
-              <h4 className="font-bold text-xs sm:text-sm text-[#141414] truncate">{product.name}</h4>
-              <p className="text-[10px] sm:text-[11px] text-[#747878] flex items-center gap-1.5 mt-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7138] block leading-none mb-1">
+                PURCHASED PIECE
+              </span>
+              <h2 className="font-bold text-sm sm:text-base text-[#141414] truncate">{product.name}</h2>
+              <p className="text-[11px] text-[#747878] flex items-center gap-1.5 mt-0.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="text-emerald-700 font-semibold">Verified Purchase • 100% Anti-Tarnish</span>
+                <span className="text-emerald-700 font-semibold">100% Anti-Tarnish Demi-Fine Certified</span>
               </p>
             </div>
           </div>
         )}
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 text-xs">
-          {error && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
-              {error}
+        {/* Main Review Form Card */}
+        <div className="bg-white rounded-3xl p-5 sm:p-7 border border-[#eae5dc] shadow-2xs">
+          <form onSubmit={handleSubmit} className="space-y-5 text-xs">
+            {error && (
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+                {error}
+              </div>
+            )}
+
+            {/* 1. Interactive Star Rating Selector */}
+            <div className="text-center py-4 bg-[#faf8f5] rounded-2xl border border-[#eae5dc] space-y-2">
+              <span className="text-[11px] font-bold text-[#747878] uppercase tracking-wider block">
+                OVERALL RATING *
+              </span>
+              <div className="flex items-center justify-center gap-2.5 sm:gap-3">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRating(star)}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    className="p-1 transition-transform hover:scale-120 active:scale-95 cursor-pointer"
+                  >
+                    <Star
+                      className={`w-8 h-8 sm:w-10 sm:h-10 transition-colors ${
+                        star <= activeStar
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'text-neutral-300'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs sm:text-sm font-bold text-[#8c7138] min-h-[20px]">
+                {RATING_LABELS[activeStar] || 'Tap a star to rate'}
+              </p>
             </div>
-          )}
 
-          {/* 1. Star Rating Selector */}
-          <div className="text-center py-2 bg-[#faf8f5] rounded-2xl border border-[#eae5dc] space-y-1.5">
-            <span className="text-[11px] font-bold text-[#747878] uppercase tracking-wider block">
-              Overall Rating *
-            </span>
-            <div className="flex items-center justify-center gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  className="p-1 transition-transform hover:scale-115 active:scale-95 cursor-pointer"
-                >
-                  <Star
-                    className={`w-7 h-7 sm:w-8 sm:h-8 transition-colors ${
-                      star <= activeStar
-                        ? 'fill-amber-400 text-amber-400'
-                        : 'text-neutral-300'
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
-            <p className="text-xs font-bold text-[#8c7138] min-h-[18px]">
-              {RATING_LABELS[activeStar] || 'Select stars'}
-            </p>
-          </div>
-
-          {/* 2. Review Title */}
-          <div>
-            <label className="block font-bold text-[#141414] mb-1">
-              Review Headline / Title
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Gorgeous 18K shine, perfect weight & packaging!"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138] bg-white"
-            />
-          </div>
-
-          {/* 3. Detailed Review Text */}
-          <div>
-            <label className="block font-bold text-[#141414] mb-1">
-              Detailed Experience *
-            </label>
-            <textarea
-              rows={3}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="How is the piece holding up? Did you wear it in water/shower? Describe the clasp, polish, packaging and comfort..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138] bg-white resize-none leading-relaxed"
-            />
-          </div>
-
-          {/* 4. Customer Real Photos Upload */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="font-bold text-[#141414] flex items-center gap-1.5">
-                <Camera className="w-4 h-4 text-[#8c7138]" />
-                <span>Upload Photos (Real Unboxing / Wearing)</span>
+            {/* 2. Review Title */}
+            <div>
+              <label className="block font-bold text-[#141414] mb-1.5 text-xs sm:text-sm">
+                Review Headline / Title
               </label>
-              <span className="text-[10px] text-[#747878] font-medium">{images.length}/5 photos</span>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Gorgeous 18K shine, perfect weight & packaging!"
+                className="w-full px-4 py-3 rounded-xl border border-[#eae5dc] text-xs sm:text-sm text-[#141414] focus:outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138] bg-white"
+              />
             </div>
 
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handlePhotoSelect}
-              className="hidden"
-            />
+            {/* 3. Detailed Review Text */}
+            <div>
+              <label className="block font-bold text-[#141414] mb-1.5 text-xs sm:text-sm">
+                Detailed Experience *
+              </label>
+              <textarea
+                rows={4}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="How is the piece holding up? Did you wear it in water/shower? Describe the clasp, polish, packaging and comfort..."
+                className="w-full px-4 py-3 rounded-xl border border-[#eae5dc] text-xs sm:text-sm text-[#141414] focus:outline-none focus:border-[#8c7138] focus:ring-1 focus:ring-[#8c7138] bg-white resize-none leading-relaxed"
+              />
+            </div>
 
-            <div className="flex flex-wrap items-center gap-2.5">
-              {/* Add Photo Button */}
-              {images.length < 5 && (
-                <button
-                  type="button"
-                  disabled={isUploadingPhoto}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-20 h-20 rounded-xl border-2 border-dashed border-[#8c7138]/50 hover:border-[#8c7138] bg-[#faf8f5] hover:bg-[#faf6ee] text-[#8c7138] flex flex-col items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-                >
-                  <Upload className="w-5 h-5" />
-                  <span className="text-[10px] font-bold">Add Photo</span>
-                </button>
-              )}
+            {/* 4. Customer Real Photos Upload */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="font-bold text-[#141414] flex items-center gap-1.5 text-xs sm:text-sm">
+                  <Camera className="w-4 h-4 text-[#8c7138]" />
+                  <span>Upload Photos (Real Unboxing / Wearing)</span>
+                </label>
+                <span className="text-[11px] text-[#747878] font-mono">{images.length}/5 photos</span>
+              </div>
 
-              {/* Uploaded Photos Thumbnails */}
-              {images.map((imgUrl, idx) => (
-                <div
-                  key={idx}
-                  className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#eae5dc] group"
-                >
-                  <img
-                    src={imgUrl}
-                    alt={`Review photo ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handlePhotoSelect}
+                className="hidden"
+              />
+
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Add Photo Button */}
+                {images.length < 5 && (
                   <button
                     type="button"
-                    onClick={() => handleRemovePhoto(idx)}
-                    className="absolute top-1 right-1 p-1 rounded-full bg-black/70 text-white hover:bg-rose-600 transition-colors cursor-pointer"
-                    title="Remove Photo"
+                    disabled={isUploadingPhoto}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-2 border-dashed border-[#8c7138]/50 hover:border-[#8c7138] bg-[#faf8f5] hover:bg-[#faf6ee] text-[#8c7138] flex flex-col items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
                   >
-                    <Trash2 className="w-3 h-3" />
+                    <Upload className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <span className="text-[10px] sm:text-[11px] font-bold">Add Photo</span>
                   </button>
-                </div>
-              ))}
-            </div>
-            <p className="text-[10px] text-[#747878] mt-1.5">
-              Real buyer photos help other shoppers see the authentic finish, shine, and fit.
-            </p>
-          </div>
+                )}
 
-          {/* 5. Reviewer Name & City */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div>
-              <label className="block font-bold text-[#141414] mb-1">Your Name *</label>
-              <input
-                type="text"
-                value={author}
-                onChange={(e) => setAuthor(e.target.value)}
-                placeholder="e.g. Pooja Sharma"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138] bg-white"
-              />
+                {/* Uploaded Photos Thumbnails */}
+                {images.map((imgUrl, idx) => (
+                  <div
+                    key={idx}
+                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-[#eae5dc] shadow-xs group"
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={`Review photo ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePhoto(idx)}
+                      className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/75 text-white hover:bg-rose-600 transition-colors cursor-pointer"
+                      title="Remove Photo"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-[#747878] mt-2">
+                Real customer photos help fellow shoppers see authentic finish, polish, and fit.
+              </p>
             </div>
-            <div>
-              <label className="block font-bold text-[#141414] mb-1">City / Location</label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Ranchi, Jharkhand"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#eae5dc] text-xs text-[#141414] focus:outline-none focus:border-[#8c7138] bg-white"
-              />
-            </div>
-          </div>
 
-          {/* Submit Buttons */}
-          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-[#eae5dc]">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-full border border-[#eae5dc] hover:bg-[#faf8f5] text-xs font-semibold text-[#747878] transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-2.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-[#fed488] hover:text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-50"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>{isSubmitting ? 'Submitting Review...' : 'Submit Verified Review'}</span>
-            </button>
-          </div>
-        </form>
-      </div>
+            {/* 5. Reviewer Name & City */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+              <div>
+                <label className="block font-bold text-[#141414] mb-1.5 text-xs sm:text-sm">Your Name *</label>
+                <input
+                  type="text"
+                  value={author}
+                  onChange={(e) => setAuthor(e.target.value)}
+                  placeholder="e.g. Pooja Sharma"
+                  className="w-full px-4 py-3 rounded-xl border border-[#eae5dc] text-xs sm:text-sm text-[#141414] focus:outline-none focus:border-[#8c7138] bg-white"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-[#141414] mb-1.5 text-xs sm:text-sm">City / Location</label>
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Ranchi, Jharkhand"
+                  className="w-full px-4 py-3 rounded-xl border border-[#eae5dc] text-xs sm:text-sm text-[#141414] focus:outline-none focus:border-[#8c7138] bg-white"
+                />
+              </div>
+            </div>
+
+            {/* Submit Action Buttons */}
+            <div className="pt-4 flex items-center justify-end gap-3 border-t border-[#eae5dc]">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-5 py-3 rounded-full border border-[#eae5dc] hover:bg-[#faf8f5] text-xs sm:text-sm font-semibold text-[#747878] transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 sm:flex-none px-8 py-3 rounded-full bg-[#141414] hover:bg-[#8c7138] text-[#fed488] hover:text-white text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-50"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{isSubmitting ? 'Submitting Review...' : 'Submit Verified Review'}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
     </div>
   );
 };
