@@ -42,31 +42,31 @@ export const INITIAL_TOP_MARQUEE: MarqueeItem[] = [
 export const INITIAL_BANNER_MARQUEE: MarqueeItem[] = [
   {
     id: 'bmarq-1',
-    text: '✨ 316L STAINLESS STEEL',
+    text: '316L SURGICAL GRADE STEEL',
     icon: 'sparkles',
     active: true
   },
   {
     id: 'bmarq-2',
-    text: '💧 SWEAT & PERFUME SAFE',
+    text: '100% WATERPROOF & ANTI-TARNISH',
     icon: 'sparkles',
     active: true
   },
   {
     id: 'bmarq-3',
-    text: '📦 FREE EXPRESS COURIER',
+    text: 'EXPRESS DOORSTEP DISPATCH',
     icon: 'truck',
     active: true
   },
   {
     id: 'bmarq-4',
-    text: '🛡️ 7 DAYS EASY REPLACEMENT',
+    text: '7-DAY HASSLE-FREE EXCHANGE',
     icon: 'shield',
     active: true
   },
   {
     id: 'bmarq-5',
-    text: '🎁 FREE LUXURY VELVET POUCH',
+    text: 'COMPLIMENTARY VELVET POUCH',
     icon: 'gift',
     active: true
   }

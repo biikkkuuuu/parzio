@@ -15,11 +15,11 @@ interface WriteReviewModalProps {
 
 const RATING_LABELS = [
   '',
-  'Very Bad 😞',
-  'Bad 😕',
-  'Average 🙂',
-  'Good 😊',
-  'Outstanding! 🌟'
+  'Poor',
+  'Fair',
+  'Average',
+  'Good',
+  'Exceptional'
 ];
 
 export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({

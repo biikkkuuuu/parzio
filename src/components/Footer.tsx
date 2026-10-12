@@ -225,8 +225,8 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenAtelierO
                 Admin Login
               </button>
             </div>
-            <p className="font-serif italic text-gray-300">
-              Beautiful Products. Happier You. <span className="text-[#c5a059]">♡</span>
+            <p className="font-serif italic text-gray-400 text-xs">
+              Demi-Fine Luxury • Handcrafted with Precision
             </p>
           </div>
 

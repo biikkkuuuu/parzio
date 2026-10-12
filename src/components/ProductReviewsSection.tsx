@@ -305,7 +305,7 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
                 : 'bg-[#faf8f5] text-[#141414] hover:bg-[#eae5dc]'
             }`}
           >
-            5 Star ★
+            5 Stars
           </button>
 
           <button
@@ -317,7 +317,7 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
                 : 'bg-[#faf8f5] text-[#141414] hover:bg-[#eae5dc]'
             }`}
           >
-            4 Star ★
+            4 Stars
           </button>
         </div>
 

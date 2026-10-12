@@ -361,7 +361,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                   </>
                 ) : (
                   <span className="text-[11px] text-[#8c7138] font-semibold bg-[#faf6ef] border border-[#ebd7be] px-2.5 py-0.5 rounded-full">
-                    ★ No reviews yet
+                    No reviews yet
                   </span>
                 )}
               </div>
@@ -474,7 +474,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 onClick={() => onBuyNow(product, quantity, selectedVariant?.name, selectedVariant?.image)}
                 className="py-3 lg:py-3.5 px-4 sm:px-6 rounded-xl bg-[#141414] hover:bg-neutral-800 text-white transition-all font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-md cursor-pointer active:scale-98"
               >
-                <Sparkles className="w-4 h-4 fill-[#fed488] text-[#fed488]" />
                 <span>BUY NOW</span>
               </button>
             </div>
@@ -626,7 +625,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             onClick={() => onBuyNow(product, quantity, selectedVariant?.name, selectedVariant?.image)}
             className="flex-1 py-2 rounded-md bg-[#141414] text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1 shadow-xs active:scale-95 cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5 fill-[#fed488] text-[#fed488]" />
             <span>BUY NOW</span>
           </button>
         </div>

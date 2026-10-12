@@ -62,9 +62,6 @@ export const WhyChooseParzio: React.FC = () => {
                 "Jewellery <br />
                 Made for Your Moments"
               </p>
-              <div className="text-[#c53030] text-lg mt-0.5">
-                ♡
-              </div>
             </div>
           </div>
 

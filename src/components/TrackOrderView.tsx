@@ -76,7 +76,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
         orderId: reviewModalOrder?.id
       });
       setReviewModalOrder(null);
-      setToastMessage('🎉 Thank you! Your verified buyer review & photos are live.');
+      setToastMessage('Thank you. Your verified buyer review is now live.');
       setTimeout(() => setToastMessage(null), 4000);
     } catch (err) {
       console.error('Failed to submit review:', err);
@@ -584,7 +584,7 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
           orderId={reviewModalOrder.id}
           onReviewSubmitted={() => {
             setReviewModalOrder(null);
-            setToastMessage('🎉 Thank you! Your verified buyer review & photos are live.');
+            setToastMessage('Thank you. Your verified buyer review is now live.');
             setTimeout(() => setToastMessage(null), 4000);
           }}
         />

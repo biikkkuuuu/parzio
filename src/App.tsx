@@ -1040,7 +1040,7 @@ export default function App() {
   const handleMoveToWishlist = (productId: string) => {
     setWishlistIds((prev) => (prev.includes(productId) ? prev : [...prev, productId]));
     handleRemoveFromCart(productId);
-    showToast('Moved item to your Wishlist ✨');
+    showToast('Moved item to your Wishlist');
   };
 
   // Wishlist Handlers
@@ -1051,7 +1051,7 @@ export default function App() {
         showToast('Removed from saved wishlist');
         return prev.filter((id) => id !== productId);
       } else {
-        showToast('Saved to wishlist ✨');
+        showToast('Saved to wishlist');
         return [...prev, productId];
       }
     });
