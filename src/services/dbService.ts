@@ -1219,12 +1219,15 @@ export const dbService = {
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) {
+          // Keep only real customer submitted reviews
+          return parsed.filter((r) => r && !r.id?.startsWith('rev-'));
+        }
       } catch (e) {
         console.error('Error parsing cached reviews:', e);
       }
     }
-    return REVIEWS_DATA;
+    return [];
   },
 
   saveReviews(reviews: Review[]): void {
@@ -1240,17 +1243,15 @@ export const dbService = {
     try {
       const snap = await getDocs(collection(db, 'reviews'));
       if (!snap.empty) {
-        const cloudReviews: Review[] = snap.docs.map(d => ({
-          ...d.data(),
-          id: d.id
-        } as Review));
+        const cloudReviews: Review[] = snap.docs
+          .map(d => ({
+            ...d.data(),
+            id: d.id
+          } as Review))
+          .filter(r => r && !r.id?.startsWith('rev-'));
         
-        const mergedMap = new Map<string, Review>();
-        REVIEWS_DATA.forEach(r => mergedMap.set(r.id, r));
-        cloudReviews.forEach(r => mergedMap.set(r.id, r));
-        const combined = Array.from(mergedMap.values());
-        this.saveReviews(combined);
-        return combined;
+        this.saveReviews(cloudReviews);
+        return cloudReviews;
       }
     } catch (e) {
       console.warn('Reviews cloud fetch failed, using local cache:', e);

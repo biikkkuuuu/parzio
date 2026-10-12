@@ -63,6 +63,22 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   const handleMarkHelpful = (reviewId: string) => {
     dbService.markReviewHelpful(reviewId);
   };
+
+  const matchingReviews = React.useMemo(() => {
+    return (reviews || []).filter(
+      (r) =>
+        Boolean(r && product?.id && r.productId === product.id) ||
+        Boolean(r && product?.name && r.purchasedItem && r.purchasedItem.trim().toLowerCase() === product.name.trim().toLowerCase())
+    );
+  }, [reviews, product?.id, product?.name]);
+
+  const matchingReviewsCount = matchingReviews.length;
+  const avgRating = React.useMemo(() => {
+    if (matchingReviewsCount === 0) return '0.0';
+    const sum = matchingReviews.reduce((acc, r) => acc + (r.rating || 5), 0);
+    return (sum / matchingReviewsCount).toFixed(1);
+  }, [matchingReviews, matchingReviewsCount]);
+
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
@@ -179,55 +195,28 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
         </script>
       </Helmet>
 
-      {/* Top Compact Breadcrumb Bar */}
-      <div className="bg-white border-b border-[#eae5dc] sticky top-0 z-30 shadow-2xs">
-        <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-12 py-2 sm:py-3 flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#141414] hover:text-[#8c7138] transition-colors cursor-pointer group"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:-translate-x-0.5 transition-transform" />
-            <span>Back to Collection</span>
-          </button>
-
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#747878] font-medium">
-            <button
-              type="button"
-              onClick={onBack}
-              className="hover:text-[#8c7138] hover:underline cursor-pointer"
-            >
-              Home
-            </button>
-            <ChevronRight className="w-3 h-3 text-[#c4c4c4]" />
-            <span className="capitalize">{product.category}</span>
-            <ChevronRight className="w-3 h-3 text-[#c4c4c4]" />
-            <span className="text-[#141414] font-semibold truncate max-w-[240px] lg:max-w-[400px]">{product.name}</span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleShare}
-            className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-[#747878] hover:text-[#141414] px-3 py-1.5 rounded-full border border-[#eae5dc] hover:bg-[#faf8f5] transition-colors cursor-pointer"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            <span>{copiedLink ? 'Copied!' : 'Share'}</span>
-          </button>
-        </div>
-      </div>
-
       {/* Main Luxury Full-Width Product Container (Expansive on PC, Compact on Mobile) */}
-      <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-12 py-3 sm:py-6 lg:py-10">
+      <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-12 py-3 sm:py-6 lg:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-10 xl:gap-14 items-start">
           
           {/* Left Column: Image Gallery with Interactive Slider & Swipe (6 Cols on Desktop) */}
           <div className="lg:col-span-6 xl:col-span-6 flex flex-col gap-3 lg:gap-4">
-            {/* Main Image Stage with Floating < and > Arrows and Swipe Gestures */}
+            {/* Main Image Stage with Floating Back, Share, Wishlist and Arrows */}
             <div
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
               className="relative aspect-square w-full rounded-2xl lg:rounded-3xl overflow-hidden bg-white border border-[#eae5dc] shadow-sm select-none group mx-auto"
             >
+              {/* Back to Catalog Floating Button */}
+              <button
+                type="button"
+                onClick={onBack}
+                className="absolute top-3 left-3 lg:top-4 lg:left-4 w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-white/90 hover:bg-white backdrop-blur-xs flex items-center justify-center text-[#141414] hover:text-[#8c7138] shadow-md transition-all active:scale-90 cursor-pointer z-20 border border-[#eae5dc]/80 hover:scale-105"
+                title="Back to Catalog"
+              >
+                <ArrowLeft className="w-4 h-4 lg:w-5 lg:h-5" />
+              </button>
+
               {/* Image with smooth transition */}
               <img
                 key={selectedImageIndex}
@@ -243,20 +232,38 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
               {/* Minimal Clean Badge */}
               {product.badge && (
-                <span className="absolute top-3 left-3 lg:top-4 lg:left-4 bg-[#141414] text-[#fed488] text-[9px] sm:text-[10px] font-bold px-2.5 py-1 rounded uppercase tracking-wider shadow-xs z-10">
+                <span className="absolute top-3 left-14 lg:top-4 lg:left-16 bg-[#141414] text-[#fed488] text-[9px] sm:text-[10px] font-bold px-2.5 py-1 rounded uppercase tracking-wider shadow-xs z-10">
                   {product.badge}
                 </span>
               )}
 
-              {/* Wishlist Button */}
+              {/* Floating Share Button */}
+              <button
+                type="button"
+                onClick={handleShare}
+                className="absolute top-3 right-13 lg:top-4 lg:right-16 w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-white/90 hover:bg-white backdrop-blur-xs flex items-center justify-center text-[#141414] hover:text-[#8c7138] shadow-md transition-all active:scale-90 cursor-pointer z-20 border border-[#eae5dc]/80 hover:scale-105"
+                title="Share Piece"
+              >
+                <Share2 className="w-4 h-4 lg:w-4.5 lg:h-4.5" />
+              </button>
+
+              {/* Floating Wishlist Button */}
               <button
                 type="button"
                 onClick={() => onToggleWishlist(product.id)}
-                className="absolute top-3 right-3 lg:top-4 lg:right-4 w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#141414] hover:text-rose-500 shadow-md transition-transform active:scale-90 cursor-pointer z-10 border border-[#eae5dc]/80 hover:scale-105"
+                className="absolute top-3 right-3 lg:top-4 lg:right-4 w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#141414] hover:text-rose-500 shadow-md transition-transform active:scale-90 cursor-pointer z-20 border border-[#eae5dc]/80 hover:scale-105"
                 title="Save to Wishlist"
               >
                 <Heart className={`w-4 h-4 lg:w-5 lg:h-5 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
               </button>
+
+              {/* Copied Link Toast Overlay */}
+              {copiedLink && (
+                <div className="absolute top-16 right-3 lg:top-18 lg:right-4 z-30 bg-[#141414] text-[#fed488] text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg animate-fadeIn flex items-center gap-1.5 border border-[#8c7138]">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Link Copied!</span>
+                </div>
+              )}
 
               {/* Floating Left Arrow (<) */}
               {galleryImages.length > 1 && (
@@ -340,15 +347,23 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 {product.name}
               </h1>
 
-              {/* Rating Star Row */}
+              {/* Rating Star Row - Only show if real verified reviews exist */}
               <div className="flex items-center gap-2 mt-2">
-                <div className="flex items-center gap-1 bg-[#141414] text-white px-2 py-0.5 rounded text-[11px] font-bold">
-                  <span>{product.rating}</span>
-                  <Star className="w-3 h-3 fill-[#fed488] text-[#fed488]" />
-                </div>
-                <span className="text-xs text-[#747878] font-medium">
-                  {product.reviewsCount} Verified Customer Reviews
-                </span>
+                {matchingReviewsCount > 0 ? (
+                  <>
+                    <div className="flex items-center gap-1 bg-[#141414] text-white px-2 py-0.5 rounded text-[11px] font-bold">
+                      <span>{avgRating}</span>
+                      <Star className="w-3 h-3 fill-[#fed488] text-[#fed488]" />
+                    </div>
+                    <span className="text-xs text-[#747878] font-medium">
+                      {matchingReviewsCount} {matchingReviewsCount === 1 ? 'Verified Customer Review' : 'Verified Customer Reviews'}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-[11px] text-[#8c7138] font-semibold bg-[#faf6ef] border border-[#ebd7be] px-2.5 py-0.5 rounded-full">
+                    ★ No reviews yet
+                  </span>
+                )}
               </div>
             </div>
 

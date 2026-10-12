@@ -125,8 +125,36 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   return (
     <div id="customer-reviews-section" className="mt-12 sm:mt-16 border-t border-[#eae5dc] pt-8 sm:pt-10">
       
-      {/* 1. Header & Summary Grid (Flipkart-Grade Layout) */}
-      <div className="bg-[#faf8f5] rounded-3xl p-5 sm:p-7 border border-[#eae5dc] mb-8">
+      {totalReviewsCount === 0 ? (
+        /* Clean Flipkart / Amazon No Reviews State */
+        <div className="bg-[#faf8f5] rounded-3xl p-8 sm:p-12 border border-[#eae5dc] text-center max-w-xl mx-auto space-y-3">
+          <div className="w-12 h-12 rounded-full bg-white border border-[#eae5dc] text-[#8c7138] flex items-center justify-center mx-auto shadow-xs">
+            <Star className="w-5 h-5 text-[#8c7138]" />
+          </div>
+          <span className="text-[10px] font-bold text-[#8c7138] uppercase tracking-wider block">
+            RATINGS &amp; REVIEWS
+          </span>
+          <h3 className="font-bold text-base sm:text-lg text-[#141414]">
+            No Reviews Yet
+          </h3>
+          <p className="text-xs sm:text-sm text-[#747878] leading-relaxed max-w-md mx-auto">
+            This piece has not received verified reviews yet. Once your order is delivered, you can upload real unboxing photos and review this piece from your <strong>My Orders</strong> section!
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setIsWriteModalOpen(true)}
+              className="px-5 py-2.5 rounded-full bg-[#141414] hover:bg-[#8c7138] text-[#fed488] hover:text-white font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 transition-all shadow-xs cursor-pointer"
+            >
+              <Camera className="w-4 h-4" />
+              <span>Write a Review</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* 1. Header & Summary Grid (Flipkart-Grade Layout) */}
+          <div className="bg-[#faf8f5] rounded-3xl p-5 sm:p-7 border border-[#eae5dc] mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           
           {/* Left: Overall Score + Star Breakdown */}
@@ -409,6 +437,8 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
             </div>
           )}
         </div>
+      )}
+        </>
       )}
 
       {/* Write Review Modal */}
