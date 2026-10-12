@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { OrderItem } from '../types';
+import { OrderItem, Review } from '../types';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -11,8 +11,12 @@ import {
   Copy,
   Check,
   Phone,
-  ChevronRight
+  ChevronRight,
+  Star,
+  Camera
 } from 'lucide-react';
+import { dbService } from '../services/dbService';
+import { WriteReviewModal } from './WriteReviewModal';
 
 interface TrackOrderViewProps {
   orders: OrderItem[];
@@ -29,6 +33,8 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
 }) => {
   const [localSelectedOrder, setLocalSelectedOrder] = useState<OrderItem | null>(null);
   const [copiedAwb, setCopiedAwb] = useState(false);
+  const [reviewModalOrder, setReviewModalOrder] = useState<OrderItem | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Active selected order is either controlled by parent (selectedOrderId) or local state
   const selectedOrder = selectedOrderId
@@ -59,6 +65,21 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
       navigator.clipboard.writeText(awb);
       setCopiedAwb(true);
       setTimeout(() => setCopiedAwb(false), 2000);
+    }
+  };
+
+  const handleReviewSubmit = async (reviewData: Omit<Review, 'id' | 'date'>) => {
+    try {
+      await dbService.addReview({
+        ...reviewData,
+        isVerifiedBuyer: true,
+        orderId: reviewModalOrder?.id
+      });
+      setReviewModalOrder(null);
+      setToastMessage('🎉 Thank you! Your verified buyer review & photos are live.');
+      setTimeout(() => setToastMessage(null), 4000);
+    } catch (err) {
+      console.error('Failed to submit review:', err);
     }
   };
 
@@ -367,6 +388,37 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
           </div>
         </div>
 
+        {/* Post-Delivery Flipkart/Amazon Style Verified Buyer Rate & Review Card */}
+        <div className="bg-white rounded-3xl p-5 border border-[#ebd7be] bg-gradient-to-br from-[#faf6ef]/70 to-white shadow-xs mb-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider">
+                <Check className="w-3 h-3 stroke-[3]" /> Verified Purchase
+              </div>
+              <h4 className="text-xs sm:text-sm font-bold text-[#141414]">
+                Rate & Review This Piece
+              </h4>
+              <p className="text-[11px] sm:text-xs text-[#747878] leading-relaxed">
+                Received your jewelry? Upload real unboxing photos & review quality to help buyers!
+              </p>
+            </div>
+            <div className="w-9 h-9 rounded-2xl bg-[#faf6ef] text-[#8c7138] flex items-center justify-center flex-shrink-0 border border-[#ebd7be]">
+              <Camera className="w-4 h-4" />
+            </div>
+          </div>
+
+          <div className="mt-3.5 pt-3 border-t border-[#ebd7be]/40 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setReviewModalOrder(selectedOrder)}
+              className="flex-1 py-2.5 px-4 rounded-xl bg-[#8c7138] hover:bg-[#725b2c] text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-xs active:scale-98 cursor-pointer"
+            >
+              <Star className="w-4 h-4 fill-amber-300 text-amber-300" />
+              <span>Write a Review & Upload Photos</span>
+            </button>
+          </div>
+        </div>
+
         {/* Delivery Address */}
         <div className="bg-white rounded-3xl p-5 border border-[#eae5dc] shadow-xs mb-4 space-y-2.5">
           <div className="flex items-center justify-between pb-2 border-b border-[#eae5dc]">
@@ -482,9 +534,22 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
                   <Truck className="w-3.5 h-3.5 text-[#8c7138]" />
                   <span>{order.courier || 'Pending Dispatch'}</span>
                 </span>
-                <span className="text-xs font-bold text-[#141414] group-hover:text-[#8c7138] flex items-center gap-0.5">
-                  View Status &rarr;
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setReviewModalOrder(order);
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#faf6ef] hover:bg-[#ebd7be] border border-[#ebd7be] text-[#8c7138] text-[11px] font-bold transition-colors cursor-pointer"
+                  >
+                    <Star className="w-3 h-3 fill-[#8c7138]" />
+                    <span>Rate & Review</span>
+                  </button>
+                  <span className="text-xs font-bold text-[#141414] group-hover:text-[#8c7138] flex items-center gap-0.5">
+                    View &rarr;
+                  </span>
+                </div>
               </div>
             </div>
           ))}
@@ -499,6 +564,26 @@ export const TrackOrderView: React.FC<TrackOrderViewProps> = ({
           <p className="text-xs text-[#747878] mt-1 max-w-xs mx-auto">
             Your placed orders will appear here.
           </p>
+        </div>
+      )}
+
+      {/* Post-Delivery Rate & Review Modal (Flipkart / Amazon Grade) */}
+      {reviewModalOrder && (
+        <WriteReviewModal
+          isOpen={!!reviewModalOrder}
+          onClose={() => setReviewModalOrder(null)}
+          productId={reviewModalOrder.sku || reviewModalOrder.id}
+          productName={reviewModalOrder.productName}
+          onSubmit={handleReviewSubmit}
+          initialName={reviewModalOrder.customerName}
+          initialLocation={reviewModalOrder.location}
+        />
+      )}
+
+      {/* Floating Success Toast */}
+      {toastMessage && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-[#141414] text-white px-5 py-3 rounded-2xl shadow-2xl text-xs sm:text-sm font-semibold flex items-center gap-2 animate-bounce">
+          <span>{toastMessage}</span>
         </div>
       )}
     </div>

@@ -16,9 +16,10 @@ import {
   ChevronDown,
   Sparkles
 } from 'lucide-react';
-import { Product, ProductColorVariant } from '../types';
+import { Product, ProductColorVariant, Review, UserProfile } from '../types';
 import { dbService } from '../services/dbService';
 import { ProductCard } from './ProductCard';
+import { ProductReviewsSection } from './ProductReviewsSection';
 
 interface ProductDetailViewProps {
   product: Product;
@@ -28,6 +29,7 @@ interface ProductDetailViewProps {
   onToggleWishlist: (productId: string) => void;
   isWishlisted: boolean;
   onSelectProduct: (product: Product) => void;
+  userProfile?: UserProfile | null;
 }
 
 export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
@@ -37,12 +39,30 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   onBuyNow,
   onToggleWishlist,
   isWishlisted,
-  onSelectProduct
+  onSelectProduct,
+  userProfile
 }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<ProductColorVariant | null>(() => product.colorVariants?.[0] || null);
   const [quantity, setQuantity] = useState(1);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>(() => dbService.getReviews());
+
+  // Subscribe to live reviews
+  useEffect(() => {
+    const unsub = dbService.subscribeToReviews((updated) => {
+      setReviews(updated);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleAddReview = async (reviewData: Omit<Review, 'id' | 'date'>) => {
+    await dbService.addReview(reviewData);
+  };
+
+  const handleMarkHelpful = (reviewId: string) => {
+    dbService.markReviewHelpful(reviewId);
+  };
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
@@ -529,6 +549,16 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
           </div>
         </div>
+
+        {/* Real Flipkart / Amazon Style Ratings & Reviews Section */}
+        <ProductReviewsSection
+          productId={product.id}
+          productName={product.name}
+          reviews={reviews}
+          onAddReview={handleAddReview}
+          onMarkHelpful={handleMarkHelpful}
+          currentUser={userProfile}
+        />
 
         {/* Complete The Look (Related Products) - Expansive Full Width Grid */}
         <div className="mt-10 sm:mt-14 border-t border-[#eae5dc] pt-6 sm:pt-8">

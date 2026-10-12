@@ -157,12 +157,21 @@ export interface CartItem {
 
 export interface Review {
   id: string;
+  productId?: string;
+  productName?: string;
   author: string;
-  role: string;
-  rating: number;
-  quote: string;
-  purchasedItem: string;
+  role?: string;
+  rating: number; // 1 to 5
+  title?: string;
+  comment?: string;
+  quote?: string; // backwards compatibility
+  purchasedItem?: string;
+  images?: string[]; // real customer photos
   date?: string;
+  isVerifiedBuyer?: boolean;
+  location?: string;
+  helpfulCount?: number;
+  orderId?: string;
 }
 
 export type OrderStatus =

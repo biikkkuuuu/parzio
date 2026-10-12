@@ -10,9 +10,11 @@ import {
   SkinSafeConfig,
   SaleBannerConfig,
   SalePoster,
-  AbandonedLead
+  AbandonedLead,
+  Review
 } from '../types';
 import { INITIAL_ORDERS } from '../data/orders';
+import { REVIEWS_DATA } from '../data/reviews';
 import {
   INITIAL_BANNERS,
   INITIAL_TOP_MARQUEE,
@@ -53,6 +55,7 @@ const KEYS = {
   STORE_SETTINGS: 'parzio_store_settings',
   INSTAGRAM_POSTS: 'parzio_instagram_posts',
   ABANDONED_LEADS: 'parzio_abandoned_leads',
+  REVIEWS: 'parzio_reviews',
 };
 
 export interface PincodeItem {
@@ -1206,5 +1209,123 @@ export const dbService = {
     for (const lead of matched) {
       await this.updateAbandonedLeadStatus(lead.id, 'converted');
     }
+  },
+
+  // ==========================================
+  // CUSTOMER PRODUCT REVIEWS (Flipkart Grade)
+  // ==========================================
+  getReviews(): Review[] {
+    const cached = localStorage.getItem(KEYS.REVIEWS);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error('Error parsing cached reviews:', e);
+      }
+    }
+    return REVIEWS_DATA;
+  },
+
+  saveReviews(reviews: Review[]): void {
+    try {
+      localStorage.setItem(KEYS.REVIEWS, JSON.stringify(reviews));
+    } catch (e) {
+      console.error('Error caching reviews:', e);
+    }
+  },
+
+  async fetchReviewsFromCloud(): Promise<Review[]> {
+    if (!db || !isFirebaseConfigured()) return this.getReviews();
+    try {
+      const snap = await getDocs(collection(db, 'reviews'));
+      if (!snap.empty) {
+        const cloudReviews: Review[] = snap.docs.map(d => ({
+          ...d.data(),
+          id: d.id
+        } as Review));
+        
+        const mergedMap = new Map<string, Review>();
+        REVIEWS_DATA.forEach(r => mergedMap.set(r.id, r));
+        cloudReviews.forEach(r => mergedMap.set(r.id, r));
+        const combined = Array.from(mergedMap.values());
+        this.saveReviews(combined);
+        return combined;
+      }
+    } catch (e) {
+      console.warn('Reviews cloud fetch failed, using local cache:', e);
+    }
+    return this.getReviews();
+  },
+
+  subscribeToReviews(callback: (reviews: Review[]) => void): () => void {
+    if (!db || !isFirebaseConfigured()) {
+      callback(this.getReviews());
+      return () => {};
+    }
+    const unsub = onSnapshot(collection(db, 'reviews'), (snap) => {
+      const cloudReviews: Review[] = snap.docs.map(d => ({
+        ...d.data(),
+        id: d.id
+      } as Review));
+      const mergedMap = new Map<string, Review>();
+      REVIEWS_DATA.forEach(r => mergedMap.set(r.id, r));
+      cloudReviews.forEach(r => mergedMap.set(r.id, r));
+      const combined = Array.from(mergedMap.values());
+      this.saveReviews(combined);
+      callback(combined);
+    }, (err) => {
+      console.warn('Reviews subscription error:', err);
+      callback(this.getReviews());
+    });
+    return unsub;
+  },
+
+  async addReview(review: Review): Promise<void> {
+    const current = this.getReviews();
+    const updated = [review, ...current.filter(r => r.id !== review.id)];
+    this.saveReviews(updated);
+
+    if (db && isFirebaseConfigured()) {
+      try {
+        await setDoc(doc(db, 'reviews', review.id), sanitizeForFirestore(review));
+      } catch (e) {
+        console.error('Failed to save review to Firebase:', e);
+      }
+    }
+  },
+
+  async deleteReview(reviewId: string): Promise<void> {
+    const current = this.getReviews();
+    const updated = current.filter(r => r.id !== reviewId);
+    this.saveReviews(updated);
+
+    if (db && isFirebaseConfigured()) {
+      try {
+        await deleteDoc(doc(db, 'reviews', reviewId));
+      } catch (e) {
+        console.error('Failed to delete review from Firebase:', e);
+      }
+    }
+  },
+
+  async markReviewHelpful(reviewId: string): Promise<number> {
+    const current = this.getReviews();
+    let newCount = 1;
+    const updated = current.map(r => {
+      if (r.id === reviewId) {
+        newCount = (r.helpfulCount || 0) + 1;
+        return { ...r, helpfulCount: newCount };
+      }
+      return r;
+    });
+    this.saveReviews(updated);
+
+    if (db && isFirebaseConfigured()) {
+      try {
+        await updateDoc(doc(db, 'reviews', reviewId), { helpfulCount: newCount });
+      } catch (e) {}
+    }
+    return newCount;
   }
 };

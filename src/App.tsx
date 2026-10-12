@@ -14,7 +14,6 @@ import { MobileDrawer } from './components/MobileDrawer';
 import { Categories } from './components/Categories';
 import { ProductVault } from './components/ProductVault';
 import { QualityCheckSection } from './components/QualityCheckSection';
-import { ReviewsSection } from './components/ReviewsSection';
 import { WhyChooseParzio } from './components/WhyChooseParzio';
 import { InstagramGrid } from './components/InstagramGrid';
 import { BrandPromise } from './components/BrandPromise';
@@ -1341,6 +1340,7 @@ export default function App() {
             onSelectProduct={(p) => {
               handleSelectProduct(p);
             }}
+            userProfile={userProfile}
           />
         ) : activeTab === 'wishlist' ? (
           <main className="pb-16 md:pb-0">
@@ -1576,9 +1576,6 @@ export default function App() {
 
             {/* Why Choose PARZIO */}
             <WhyChooseParzio />
-
-            {/* What Our Customers Say */}
-            <ReviewsSection />
 
             {/* Follow Us on Instagram */}
             <InstagramGrid />
